@@ -23,7 +23,7 @@
 namespace Config {
 
 class BinarySetting  { };
-class DWordSetting   { };
+class DWordSetting { };
 class StringSetting  { };
 
 template <class T> class SettingType: public BinarySetting { };
@@ -66,7 +66,7 @@ public:
 
    //TODO: Warning: Missing GetDefaultSetting() for binary and strings !
 
-   // Generic settings accessors for "large", fixed size, settings, saved as binary
+   // Generic settings accessors, mostly for "large", fixed size, settings, saved as binary
    template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data)          { return LoadSetting(setting, data, setting); }
    template<class T> inline void SaveSetting(const Setting<T> &setting, const T* data)    { SaveSetting(setting, data, setting); }
 
@@ -86,6 +86,7 @@ protected:
    template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data, const BinarySetting& type);
    template<class T> inline void SaveSetting(const Setting<T> &setting, const T* data, const BinarySetting& type);
 
+   template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data, const DWordSetting& type);
    template<class T> inline T LoadSetting(const Setting<T> &setting, const DWordSetting& type);
    template<class T> inline void SaveSetting(const Setting<T> &setting, T data, const DWordSetting& type);
    template<class T> static inline T GetDefaultSetting(const Setting<T> &setting, const DWordSetting& type) { return setting.m_default; }
@@ -119,6 +120,12 @@ template<class T> inline void Group::SaveSetting(const Setting<T> &setting, cons
 
 template<class T> inline T ConvertFromDWord(DWORD dw)    { return (T)dw; }
 template<> inline bool ConvertFromDWord<bool>(DWORD dw)  { return dw ? true : false; }
+
+template<class T> inline bool Group::LoadSetting(const Setting<T> &setting, T* data, const DWordSetting& type)
+{
+   assert(sizeof(T)<=sizeof(DWORD));
+   return LoadBinary(setting.m_name, (LPBYTE)data, sizeof(T), (LPBYTE)&setting.m_default);
+}
 
 template<class T> T Group::LoadSetting(const Setting<T> &setting, const DWordSetting& /*type*/)
 {
