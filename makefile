@@ -41,8 +41,8 @@ ifdef DEBUG
 CXXFLAGS = -g
 CFLAGS = -g
 else
-CXXFLAGS = -fexpensive-optimizations -O3
-CFLAGS = -fexpensive-optimizations -O3
+CXXFLAGS = -fexpensive-optimizations -O3 -ffast-math
+CFLAGS = -fexpensive-optimizations -O3 -ffast-math
 endif
 
 MAKEDEPEND = g++ -MM $(CPPFLAGS) -o $*.d $<
