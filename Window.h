@@ -50,10 +50,31 @@ class Window
 {
 public:
    Window(HWND hWnd);
-   ~Window(void);
+   ~Window();
 
+   /** Move the window to the specified desktop.
+    * This function allows to specify the desktop on which the window can be seen.
+    * By specifying NULL, the window will be seen on all desktops.
+    *
+    * @param desk Pointer to the desktop on to which the window belongs (ie, on which the 
+    * window is displayed), or NULL to make the window always visible (ie, on all desktops)
+    */
    void MoveToDesktop(Desktop * desk);
+
+   /** Tell if the window can be seen on the specified desktop.
+    * This function returns a boolean, indicating if the window is displayed on the 
+    * specified desktop. By specifying the NULL desktop, the caller can easily find out
+    * if the window can be seen on all desktops.
+    *
+    * @param desk Pointer to the desktop on which one wants to know if the window is
+    * displayed, or NULL to find out if the window is displayed on all desktops.
+    * @retval true if the window is visible on the specified desktop
+    * @retval false if the window is not visible on the specified desktop
+    */
    bool IsOnDesk(Desktop * desk);
+
+   void BuildMenu(HMENU menu);
+   void OnMenuItemSelected(HMENU menu, int cmdId);
 
    void ShowWindow();
    void HideWindow();
@@ -68,13 +89,27 @@ public:
       WHM_MOVE
    };
 
+   enum MenuItems {
+      VDM_ACTIVATEWINDOW = WM_USER+1,
+      VDM_TOGGLEONTOP,
+      VDM_TOGGLEALLDESKTOPS,
+      VDM_MINIMIZETOTRAY,
+      VDM_MOVEWINDOW
+   };
+
+
 protected:
    HWND m_hWnd;
    Desktop * m_desk;
    bool m_hidden;
    int m_hidingMethod;
    bool m_iconic;
+   bool m_alldesks;
 
+   /** Pointer to the COM taskbar interface.
+    * This interface is used for the WHM_MINIMIZE hiding method, to add/remove the icons
+    * from the taskbar
+    */
    static ITaskbarList* m_tasklist;
 };
 
