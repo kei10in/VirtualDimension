@@ -28,11 +28,9 @@
 #include "alwaysontop.h"
 #include "windowsmanager.h"
 #include "ToolTip.h"
-
-extern HINSTANCE hInst;
+#include "FastWindow.h"
 
 extern HWND configBox;
-extern HWND mainWnd;
 extern DesktopManager * deskMan;
 extern WindowsManager * winMan;
 extern Transparency * transp;
@@ -40,12 +38,44 @@ extern TrayIcon * trayIcon;
 extern AlwaysOnTop * ontop;
 extern ToolTip * tooltip;
 
-extern char desk_name[80];
-extern char desk_wallpaper[256];
-extern int  desk_hotkey;
-LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-
 #define WM_VIRTUALDIMENSION (WM_APP + 1)
 #define VD_MOVEWINDOW 1
+
+class VirtualDimension: public FastWindow
+{
+public:
+   VirtualDimension();
+   ~VirtualDimension();
+
+   void Start(HINSTANCE hInstance, int nCmdShow);
+   HWND GetHWND() const { return *((FastWindow*)this); }
+   operator HINSTANCE() { return m_hInstance; }
+
+protected:
+   Window * m_draggedWindow;
+   HCURSOR m_dragCursor;
+
+   HINSTANCE m_hInstance;
+
+   static const int MAX_LOADSTRING = 100;
+   TCHAR m_szTitle[MAX_LOADSTRING];
+   TCHAR m_szWindowClass[MAX_LOADSTRING];
+
+   ATOM RegisterClass();
+
+   LRESULT OnCmdAbout(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnCmdConfigure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnCmdExit(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+   LRESULT OnLeftButtonDown(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnLeftButtonUp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnRightButtonDown(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+   LRESULT OnDestroy(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+   static LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/);
+};
+
+extern VirtualDimension vdWindow;
 
 #endif /* __VIRTUAL_DIMENSION_H__ */

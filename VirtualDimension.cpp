@@ -27,19 +27,13 @@
 #include "Windowsx.h"
 #include "hotkeymanager.h"
 #include "shellhook.h"
-#include "movewindow.h"
 #include "tooltip.h"
 #include <objbase.h>
+#include "fastwindow.h"
 
-#define MAX_LOADSTRING 100
 
 // Global Variables:
-HINSTANCE hInst;								// current instance
-TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
-TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
-
 HWND configBox = NULL;
-HWND mainWnd = NULL;
 DesktopManager * deskMan;
 WindowsManager * winMan;
 Transparency * transp;
@@ -47,14 +41,9 @@ TrayIcon * trayIcon;
 AlwaysOnTop * ontop;
 ToolTip * tooltip;
 
-// Forward declarations of functions included in this code module:
-ATOM				MyRegisterClass(HINSTANCE hInstance);
-HWND				InitInstance(HINSTANCE, int);
-LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
-void AddTaskbarIcons(HWND hWnd);
-void DelTaskbarIcons(HWND hWnd);
+VirtualDimension vdWindow;;
 
+// Forward function definition
 HWND CreateConfigBox();
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
@@ -62,23 +51,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      LPTSTR    /*lpCmdLine*/,
                      int       nCmdShow)
 {
- 	// TODO: Place code here.
 	MSG msg;
 	HACCEL hAccelTable;
 
    InitCommonControls();
-
    CoInitialize ( NULL );
 
-	// Initialize global strings
-	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadString(hInstance, IDC_VIRTUALDIMENSION, szWindowClass, MAX_LOADSTRING);
-	MyRegisterClass(hInstance);
-
-   // Perform application initialization:
-   mainWnd = InitInstance (hInstance, nCmdShow);
-	if (!mainWnd) 
-		return FALSE;
+   vdWindow.Start(hInstance, nCmdShow);
 
    // Load accelerators
 	hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_VIRTUALDIMENSION);
@@ -104,89 +83,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	return (int) msg.wParam;
 }
 
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-//  COMMENTS:
-//
-//    This function and its usage are only necessary if you want this code
-//    to be compatible with Win32 systems prior to the 'RegisterClassEx'
-//    function that was added to Windows 95. It is important to call this function
-//    so that the application will get 'well formed' small icons associated
-//    with it.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-	WNDCLASSEX wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX); 
-
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= (WNDPROC)WndProc;
-	wcex.cbClsExtra		= 0;
-	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)IDI_VIRTUALDIMENSION);
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= 0;
-	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon((HINSTANCE)wcex.hInstance, (LPCTSTR)IDI_SMALL);
-
-	return RegisterClassEx(&wcex);
-}
-
-//
-//   FUNCTION: InitInstance(HANDLE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   HWND hWnd;
-   RECT pos;
-   Settings settings;
-
-   // Store instance handle in our global variable
-   hInst = hInstance;
-
-   // Create the main window
-   settings.LoadPosition(&pos);
-   hWnd = CreateWindowEx(WS_EX_TOOLWINDOW, szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, NULL, NULL, hInstance, NULL);
-
-   if (!hWnd)
-      return NULL;
-
-   // Show window if needed
-   if (settings.LoadShowWindow())
-   {
-      ShowWindow(hWnd, nCmdShow);
-      InvalidateRect(hWnd, NULL, TRUE);
-   }
-
-   return hWnd;
-}
-
-//
-//  FUNCTION: WndProc(HWND, unsigned, WORD, LONG)
-//
-//  PURPOSE:  Processes messages for the main window.
-//
-//  WM_COMMAND	- process the application menu
-//  WM_PAINT	- Paint the main window
-//  WM_DESTROY	- post a quit message and return
-//
-//
-
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+/*LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    static UINT s_uTaskbarRestart;
    static bool dragging = false;
@@ -199,243 +96,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
    switch (message) 
    {
-   case WM_SYSCOMMAND:
-	case WM_COMMAND:
-		wmId    = LOWORD(wParam); 
-		wmEvent = HIWORD(wParam); 
-		// Parse the menu selections:
-		switch (wmId)
-		{
-		case IDM_ABOUT:
-			DialogBox(hInst, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
-			break;
-      case IDM_CONFIGURE:
-         if (!configBox)
-            configBox = CreateConfigBox();
-         break;
-      case SC_CLOSE:
-		case IDM_EXIT:
-         {
-            //Save the visibility state of the window before it is hidden
-            Settings settings;
-            settings.SaveShowWindow(IsWindowVisible(hWnd) ? true:false);
-         }
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-		break;
 
-   case WM_HOTKEY:
-      {
-         Desktop * desk = (Desktop*)HotKeyManager::GetInstance()->GetHotkeyData((int)wParam);
-
-         if (desk != NULL)
-         {
-            deskMan->SwitchToDesktop(desk);
-            InvalidateRect(hWnd, NULL, TRUE);
-         }
-      }
-      break;
-
-   case IDC_TRAYICON:
-      switch(lParam)
-      {
-      case WM_RBUTTONDOWN:
-      case WM_CONTEXTMENU:
-         trayIcon->OnContextMenu();
-         break;
-
-      case WM_LBUTTONDOWN:
-         trayIcon->OnLeftButtonDown();
-         break;
-      }
-      break;
-
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-      deskMan->paint(hdc);
-		EndPaint(hWnd, &ps);
-		break;
-
-   case WM_SIZE:
-      if (wParam == SIZE_RESTORED)
-         deskMan->resize(LOWORD(lParam), HIWORD(lParam));
-      break;
-
-   case WM_LBUTTONDOWN:
-      {
-         POINT pt;
-
-         pt.x = GET_X_LPARAM(lParam);
-         pt.y = GET_Y_LPARAM(lParam);
-
-         Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
-         if ( (desk) &&
-              ((draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
-              (!draggedWindow->IsOnDesk(NULL)) &&
-              (ClientToScreen(hWnd, &pt)) &&
-              (DragDetect(hWnd, pt)) )
-         {
-            //Dragging a window
-            dragging = true;
-            SetCapture(hWnd);
-
-            ICONINFO icon;
-            GetIconInfo(draggedWindow->GetIcon(), &icon);
-            icon.fIcon = FALSE;
-            dragCursor = (HCURSOR)CreateIconIndirect(&icon);
-            SetCursor(dragCursor);
-         }
-         else
-         {
-            //dragging = false;  //no needed
-            deskMan->SwitchToDesktop(desk);
-            InvalidateRect(hWnd, NULL, TRUE);
-         }
-      }
-      break;
-
-   case WM_LBUTTONUP:
-      if (dragging)
-      {
-         POINT pt;
-
-         //Release capture
-         dragging = false;
-         ReleaseCapture();
-
-         //Free the cursor
-         DestroyCursor(dragCursor);
-
-         pt.x = GET_X_LPARAM(lParam);
-         pt.y = GET_Y_LPARAM(lParam);
-
-         //Find out the target desktop
-         Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
-         if (draggedWindow->IsOnDesk(desk))
-            break;   //window already on the target desk
-
-         //Move the window to this desktop
-         draggedWindow->MoveToDesktop(desk);
-
-         //Refresh the window
-         InvalidateRect(hWnd, NULL, TRUE);
-      }
-      break;
-
-   case WM_RBUTTONDOWN:
-      {
-         HMENU hMenu, hmenuTrackPopup;
-         POINT pt;
-         HRESULT res;
-         pt.x = GET_X_LPARAM(lParam);
-         pt.y = GET_Y_LPARAM(lParam);
-
-         //Get the "base" menu
-         hMenu = LoadMenu(hInst, (LPCTSTR)IDC_VIRTUALDIMENSION);
-         if (hMenu == NULL)
-            break;
-         hmenuTrackPopup = GetSubMenu(hMenu, 0); 
-
-         //Add desktop specific information
-         Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
-         Window * window = NULL;
-         if (desk != NULL)
-         {
-            window = desk->GetWindowFromPoint(pt.x, pt.y);
-            if (window)
-               window->BuildMenu(hmenuTrackPopup);
-            else
-               desk->BuildMenu(hmenuTrackPopup);
-         }
-
-         //And show the menu
-         ClientToScreen(hWnd, &pt);
-         res = TrackPopupMenu(hmenuTrackPopup, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, mainWnd, NULL);
-
-         //Process the resulting message
-         if (res >= WM_USER)
-         {
-            if (window != NULL)
-               window->OnMenuItemSelected(hmenuTrackPopup, res);
-            else
-               desk->OnMenuItemSelected(hmenuTrackPopup, res);
-         }
-         else
-            PostMessage(hWnd, WM_COMMAND, res, 0);
-
-         DestroyMenu(hMenu);
-      }
-      break;
-
-	case WM_DESTROY:
-      {  
-         RECT pos;
-         Settings settings;
-         
-         // Before exiting, save the window position and visibility
-         GetWindowRect(hWnd, &pos);
-         settings.SavePosition(&pos);
-
-         // Remove the tray icon
-         delete trayIcon;
-
-         // Cleanup transparency
-         delete transp;
-
-         // Cleanup always on top state
-         delete ontop;
-
-         // Destroy the tooltip
-         delete tooltip;
-
-         // Destroy the desktop manager
-         delete deskMan;
-
-         // Destroy the windows manager
-         delete winMan;
-      }
-		PostQuitMessage(0);
-		break;
-
-   case WM_CREATE:
-      {
-         mainWnd = hWnd;
-
-         // Setup the system menu
-         HMENU pSysMenu= GetSystemMenu(hWnd, FALSE);
-	      if (pSysMenu != NULL)
-	      {
-   	      AppendMenu(pSysMenu, MF_SEPARATOR, 0, NULL);
-            AppendMenu(pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
-		      AppendMenu(pSysMenu, MF_STRING, IDM_ABOUT, "&About");
-         }
-         s_uTaskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
-
-         // Initialize tray icon
-         trayIcon = new TrayIcon(hWnd);
-
-         // Initialize transparency
-         transp = new Transparency(hWnd);
-
-         // Initialize always on top state
-         ontop = new AlwaysOnTop(hWnd);
-
-         // Create the tooltip
-         tooltip = new ToolTip(hWnd);
-
-         // Create the windows manager
-         winMan = new WindowsManager(hWnd);
-
-         // Create the desk manager
-         deskMan = new DesktopManager;
-
-         // Retrieve the initial list of windows
-         winMan->PopulateInitialWindowsSet();
-      }
-      break;
 
    case WM_VIRTUALDIMENSION:
       switch(wParam)
@@ -447,60 +108,290 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       break;
 
 	default:
-      if(message == s_uTaskbarRestart)
-         trayIcon->RefreshIcon();
-      else if (message == ShellHook::WM_SHELLHOOK)
-      {
-         switch(wParam)
-         {
-            case ShellHook::WINDOWACTIVATED:
-               winMan->OnWindowActivated((HWND)lParam);
-               break;
 
-            case ShellHook::RUDEAPPACTIVATEED: 
-               winMan->OnRudeAppActivated((HWND)lParam);
-               break;
-
-            case ShellHook::WINDOWREPLACING: 
-               winMan->OnWindowReplacing((HWND)lParam);
-               break;
-
-            case ShellHook::WINDOWREPLACED: 
-               winMan->OnWindowReplaced((HWND)lParam);
-               break;
-
-            case ShellHook::WINDOWCREATED: 
-               winMan->OnWindowCreated((HWND)lParam);
-               break;
-
-            case ShellHook::WINDOWDESTROYED: 
-               winMan->OnWindowDestroyed((HWND)lParam);
-               break;
-
-            case ShellHook::ACTIVATESHELLWINDOW: 
-               break;
-
-            case ShellHook::TASKMAN: 
-               break;
-
-            case ShellHook::REDRAW: 
-               winMan->OnRedraw((HWND)lParam);
-               break;
-
-            case ShellHook::FLASH: 
-               break;
-
-            case ShellHook::ENDTASK: 
-               break;
-         }
-      }
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
+}*/
+
+VirtualDimension::VirtualDimension()
+{
+}
+
+void VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
+{
+   HWND hWnd;
+   RECT pos;
+   Settings settings;
+
+   m_hInstance = hInstance;
+
+   // Register the window class
+   RegisterClass();
+
+   // Bind the message handlers
+   SetCommandHandler(IDM_ABOUT, this, &VirtualDimension::OnCmdAbout);
+   SetSysCommandHandler(IDM_ABOUT, this, &VirtualDimension::OnCmdAbout);
+   SetCommandHandler(IDM_CONFIGURE, this, &VirtualDimension::OnCmdConfigure);
+   SetSysCommandHandler(IDM_CONFIGURE, this, &VirtualDimension::OnCmdConfigure);
+   SetCommandHandler(IDM_EXIT, this, &VirtualDimension::OnCmdExit);
+   SetSysCommandHandler(SC_CLOSE, this, &VirtualDimension::OnCmdExit);
+
+   SetMessageHandler(WM_DESTROY, this, &VirtualDimension::OnDestroy);
+   SetMessageHandler(WM_LBUTTONDOWN, this, &VirtualDimension::OnLeftButtonDown);
+   SetMessageHandler(WM_LBUTTONUP, this, &VirtualDimension::OnLeftButtonUp);
+   SetMessageHandler(WM_RBUTTONDOWN, this, &VirtualDimension::OnRightButtonDown);
+
+   // Create the main window
+   settings.LoadPosition(&pos);
+   Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, WS_OVERLAPPEDWINDOW,
+           pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, 
+           NULL, NULL, hInstance);
+   if (!IsValid())
+      return;
+
+   hWnd = *this;
+
+   // Show window if needed
+   if (settings.LoadShowWindow())
+   {
+      ShowWindow(hWnd, nCmdShow);
+      InvalidateRect(hWnd, NULL, TRUE);
+   }
+
+   // Setup the system menu
+   HMENU pSysMenu= GetSystemMenu(hWnd, FALSE);
+	if (pSysMenu != NULL)
+	{
+   	AppendMenu(pSysMenu, MF_SEPARATOR, 0, NULL);
+      AppendMenu(pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
+		AppendMenu(pSysMenu, MF_STRING, IDM_ABOUT, "&About");
+   }
+
+   // Initialize tray icon
+   trayIcon = new TrayIcon(hWnd);
+
+   // Initialize transparency
+   transp = new Transparency(hWnd);
+
+   // Initialize always on top state
+   ontop = new AlwaysOnTop(hWnd);
+
+   // Create the tooltip
+   tooltip = new ToolTip(hWnd);
+
+   // Create the windows manager
+   winMan = new WindowsManager(hWnd);
+
+   // Create the desk manager
+   deskMan = new DesktopManager;
+
+   // Retrieve the initial list of windows
+   winMan->PopulateInitialWindowsSet();
+}
+
+VirtualDimension::~VirtualDimension()
+{
+}
+
+ATOM VirtualDimension::RegisterClass()
+{
+	WNDCLASSEX wcex;
+
+   LoadString(m_hInstance, IDS_APP_TITLE, m_szTitle, MAX_LOADSTRING);
+	LoadString(m_hInstance, IDC_VIRTUALDIMENSION, m_szWindowClass, MAX_LOADSTRING);
+
+	wcex.cbSize = sizeof(WNDCLASSEX); 
+
+	wcex.style			= CS_HREDRAW | CS_VREDRAW;
+	wcex.cbClsExtra		= 0;
+	wcex.cbWndExtra		= 0;
+	wcex.hInstance		= m_hInstance;
+	wcex.hIcon			= LoadIcon(m_hInstance, (LPCTSTR)IDI_VIRTUALDIMENSION);
+	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
+	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+	wcex.lpszMenuName	= 0;
+	wcex.lpszClassName	= m_szWindowClass;
+	wcex.hIconSm		= LoadIcon((HINSTANCE)wcex.hInstance, (LPCTSTR)IDI_SMALL);
+
+   return FastWindow::RegisterClassEx(&wcex);
+}
+
+LRESULT VirtualDimension::OnCmdAbout(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+   DialogBox(vdWindow, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnCmdConfigure(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+   if (!configBox)
+      configBox = CreateConfigBox();
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+   Settings settings;
+
+   //Save the visibility state of the window before it is hidden
+   settings.SaveShowWindow(IsWindowVisible(hWnd) ? true:false);
+
+	DestroyWindow(hWnd);
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   POINT pt;
+
+   pt.x = GET_X_LPARAM(lParam);
+   pt.y = GET_Y_LPARAM(lParam);
+
+   Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+   if ( (desk) &&
+         ((m_draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
+         (!m_draggedWindow->IsOnDesk(NULL)) &&
+         (ClientToScreen(hWnd, &pt)) &&
+         (DragDetect(hWnd, pt)) )
+   {
+      ICONINFO icon;
+
+      //Dragging a window
+//      dragging = true;
+      SetCapture(hWnd);
+
+      GetIconInfo(m_draggedWindow->GetIcon(), &icon);
+      icon.fIcon = FALSE;
+      m_dragCursor = (HCURSOR)CreateIconIndirect(&icon);
+      SetCursor(m_dragCursor);
+   }
+   else
+   {
+      //dragging = false;  //no needed
+      deskMan->SwitchToDesktop(desk);
+      InvalidateRect(hWnd, NULL, TRUE);
+   }
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnLeftButtonUp(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   POINT pt;
+
+   //If not dragging, nothing to do
+   if (m_draggedWindow == NULL)
+      return 0;
+
+   //Release capture
+//   dragging = false;
+   ReleaseCapture();
+
+   //Free the cursor
+   DestroyCursor(m_dragCursor);
+
+   pt.x = GET_X_LPARAM(lParam);
+   pt.y = GET_Y_LPARAM(lParam);
+
+   //Find out the target desktop
+   Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+   if (m_draggedWindow->IsOnDesk(desk))
+      return 0;   //window already on the target desk
+
+   //Move the window to this desktop
+   m_draggedWindow->MoveToDesktop(desk);
+
+   //Refresh the window
+   InvalidateRect(hWnd, NULL, TRUE);
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   HMENU hMenu, hmenuTrackPopup;
+   POINT pt;
+   HRESULT res;
+
+   pt.x = GET_X_LPARAM(lParam);
+   pt.y = GET_Y_LPARAM(lParam);
+
+   //Get the "base" menu
+   hMenu = LoadMenu(vdWindow, (LPCTSTR)IDC_VIRTUALDIMENSION);
+   if (hMenu == NULL)
+      return 0;
+   hmenuTrackPopup = GetSubMenu(hMenu, 0); 
+
+   //Add desktop specific information
+   Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+   Window * window = NULL;
+   if (desk != NULL)
+   {
+      window = desk->GetWindowFromPoint(pt.x, pt.y);
+      if (window)
+         window->BuildMenu(hmenuTrackPopup);
+      else
+         desk->BuildMenu(hmenuTrackPopup);
+   }
+
+   //And show the menu
+   ClientToScreen(hWnd, &pt);
+   res = TrackPopupMenu(hmenuTrackPopup, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, hWnd, NULL);
+
+   //Process the resulting message
+   if (res >= WM_USER)
+   {
+      if (window != NULL)
+         window->OnMenuItemSelected(hmenuTrackPopup, res);
+      else
+         desk->OnMenuItemSelected(hmenuTrackPopup, res);
+   }
+   else
+      PostMessage(hWnd, WM_COMMAND, res, 0);
+
+   DestroyMenu(hMenu);
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{  
+   RECT pos;
+   Settings settings;
+   
+   // Before exiting, save the window position and visibility
+   GetWindowRect(hWnd, &pos);
+   settings.SavePosition(&pos);
+
+   // Remove the tray icon
+   delete trayIcon;
+
+   // Cleanup transparency
+   delete transp;
+
+   // Cleanup always on top state
+   delete ontop;
+
+   // Destroy the tooltip
+   delete tooltip;
+
+   // Destroy the desktop manager
+   delete deskMan;
+
+   // Destroy the windows manager
+   delete winMan;
+
+   PostQuitMessage(0);
+
+   return 0;
 }
 
 // Message handler for about box.
-LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
+LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
 {
 	switch (message)
 	{
