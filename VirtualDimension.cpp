@@ -122,6 +122,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetSysCommandHandler(IDM_CONFIGURE, this, &VirtualDimension::OnCmdConfigure);
    SetCommandHandler(IDM_EXIT, this, &VirtualDimension::OnCmdExit);
    SetSysCommandHandler(SC_CLOSE, this, &VirtualDimension::OnCmdExit);
+   SetCommandHandler(IDM_LOCKPREVIEWWND, this, &VirtualDimension::OnCmdLockPreviewWindow);
+   SetSysCommandHandler(IDM_LOCKPREVIEWWND, this, &VirtualDimension::OnCmdLockPreviewWindow);
 
    SetMessageHandler(WM_DESTROY, this, &VirtualDimension::OnDestroy);
    SetMessageHandler(WM_LBUTTONDOWN, this, &VirtualDimension::OnLeftButtonDown);
@@ -131,7 +133,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // Create the main window
    settings.LoadPosition(&pos);
-   Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, WS_OVERLAPPEDWINDOW,
+   Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, 
+           WS_OVERLAPPED | WS_SYSMENU ,
            pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, 
            NULL, NULL, hInstance);
    if (!IsValid())
@@ -147,13 +150,24 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    }
 
    // Setup the system menu
-   HMENU pSysMenu= GetSystemMenu(hWnd, FALSE);
-	if (pSysMenu != NULL)
+   m_pSysMenu = GetSystemMenu(hWnd, FALSE);
+	if (m_pSysMenu != NULL)
 	{
-   	AppendMenu(pSysMenu, MF_SEPARATOR, 0, NULL);
-      AppendMenu(pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
-		AppendMenu(pSysMenu, MF_STRING, IDM_ABOUT, "&About");
+      RemoveMenu(m_pSysMenu, SC_RESTORE, MF_BYCOMMAND);
+      RemoveMenu(m_pSysMenu, SC_MINIMIZE, MF_BYCOMMAND);
+      RemoveMenu(m_pSysMenu, SC_MAXIMIZE, MF_BYCOMMAND);
+      RemoveMenu(m_pSysMenu, SC_MOVE, MF_BYCOMMAND);
+      RemoveMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND);
+      RemoveMenu(m_pSysMenu, 0, MF_BYCOMMAND);
+
+   	AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, "Lock the window");
+		AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, "&About");
    }
+
+   // Lock the preview window as appropriate
+   LockPreviewWindow(settings.LoadLockPreviewWindow());
 
    // Initialize the tray icon manager
    trayManager = new TrayIconsManager();
@@ -187,6 +201,32 @@ VirtualDimension::~VirtualDimension()
 {
 }
 
+void VirtualDimension::LockPreviewWindow(bool lock)
+{
+   LONG_PTR style;
+
+   m_lockPreviewWindow = lock;
+
+   CheckMenuItem(m_pSysMenu, IDM_LOCKPREVIEWWND, m_lockPreviewWindow ? MF_CHECKED : MF_UNCHECKED );
+
+   style = GetWindowLongPtr(m_hWnd, GWL_STYLE);
+   if (m_lockPreviewWindow)
+   {
+      style &= ~WS_SIZEBOX;
+
+      RemoveMenu(m_pSysMenu, SC_MOVE, MF_BYCOMMAND);
+      RemoveMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND);
+   }
+   else
+   {
+      style |= WS_SIZEBOX;
+
+      InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_SIZE, "&Size");
+      InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_MOVE, "&Move");
+   }
+   SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
+}
+
 ATOM VirtualDimension::RegisterClass()
 {
 	WNDCLASSEX wcex;
@@ -210,6 +250,13 @@ ATOM VirtualDimension::RegisterClass()
 LRESULT VirtualDimension::OnCmdAbout(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
    DialogBox(vdWindow, (LPCTSTR)IDD_ABOUTBOX, hWnd, (DLGPROC)About);
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnCmdLockPreviewWindow(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+   LockPreviewWindow(!IsPreviewWindowLocked());
 
    return 0;
 }
@@ -338,11 +385,8 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    }
    else
    {
-      //Get the "base" menu
-      hBaseMenu = LoadMenu(vdWindow, (LPCTSTR)IDC_VIRTUALDIMENSION);
-      if (hBaseMenu == NULL)
-         return 0;
-      hMenu = GetSubMenu(hBaseMenu, 0); 
+      hBaseMenu = NULL; //to prevent destroying the system menu
+      hMenu = m_pSysMenu;
    }
 
    if (hMenu == NULL)
@@ -376,6 +420,9 @@ LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam
    // Before exiting, save the window position and visibility
    GetWindowRect(hWnd, &pos);
    settings.SavePosition(&pos);
+
+   //Save the locking state of the window
+   settings.SaveLockPreviewWindow(IsPreviewWindowLocked());
 
    // Remove the tray icon
    delete trayIcon;

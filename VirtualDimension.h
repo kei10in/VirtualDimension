@@ -50,12 +50,15 @@ public:
    ~VirtualDimension();
 
    bool Start(HINSTANCE hInstance, int nCmdShow);
-   HWND GetHWND() const { return *((FastWindow*)this); }
-   operator HINSTANCE() { return m_hInstance; }
+   HWND GetHWND() const   { return *((FastWindow*)this); }
+   HMENU GetMenu() const  { return m_pSysMenu; } 
+   operator HINSTANCE()   { return m_hInstance; }
 
 protected:
    Window * m_draggedWindow;
    HCURSOR m_dragCursor;
+
+   HMENU m_pSysMenu;
 
    HINSTANCE m_hInstance;
 
@@ -63,9 +66,15 @@ protected:
    TCHAR m_szTitle[MAX_LOADSTRING];
    TCHAR m_szWindowClass[MAX_LOADSTRING];
 
+   bool m_lockPreviewWindow;
+
+   bool IsPreviewWindowLocked() const     { return m_lockPreviewWindow; }
+   void LockPreviewWindow(bool lock);
+
    ATOM RegisterClass();
 
    LRESULT OnCmdAbout(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnCmdLockPreviewWindow(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdConfigure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdExit(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
