@@ -21,6 +21,7 @@
 #ifndef __APPLICATIONLISTDLG_H__
 #define __APPLICATIONLISTDLG_H__
 
+#include "PlatformHelper.h"
 #include "Config.h"
 
 class ApplicationListDlg
