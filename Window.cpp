@@ -24,7 +24,7 @@
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_alldesks(false)
+Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false)
 {
    //Find out on which desktop the window is
    m_desk = deskMan->GetCurrentDesktop();
@@ -67,18 +67,27 @@ Window::~Window(void)
 
 void Window::MoveToDesktop(Desktop * desk)
 {
+   Desktop * oldDesk;
+
    if (desk == m_desk)
       return;
 
+   oldDesk = m_desk;
    m_desk = desk;
-   m_alldesks = (m_desk == NULL ? true : false);
 
    if (IsOnDesk(deskMan->GetCurrentDesktop()))
       ShowWindow();
    else
       HideWindow();
 
-   InvalidateRect(mainWnd, NULL, TRUE);
+   if (IsOnDesk(NULL))  //on all desktops
+      deskMan->UpdateLayout();
+   else
+   {
+      if (oldDesk != NULL)
+         oldDesk->UpdateLayout();
+      m_desk->UpdateLayout();
+   }
 }
 
 void Window::ShowWindow()
@@ -144,11 +153,8 @@ void Window::HideWindow()
 
 bool Window::IsOnDesk(Desktop * desk)
 {
-   if (m_alldesks)
-      return true;
-
    if (m_desk == NULL)
-      m_desk = desk; //Move to the first desktop that asks
+      return true;
 
    return desk == m_desk;
 }
@@ -174,7 +180,7 @@ void Window::BuildMenu(HMENU menu)
    bool ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
    AppendMenu(menu, MF_STRING | (ontop ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEONTOP, "Always on top");
 
-   AppendMenu(menu, MF_STRING | (m_alldesks ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEALLDESKTOPS, "All desktops");
+   AppendMenu(menu, MF_STRING | (m_desk==NULL ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEALLDESKTOPS, "All desktops");
    AppendMenu(menu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
 }
 
@@ -197,10 +203,11 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       break;
 
    case VDM_TOGGLEALLDESKTOPS:
-      m_alldesks = !m_alldesks;
-      if (m_alldesks)
-         ShowWindow();
-      InvalidateRect(mainWnd, NULL, FALSE);
+      if (IsOnDesk(NULL))
+         MoveToDesktop(deskMan->GetCurrentDesktop());
+      else
+         MoveToDesktop(NULL);
+      
       break;
 
    case VDM_MOVEWINDOW:
