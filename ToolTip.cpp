@@ -31,7 +31,7 @@ ToolTip::ToolTip(HWND hWnd): m_hOwnerWnd(hWnd)
    m_hWnd = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
                            WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,		
                            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                           hWnd, NULL, hInst, NULL);
+                           hWnd, NULL, vdWindow, NULL);
 
    //Load from the registry to find out whether to enable tooltips or not
    EnableTooltips(settings.LoadEnableTooltips());
@@ -61,7 +61,7 @@ void ToolTip::SetTool(Tool * tool, LPRECT rect)
    update = SendMessage(m_hWnd, TTM_GETTOOLINFO, 0, (LPARAM) (LPTOOLINFO) &ti);
 
    ti.uFlags = TTF_SUBCLASS;
-   ti.hinst = hInst;
+   ti.hinst = vdWindow;
    ti.lpszText = tool->GetText();
    if (rect)
       ti.rect = *rect;
