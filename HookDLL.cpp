@@ -29,6 +29,7 @@ public:
    WNDPROC m_fnPrevWndProc;
    int m_iData;
    HANDLE m_hMutex;
+   HANDLE m_hMinToTrayEvent;
    bool m_fnHookWndProcCalled;
 };
 
@@ -75,12 +76,10 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       {
       case SC_MINIMIZE:
          //Minimize using VD
-         res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
-         break;
-
-      case SC_RESTORE:
-         //Restore using VD
-         res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_RESTORE, (WPARAM)pData->m_iData);
+         if (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0)
+            res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
+         else
+            res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
          break;
 
       case SC_MAXIMIZE:
@@ -137,12 +136,10 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       {
       case SC_MINIMIZE:
          //Minimize using VD
-         res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
-         break;
-
-      case SC_RESTORE:
-         //Restore using VD
-         res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_RESTORE, (WPARAM)pData->m_iData);
+         if (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0)
+            res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
+         else
+            res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
          break;
 
       case SC_MAXIMIZE:
@@ -177,7 +174,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 }
 
 
-HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
+HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent)
 {
    HWNDHookData * pHookData = new HWNDHookData;
 
@@ -189,6 +186,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
    }
 
    pHookData->m_iData = data;
+   pHookData->m_hMinToTrayEvent = minToTrayEvent;
    pHookData->m_fnHookWndProcCalled = false;
 
    if (IsWindowUnicode(hWnd))
@@ -252,6 +250,7 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
    //Cleanup the hook inforations related to this window
    CloseHandle(pData->m_hMutex);
+   CloseHandle(pData->m_hMinToTrayEvent);
    if (unicode)
       RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
    else

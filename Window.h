@@ -176,6 +176,7 @@ protected:
    Desktop * m_desk;
    bool m_hidden;
    bool m_MinToTray;
+   HANDLE m_hMinToTrayEvent;
    bool m_iconic;
    char m_name[255];
    BOOL m_enabled;

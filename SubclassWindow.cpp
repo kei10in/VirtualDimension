@@ -28,6 +28,7 @@ typedef struct RemoteStartupArgs {
    int fnIndex;
    HWND hWnd;
    int data;
+   HANDLE minToTrayEvent;
 } RemoteStartupArgs;
 
 typedef struct RemoteCleanupArgs {
@@ -44,17 +45,17 @@ typedef struct RemoteCleanupArgs {
 static HINSTANCE WINAPI RemoteStartup (RemoteStartupArgs* args) 
 {
 	HINSTANCE hinstLib;
-   DWORD (WINAPI *fnFunc)(HWND,int);
+   DWORD (WINAPI *fnFunc)(HWND,int,HANDLE);
 
 	hinstLib = args->fnLoadLibrary(args->pbLibFile);
    if (!hinstLib)
       return NULL;
 
-   fnFunc = (DWORD (WINAPI *)(HWND,int))args->fnGetProcAddress(hinstLib, (LPCSTR)MAKEINTRESOURCE(args->fnIndex));
+   fnFunc = (DWORD (WINAPI *)(HWND,int,HANDLE))args->fnGetProcAddress(hinstLib, (LPCSTR)MAKEINTRESOURCE(args->fnIndex));
 
    if (fnFunc)
    {
-      fnFunc(args->hWnd, args->data);
+      fnFunc(args->hWnd, args->data, args->minToTrayEvent);
       return hinstLib;
    }
    else
@@ -146,7 +147,7 @@ static BOOL FreeProcessMemory (HANDLE hProcess, PVOID pvMem)
 	return res;
 }
 
-HINSTANCE HookWindow(HWND hWnd, int data)
+HINSTANCE HookWindow(HWND hWnd, int data, HANDLE minToTrayEvent)
 {
    const int cbCodeSize = ((LPBYTE)AfterRemoteStartup - (LPBYTE)RemoteStartup);
 	const DWORD cbMemSize = cbCodeSize + sizeof(RemoteStartupArgs) + 3;
@@ -206,6 +207,7 @@ HINSTANCE HookWindow(HWND hWnd, int data)
       CloseHandle(hProcess);
       return NULL;
    }
+   DuplicateHandle( GetCurrentProcess(), minToTrayEvent, hProcess, &args.minToTrayEvent, 0, FALSE, DUPLICATE_SAME_ACCESS);
 
 	// Write a copy of the arguments to the remote process (the structure MUST start on a 32-bit bourdary)
    pArgsRemote = (RemoteStartupArgs*)(pdwCodeRemote + ((cbCodeSize + 4) & ~3));

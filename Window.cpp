@@ -30,7 +30,7 @@
 #define MNS_CHECKORBMP 0x04000000
 #endif
 
-HINSTANCE HookWindow(HWND hWnd, int data);
+HINSTANCE HookWindow(HWND hWnd, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, HWND hWnd);
 
 ITaskbarList* Window::m_tasklist = NULL;
@@ -84,7 +84,8 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
       //Find out on which desktop the window is
       m_desk = deskMan->GetCurrentDesktop();
 
-   m_HookDllHandle = HookWindow(m_hWnd, (int)this);
+   m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
+   m_HookDllHandle = HookWindow(m_hWnd, (int)this, m_hMinToTrayEvent);
 }
 
 Window::~Window(void)
@@ -93,6 +94,9 @@ Window::~Window(void)
 
    if (m_HookDllHandle)
       UnHookWindow(m_HookDllHandle, m_hWnd);
+
+   if (m_hMinToTrayEvent)
+      CloseHandle(m_hMinToTrayEvent);
 
    if (m_ownIcon)
       DestroyIcon(m_hIcon);
@@ -368,6 +372,11 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
 void Window::SetMinimizeToTray(bool totray)
 {
    m_MinToTray = totray;
+
+   if (m_MinToTray)
+      SetEvent(m_hMinToTrayEvent);
+   else
+      ResetEvent(m_hMinToTrayEvent);
 
    if (IsIconic() && IsOnCurrentDesk())
    {
