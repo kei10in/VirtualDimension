@@ -480,6 +480,8 @@ LRESULT VirtualDimension::OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPA
    window = (Window*)lpdis->itemData;
 
    DrawIconEx(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, window->GetIcon(), 16, 16, 0, NULL, DI_NORMAL);
+
+   return TRUE;
 }
 
 
