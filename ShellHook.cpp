@@ -34,7 +34,11 @@ ShellHook::ShellHook(HWND hWnd)
 
       RegisterShellHook = (BOOL (__STDCALL__*)(HWND,DWORD) )GetProcAddress(hinstDLL, (LPCSTR)181);
       if (RegisterShellHook == NULL)
-         MessageBox(NULL, "coucou", "coucou", MB_OK);
+      {
+         MessageBox(NULL, "Unable to find function 'RegisterShellHook' in shell32.dll", "Dynamic link error", MB_OK);
+         FreeLibrary(hinstDLL);
+         return;
+      }
    }
 
    nbInstance++;
@@ -46,6 +50,9 @@ ShellHook::ShellHook(HWND hWnd)
 
 ShellHook::~ShellHook(void)
 {
+   if (RegisterShellHook == NULL)
+      return;
+
    RegisterShellHook(hWnd, 0);
 
    nbInstance--;
