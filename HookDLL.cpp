@@ -22,8 +22,6 @@ using namespace std;
 HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data);
 HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd);
 
-list<HWND> m_hookedWindows;
-
 class HWNDHookData
 {
 public:
@@ -105,7 +103,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
       }
    }
-   else if ((message == WM_ACTIVATE) && (LOWORD(wParam) != WA_INACTIVE))
+   else if ((message == WM_ACTIVATEAPP) && (wParam == TRUE))
    {
       PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
@@ -170,7 +168,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
       }
    }
-   else if ((message == WM_ACTIVATE) && (LOWORD(wParam) != WA_INACTIVE))
+   else if ((message == WM_ACTIVATEAPP) && (wParam == TRUE))
    {
       PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
@@ -220,7 +218,6 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    }
    else
    {
-      m_hookedWindows.push_front(hWnd);
       ReleaseMutex(pHookData->m_hMutex);
       return TRUE;
    }
@@ -272,8 +269,6 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
       RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
    delete pData;
 
-   m_hookedWindows.remove(hWnd);
-
    if (hInstance)
    {
       FreeLibraryAndExitThread(hInstance, TRUE);
@@ -298,13 +293,6 @@ BOOL APIENTRY DllMain( HANDLE /*hModule*/,
       break;
 
    case DLL_PROCESS_DETACH:
-      //Unhook all windows that would still be hooked
-      while(!m_hookedWindows.empty())
-      {
-         doUnHookWindow(NULL, m_hookedWindows.front());
-         m_hookedWindows.pop_front();
-      }
-
       g_iProcessCount--;
       if (g_iProcessCount == 0)
          GlobalDeleteAtom(g_aPropName);
