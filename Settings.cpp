@@ -36,7 +36,7 @@ const char Settings::regValCloseToTray[] = "CloseToTray";
 Settings::Settings(void)
 {
    HRESULT res;
-   
+
    res = RegCreateKeyEx(HKEY_CURRENT_USER, regKeyName, 
                         0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, 
                         &m_regKey, NULL);
@@ -185,6 +185,39 @@ bool Settings::LoadCloseToTray()
 void Settings::SaveCloseToTray(bool totray)
 {
    SaveDWord(m_regKey, m_keyOpened, regValCloseToTray, totray);
+}
+
+const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
+const char Settings::regValStartWithWindows[] = "Virtual Dimension";
+
+bool Settings::LoadStartWithWindows()
+{
+   HKEY regKey;
+   if ((RegOpenKeyEx(HKEY_CURRENT_USER, regKeyWindowsStartup, 0, KEY_READ, &regKey) == ERROR_SUCCESS) &&
+       (RegQueryValueEx(regKey, regValStartWithWindows, NULL, NULL, NULL, NULL) == ERROR_SUCCESS))
+   {
+      RegCloseKey(regKey);
+      return true;
+   }
+   else
+      return false;
+}
+
+void Settings::SaveStartWithWindows(bool start)
+{
+   HKEY regKey;
+   if (RegOpenKeyEx(HKEY_CURRENT_USER, regKeyWindowsStartup, 0, KEY_WRITE, &regKey) == ERROR_SUCCESS)
+   {
+      if (start)
+      {
+         TCHAR buffer[256];
+         GetModuleFileName(NULL, buffer, sizeof(buffer)/sizeof(TCHAR));
+         RegSetValueEx(regKey, regValStartWithWindows, 0, REG_SZ, (LPBYTE)buffer, sizeof(buffer)/sizeof(TCHAR));
+      }
+      else
+         RegDeleteValue(regKey, regValStartWithWindows);
+      RegCloseKey(regKey);
+   }
 }
 
 const char Settings::Desktop::regKeyDesktops[] = "Desktops";

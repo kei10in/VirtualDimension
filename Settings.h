@@ -49,6 +49,8 @@ public:
    void SaveAutoSaveWindowsSettings(bool autosave);
    bool LoadCloseToTray();
    void SaveCloseToTray(bool totray);
+   bool LoadStartWithWindows();
+   void SaveStartWithWindows(bool start);
 
    class Desktop 
    {
@@ -152,6 +154,7 @@ public:
 
 protected:
    static const char regKeyName[];
+   static const char regKeyWindowsStartup[];
 
    static const char regValPosition[];
    static const char regValNbColumns[];
@@ -163,6 +166,7 @@ protected:
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
    static const char regValCloseToTray[];
+   static const char regValStartWithWindows[];
 
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);
    static void SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value);
