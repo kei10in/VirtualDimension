@@ -160,6 +160,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // Initialize transparency
    transp = new Transparency(hWnd);
+   transp->SetTransparencyLevel(settings.LoadTransparencyLevel());
 
    // Initialize always on top state
    ontop = new AlwaysOnTop(hWnd);
@@ -378,6 +379,7 @@ LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam
    delete trayIcon;
 
    // Cleanup transparency
+   settings.SaveTransparencyLevel(transp->GetTransparencyLevel());
    delete transp;
 
    // Cleanup always on top state
