@@ -36,6 +36,9 @@ const char Settings::regValCloseToTray[] = "CloseToTray";
 const char Settings::regValAutoSwitchDesktop[] = "AutoSwitchDesktop";
 const char Settings::regValAllWindowsInTaskList[] = "AllWindowsInTaskList";
 const char Settings::regValIntegrateWithShell[] = "IntegrateWithShell";
+const char Settings::regValDisplayMode[] = "DisplayMode";
+const char Settings::regValBackgroundColor[] = "BackgroundColor";
+const char Settings::regValBackgroundImage[] = "BackgroundPicture";
 const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
 const char Settings::regValOSDTimeout[] = "OSDTimeout";
 const char Settings::regValOSDFont[] = "OSDFont";
@@ -248,6 +251,42 @@ bool Settings::LoadIntegrateWithShell()
 void Settings::SaveIntegrateWithShell(bool integ)
 {
    SaveDWord(m_regKey, m_keyOpened, regValIntegrateWithShell, integ);
+}
+
+int Settings::LoadDisplayMode()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValDisplayMode, 0);
+}
+
+void Settings::SaveDisplayMode(int mode)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValDisplayMode, mode);
+}
+
+COLORREF Settings::LoadBackgroundColor()
+{
+   return (COLORREF)LoadDWord(m_regKey, m_keyOpened, regValBackgroundColor, RGB(255,255,255));
+}
+
+void Settings::SaveBackgroundColor(COLORREF color)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValBackgroundColor, color);
+}
+
+LPTSTR Settings::LoadBackgroundImage(LPTSTR buffer, unsigned int length)
+{
+   if (LoadBinary(m_regKey, m_keyOpened, regValBackgroundImage, (LPBYTE)buffer, length))
+      return buffer;
+   else
+   {
+      strncpy(buffer, "", length);
+      return NULL;
+   }
+}
+
+void Settings::SaveBackgroundImage(LPTSTR buffer)
+{
+   SaveBinary(m_regKey, m_keyOpened, regValBackgroundImage, (LPBYTE)buffer, strlen(buffer)*sizeof(TCHAR));
 }
 
 bool Settings::LoadDesktopNameOSD()

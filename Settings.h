@@ -58,6 +58,13 @@ public:
    bool LoadIntegrateWithShell();
    void SaveIntegrateWithShell(bool integ);
 
+   int LoadDisplayMode();
+   void SaveDisplayMode(int mode);
+   COLORREF LoadBackgroundColor();
+   void SaveBackgroundColor(COLORREF color);
+   LPTSTR LoadBackgroundImage(LPTSTR buffer, unsigned int length);
+   void SaveBackgroundImage(LPTSTR buffer);
+
    bool LoadDesktopNameOSD();
    void SaveDesktopNameOSD(bool osd);
    int LoadOSDTimeout();
@@ -198,6 +205,9 @@ protected:
    static const char regValAutoSwitchDesktop[];
    static const char regValAllWindowsInTaskList[];
    static const char regValIntegrateWithShell[];
+   static const char regValDisplayMode[];
+   static const char regValBackgroundColor[];
+   static const char regValBackgroundImage[];
    static const char regValDesktopNameOSD[];
    static const char regValOSDTimeout[];
    static const char regValOSDFont[];
