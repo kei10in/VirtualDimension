@@ -29,6 +29,9 @@ TrayIcon::TrayIcon(HWND hWnd): m_hWnd(hWnd), m_iconLoaded(false)
 
    if (settings.LoadHasTrayIcon())
       AddIcon();
+
+   m_closeToTray = settings.LoadCloseToTray();
+   vdWindow.SetSysCommandHandler(SC_CLOSE, this, &TrayIcon::OnCmdClose);
 }
 
 TrayIcon::~TrayIcon(void)
@@ -36,6 +39,7 @@ TrayIcon::~TrayIcon(void)
    Settings settings;
 
    settings.SaveHasTrayIcon(m_iconLoaded);
+   settings.SaveCloseToTray(m_closeToTray);
 
    DelIcon();
 }
@@ -158,6 +162,16 @@ void TrayIcon::OnLeftButtonDown()
       SetForegroundWindow(m_hWnd);
       ShowWindow(m_hWnd, SW_SHOW);
    }
+}
+
+LRESULT TrayIcon::OnCmdClose(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   if (m_closeToTray && m_iconLoaded && (HIWORD(lParam) != 0) && (HIWORD(lParam) != -1))
+      ShowWindow(m_hWnd, SW_HIDE);
+   else
+      PostMessage(hWnd, WM_COMMAND, IDM_EXIT, 0);
+
+   return 0;
 }
 
 HICON TrayIcon::GetIcon()
