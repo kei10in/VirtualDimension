@@ -35,6 +35,7 @@
 #include "LinkControl.h"
 #include "ExplorerWrapper.h"
 #include <shellapi.h>
+#include <assert.h>
 
 // Global Variables:
 HWND configBox = NULL;
@@ -515,7 +516,7 @@ LRESULT VirtualDimension::OnLeftButtonDblClk(HWND /*hWnd*/, UINT /*message*/, WP
 
 LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
-   HMENU hMenu, hBaseMenu;
+   HMENU hMenu = NULL, hBaseMenu;
    POINT pt;
    HRESULT res;
 
@@ -537,16 +538,18 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
          hMenu = window->BuildMenu();
       else
          hMenu = desk->BuildMenu();
-      hBaseMenu = hMenu;
    }
-   else
+
+   //If no window on desktop, or no menu for the window, display system menu
+   if (hMenu == NULL || GetMenuItemCount(hMenu) == 0)
    {
       hBaseMenu = NULL; //to prevent destroying the system menu
       hMenu = m_pSysMenu;
    }
+   else
+      hBaseMenu = hMenu;
 
-   if (hMenu == NULL)
-      return 0;
+   assert(hMenu != NULL);
 
    //And show the menu
    ClientToScreen(hWnd, &pt);
