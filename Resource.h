@@ -48,6 +48,7 @@
 #define IDD_GLOBAL_SETTINGS             137
 #define IDD_MOVEWINDOW                  138
 #define IDD_WINDOW_AUTOSETTINGS         139
+#define IDD_OSD_SETTINGS                140
 #define IDC_DESK_LIST                   1001
 #define IDC_INSERT_DESK                 1002
 #define IDC_REMOVE_DESK                 1003
@@ -84,6 +85,15 @@
 #define IDC_LASTSESSION_RATIO           1043
 #define IDC_AUTOSIZE_CHECK              1045
 #define IDC_AUTOPOS_CHECK               1046
+#define IDC_FONT_BTN                    1047
+#define IDC_BGCOLOR_BTN                 1050
+#define IDC_TIMEOUT_SPIN                1052
+#define IDC_TIMEOUT_EDIT                1053
+#define IDC_ENABLEOSD_CHECK             1054
+#define IDC_TRANSPARENT_CHK             1056
+#define IDC_BACKGROUND_CHK              1057
+#define IDC_POSITION_BTN                1058
+#define IDC_TIMEOUT_STATIC              1059
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -91,9 +101,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_RESOURCE_VALUE        141
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1047
+#define _APS_NEXT_CONTROL_VALUE         1060
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif
