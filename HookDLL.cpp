@@ -12,6 +12,7 @@ ATOM g_aPropName = 0;
 int g_iProcessCount = 0;
 
 const UINT g_uiHookMessageId = RegisterWindowMessage("Virtual Dimension Message");
+const UINT g_uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
 #pragma data_seg()
 
 using namespace std;
@@ -104,6 +105,11 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
       }
    }
+   else if ((message == WM_ACTIVATE) && (LOWORD(wParam) != WA_INACTIVE))
+   {
+      PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
+      res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
+   }
    else
       res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
 
@@ -163,6 +169,11 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          //Call the original window proc
          res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
       }
+   }
+   else if ((message == WM_ACTIVATE) && (LOWORD(wParam) != WA_INACTIVE))
+   {
+      PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
+      res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
    }
    else
       res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
