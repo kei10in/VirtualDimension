@@ -26,44 +26,6 @@
 #include "PlatformHelper.h"
 #include "Desktop.h"
 
-static WNDPROC wpOrigEditProc;
-
-LRESULT APIENTRY Desktop::ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
-{ 
-   switch(uMsg) 
-   { 
-   case WM_PAINT:
-      {
-         PAINTSTRUCT ps;
-         RECT rect;
-         HDC hdc;
-         IPicture * picture = (IPicture*)CallWindowProc(wpOrigEditProc, hwnd, STM_GETIMAGE, IMAGE_BITMAP, 0);
-
-         //Display the image, or a text if there is no image
-         hdc = BeginPaint(hwnd, &ps);
-         GetClientRect(hwnd, &rect);
-         if (picture)
-         {
-            OLE_XSIZE_HIMETRIC width;
-            OLE_YSIZE_HIMETRIC height;
-            picture->get_Width(&width);
-            picture->get_Height(&height);
-            
-            picture->Render( hdc, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
-               0, height, width, -height, NULL);
-         }
-         else
-            DrawText(hdc, "No image", -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-         EndPaint(hwnd, &ps);
-      }
-      break; 
-
-   default:
-      return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
-   } 
-   return FALSE;
-}
-
 // Message handler for the desktop properties dialog box.
 LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -92,9 +54,6 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
 
          hWnd = GetDlgItem(hDlg, IDC_HOTKEY);
          SendMessage(hWnd, HKM_SETHOTKEY, (WPARAM)self->desk->GetHotkey(), 0);
-
-         hWnd = GetDlgItem(hDlg, IDC_PREVIEW);
-         wpOrigEditProc = (WNDPROC)SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)ImageCtrlProc);
       }
 		return TRUE;
 
@@ -118,10 +77,6 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
 
       case IDCANCEL:
          {
-            //Unsubclass the image control
-            HWND hWnd = GetDlgItem(hDlg, IDC_PREVIEW);
-            SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)wpOrigEditProc);
-            
             //Free the image, if any
             if (self->m_picture)
                self->m_picture->Release();
@@ -168,14 +123,40 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
                if (self->m_picture)
                   self->m_picture->Release();
                self->m_picture = PlatformHelper::OpenImage(self->m_wallpaper);
-               SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)self->m_picture);
-               InvalidateRect(hDlg, NULL, TRUE);
+               InvalidateRect(GetDlgItem(hDlg, IDC_PREVIEW), NULL, TRUE);
             }
             break;
          }
 
       }
 		break;
+
+   case WM_DRAWITEM:
+      {
+         LPDRAWITEMSTRUCT lpDrawItem = (LPDRAWITEMSTRUCT) lParam;
+         LPRECT rect = &lpDrawItem->rcItem;
+         self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
+
+         if (self->m_picture)
+         {
+            OLE_XSIZE_HIMETRIC width;
+            OLE_YSIZE_HIMETRIC height;
+            self->m_picture->get_Width(&width);
+            self->m_picture->get_Height(&height);
+            
+            self->m_picture->Render( lpDrawItem->hDC, 
+                                     rect->left, rect->top, rect->right-rect->left, rect->bottom-rect->top,
+                                     0, height, width, -height, NULL);
+         }
+         else
+         {
+            FillRect(lpDrawItem->hDC, rect, GetSysColorBrush(COLOR_BTNFACE));
+            DrawText(lpDrawItem->hDC, "No image", -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+         }
+
+         return TRUE;
+      }
+      break;
 
    }
 	return FALSE;
