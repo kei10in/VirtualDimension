@@ -344,7 +344,7 @@ void Settings::SaveDisplayMode(int mode)
 
 COLORREF Settings::LoadBackgroundColor()
 {
-   return (COLORREF)LoadDWord(m_regKey, m_keyOpened, regValBackgroundColor, RGB(255,255,255));
+   return (COLORREF)LoadDWord(m_regKey, m_keyOpened, regValBackgroundColor, RGB(0xc0,0xc0,0xc0));
 }
 
 void Settings::SaveBackgroundColor(COLORREF color)
