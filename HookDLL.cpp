@@ -5,11 +5,11 @@
 #include <list>
 
 //First, some data shared by all instances of the DLL
-HWND hVDWnd __attribute__((section (".shared"), shared)) = NULL;
-ATOM g_aPropName __attribute__((section (".shared"), shared)) = 0;
-int g_iProcessCount __attribute__((section (".shared"), shared)) = 0;
-UINT g_uiHookMessageId __attribute__((section (".shared"), shared)) = 0;
-UINT g_uiShellHookMsg __attribute__((section (".shared"), shared)) = 0;
+HWND hVDWnd /*__attribute__((section (".shared"), shared))*/ = NULL;
+ATOM g_aPropName /*__attribute__((section (".shared"), shared))*/ = 0;
+int g_iProcessCount /*__attribute__((section (".shared"), shared))*/ = 0;
+UINT g_uiHookMessageId /*__attribute__((section (".shared"), shared))*/ = 0;
+UINT g_uiShellHookMsg /*__attribute__((section (".shared"), shared))*/ = 0;
 
 using namespace std;
 
@@ -25,7 +25,7 @@ public:
    int m_iData;
    HANDLE m_hMutex;
    HANDLE m_hMinToTrayEvent;
-   bool m_fnHookWndProcCalled;
+   bool m_bHookWndProcCalled;
 };
 
 enum MenuItems {
@@ -62,7 +62,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    WaitForSingleObject(pData->m_hMutex, INFINITE);
 
    //Mark that the hook procedure has been called
-   pData->m_fnHookWndProcCalled = true;
+   pData->m_bHookWndProcCalled = true;
 
    //Process the message
    switch(message)
@@ -98,8 +98,20 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       break;
 
    case WM_DESTROY:
-      PostMessageW(hVDWnd, g_uiHookMessageId, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
-      break;
+	   {
+			//Do some cleanup
+			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
+			CloseHandle(pData->m_hMutex);
+			CloseHandle(pData->m_hMinToTrayEvent);
+			RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+			delete pData;
+
+			//Alert VD window
+			PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
+		
+			//Do the normal processing
+			return CallWindowProcW(fnPrevWndProc, hWnd, message, wParam, lParam);
+		}
    }
 
    if (res == 0)
@@ -125,7 +137,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    WaitForSingleObject(pData->m_hMutex, INFINITE);
 
    //Mark that the hook procedure has been called
-   pData->m_fnHookWndProcCalled = true;
+   pData->m_bHookWndProcCalled = true;
 
    //Process the message
    switch(message)
@@ -140,18 +152,18 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          break;
 
       case SC_MAXIMIZE:
-         {
-            short shift = GetKeyState(VK_SHIFT) & 0x8000;
-            short ctrl = GetKeyState(VK_CONTROL) & 0x8000;
-
-            if (shift && !ctrl)
-               //Maximize width using VD
-               res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
-            else if (ctrl && !shift)
-               //Maximize height using VD
-               res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
-         }
-         break;
+		   {
+				short shift = GetKeyState(VK_SHIFT) & 0x8000;
+				short ctrl = GetKeyState(VK_CONTROL) & 0x8000;
+			
+				if (shift && !ctrl)
+					//Maximize width using VD
+					res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
+				else if (ctrl && !shift)
+					//Maximize height using VD
+					res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
+				break;
+			}
       }
       break;   
 
@@ -160,10 +172,22 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       break;
 
-   case WM_DESTROY:
-      PostMessageA(hVDWnd, g_uiHookMessageId, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
-      break;
-   }
+   case WM_DESTROY:		
+	   {
+			//Do some cleanup
+			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
+			CloseHandle(pData->m_hMutex);
+			CloseHandle(pData->m_hMinToTrayEvent);
+			RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEW(g_aPropName));
+			delete pData;
+			
+			//Alert VD window
+			PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
+			
+			//Do the normal processing
+			return CallWindowProcA(fnPrevWndProc, hWnd, message, wParam, lParam);
+		}
+	}
 
    if (res == 0)
       res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
@@ -198,7 +222,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
 
    pHookData->m_iData = data;
    pHookData->m_hMinToTrayEvent = minToTrayEvent;
-   pHookData->m_fnHookWndProcCalled = false;
+   pHookData->m_bHookWndProcCalled = false;
 
    if (unicode)
    {
@@ -245,7 +269,7 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
 		do
 		{
-			pData->m_fnHookWndProcCalled = false;
+			pData->m_bHookWndProcCalled = false;
 
 			//Release the semaphore
 			ReleaseMutex(pData->m_hMutex);
@@ -256,7 +280,7 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 			//Wait till all calls to the "subclassed" window proc are finished
 			WaitForSingleObject(pData->m_hMutex, INFINITE);
 		}
-		while(pData->m_fnHookWndProcCalled);
+		while(pData->m_bHookWndProcCalled);
 
 		//Cleanup the hook inforations related to this window
 		CloseHandle(pData->m_hMutex);
