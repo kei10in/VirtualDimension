@@ -28,15 +28,20 @@
 #include "ToolTip.h"
 #include "FastWindow.h"
 #include "Window.h"
+#include "MouseWarp.h"
 
 extern HWND configBox;
 extern Transparency * transp;
 extern TrayIcon * trayIcon;
 extern AlwaysOnTop * ontop;
 extern ToolTip * tooltip;
+extern MouseWarp * mousewarp;
 
-#define WM_VIRTUALDIMENSION (WM_APP + 1)
-#define VD_MOVEWINDOW 1
+enum {
+   WM_VD_HOOK = WM_APP + 100,
+   WM_VD_HOOK2,
+   WM_VD_MOUSEWARP,
+};
 
 #define TIMERID_AUTOHIDE	1
 

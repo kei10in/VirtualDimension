@@ -250,6 +250,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    // Create the tooltip
    tooltip = new ToolTip(hWnd);
 
+   // Create mouse warp
+   mousewarp = new MouseWarp();
+
    // Create the windows manager
    winMan = new WindowsManager;
 
