@@ -22,6 +22,7 @@
 #include "desktopmanager.h"
 #include "settings.h"
 #include "hotkeymanager.h"
+#include <algorithm>
 
 bool deskOrder(Desktop * first, Desktop * second)
 {  return first->m_index < second->m_index;  }
@@ -44,20 +45,23 @@ DesktopManager::~DesktopManager(void)
    int index;
 
    index = 0;
-   while(!m_desks.empty())
+
+   vector<Desktop*>::const_iterator it;
+   for(it = m_desks.begin(); it != m_desks.end(); it ++)
    {
       Desktop * desk;
 
-      desk = m_desks.front();
+      desk = *it;
       desk->m_index = index;
 
       desk->Save();
 
-      m_desks.pop_front();
       delete desk;
 
       index ++;
    }
+   m_desks.clear();
+
 
    settings.SaveNbCols(m_nbColumn);
 }
@@ -65,12 +69,14 @@ DesktopManager::~DesktopManager(void)
 void DesktopManager::resize(int width, int height)
 {
    m_width = width; 
-   m_height = height; 
+   m_height = height;
+
+   UpdateLayout();
 }
 
-void DesktopManager::paint(HDC hDc)
+void DesktopManager::UpdateLayout()
 {
-   list<Desktop*>::const_iterator it;
+   vector<Desktop*>::const_iterator it;
    int x, y;            //Position of the top/left corner of a desktop representation
    int i;
    int deltaX, deltaY;  //Width and height of a desktop
@@ -95,7 +101,7 @@ void DesktopManager::paint(HDC hDc)
       rect.right = x+deltaX-2;
 
       // Draw the desktop
-      (*it)->Draw(hDc, &rect);
+      (*it)->resize(&rect);
 
       // Calculate x and y for the next iteration
       i++;
@@ -106,6 +112,17 @@ void DesktopManager::paint(HDC hDc)
       }
       else
          x += deltaX;
+   }
+}
+
+void DesktopManager::paint(HDC hDc)
+{
+   vector<Desktop*>::const_iterator it;
+
+   for(it = m_desks.begin(); it != m_desks.end(); it ++)
+   {
+      // Draw the desktop
+      (*it)->Draw(hDc);
    }
 }
 
@@ -120,6 +137,9 @@ Desktop * DesktopManager::AddDesktop(Desktop * desk)
 
    /* Add the desktop to the list */
    m_desks.push_back(desk);
+
+   /* Update the desktop layout */
+   UpdateLayout();
 
    /* If this is the first desktop, activate it */
    if (m_currentDesktop == NULL)
@@ -147,12 +167,17 @@ Desktop * DesktopManager::GetNextDesktop()
 void DesktopManager::RemoveDesktop(Desktop * desk)
 {
    /* remove from the list */
-   m_desks.remove(desk);
+   vector<Desktop*>::iterator it = find(m_desks.begin(), m_desks.end(), desk);
+   if (it != m_desks.end())
+      m_desks.erase(it);
 
    /* remove from the registry */
    desk->Remove();
 
-   /* change the current desktop, if needed */
+   /* Update the desktop layout */
+   UpdateLayout();
+
+   /* Change the current desktop, if needed */
    if (m_currentDesktop == desk)
    {
       if (m_desks.empty())
@@ -170,14 +195,13 @@ void DesktopManager::RemoveDesktop(Desktop * desk)
 
 void DesktopManager::Sort()
 {
-   m_desks.sort(deskOrder);
+   sort(m_desks.begin(), m_desks.end(), deskOrder);
 }
 
 Desktop* DesktopManager::GetDesktopFromPoint(int X, int Y)
 {
-   list<Desktop*>::const_iterator it;
-   int x, y;            //Position of the top/left corner of a desktop representation
-   int i;
+   vector<Desktop*>::const_iterator it;
+   unsigned int index;
    int deltaX, deltaY;  //Width and height of a desktop
 
    if (m_desks.size() == 0)
@@ -186,26 +210,12 @@ Desktop* DesktopManager::GetDesktopFromPoint(int X, int Y)
    deltaX = m_width / min(m_nbColumn, (int)m_desks.size());
    deltaY = m_height / (((int)m_desks.size()+m_nbColumn-1) / m_nbColumn);
 
-   x = 0;
-   y = 0;
-   i = 0;
-   for(it = m_desks.begin(); it != m_desks.end(); it ++)
-   {
-      if ((X < x+deltaX) && (Y < y+deltaY))
-         return *it;
+   index = (X / deltaX) + m_nbColumn * (Y / deltaY);
 
-      // Calculate x and y for the next iteration
-      i++;
-      if (i % m_nbColumn == 0)
-      {
-         x = 0;
-         y += deltaY;
-      }
-      else
-         x += deltaX;
-   }
-
-   return NULL;
+   if (index >= m_desks.size())
+      return NULL;
+   else
+      return m_desks[index];
 }
 
 void DesktopManager::SwitchToDesktop(Desktop * desk)
@@ -249,4 +259,10 @@ void DesktopManager::LoadDesktops()
       m_currentDesktop = m_desks.front();
       m_currentDesktop->Activate();
    }
+}
+
+void DesktopManager::SetNbColumns(int cols)
+{
+   m_nbColumn = cols; 
+   UpdateLayout();
 }
