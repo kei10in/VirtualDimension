@@ -342,6 +342,7 @@ void Desktop::Save()
 void Desktop::Activate(void)
 {
    WindowsManager::Iterator it;
+   HWND topmost = NULL;
 
    m_active = true;
 
@@ -374,7 +375,12 @@ void Desktop::Activate(void)
          if (win->IsInTray())
             trayManager->AddIcon(win);
          else
+         {
             win->ShowWindow();
+
+            if (!topmost)
+               topmost = *win;
+         }
       }
       else
       {
@@ -386,15 +392,12 @@ void Desktop::Activate(void)
    }
 
    // Restore the foreground window
-   SetForegroundWindow(Window::GetOwnedWindow(m_foregroundWnd));
+   SetForegroundWindow(Window::GetOwnedWindow(topmost));
 }
 
 void Desktop::Desactivate(void)
 {
    m_active = false;
-
-   // Save the foreground window
-   m_foregroundWnd = winMan->GetActiveWindow();
 }
                                                    
 void Desktop::SetHotkey(int hotkey)
