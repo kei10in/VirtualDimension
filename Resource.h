@@ -35,6 +35,7 @@
 #define IDI_VIRTUALDIMENSION            107
 #define IDI_DEFAPP_SMALL                108
 #define IDC_VIRTUALDIMENSION            109
+#define IDM_LOCKPREVIEWWND              110
 #define IDR_MAINFRAME                   128
 #define ID_CONFIGURE                    129
 #define IDD_SETTINGS                    130
