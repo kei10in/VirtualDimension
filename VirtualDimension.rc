@@ -44,16 +44,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Bitmap
-//
-
-IDB_MAXIMIZE_HORIZ      BITMAP                  "maxH.bmp"
-IDB_MAXIMIZE_VERT       BITMAP                  "maxV.bmp"
-IDB_MINIMIZE_TRAY       BITMAP                  "minTray.bmp"
-IDB_KILL                BITMAP                  "kill.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Icon
 //
 
@@ -61,6 +51,10 @@ IDB_KILL                BITMAP                  "kill.bmp"
 // remains consistent on all systems.
 IDI_VIRTUALDIMENSION    ICON                    "VirtualDimension.ico"
 IDI_DEFAPP_SMALL        ICON                    "defaultapp_sm.ico"
+IDI_KILL                ICON                    "kill.ico"
+IDI_MAXIMIZE_VERT       ICON                    "maxV.ico"
+IDI_MAXIMIZE_HORIZ      ICON                    "maxH.ico"
+IDI_MINIMIZE_TRAY       ICON                    "minTray.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -358,6 +352,53 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// RT_MANIFEST
+//
+
+1/*CREATEPROCESS_MANIFEST_RESOURCE_ID*/ 24/*RT_MANIFEST*/ "VirtualDimension.exe.manifest"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "A free, fast, and feature-full virtual desktop manager for the Windows platform."
+            VALUE "CompanyName", "Typz Software"
+            VALUE "FileDescription", "Virtual Dimension"
+            VALUE "FileVersion", "1, 0, 0, 0"
+            VALUE "InternalName", "Virtual Dimension"
+            VALUE "LegalCopyright", "Copyright (C) 2003-2004 François Ferrand"
+            VALUE "OriginalFilename", "Virtual.exe"
+            VALUE "ProductName", " Virtual Application"
+            VALUE "ProductVersion", "1, 0, 0, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
@@ -366,14 +407,6 @@ BEGIN
     IDS_APP_TITLE           "Virtual Dimension"
     IDC_VIRTUALDIMENSION    "VIRTUALDIMENSION"
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Manifest
-//
-
-1/*CREATEPROCESS_MANIFEST_RESOURCE_ID*/ 24/*RT_MANIFEST*/ "VirtualDimension.exe.manifest"
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

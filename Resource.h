@@ -22,10 +22,6 @@
 // Used by VirtualDimension.rc
 //
 #define IDC_MYICON                      2
-#define IDB_MAXIMIZE_HORIZ              2
-#define IDB_MAXIMIZE_VERT               3
-#define IDB_MINIMIZE_TRAY               4
-#define IDB_KILL                        5
 #define IDD_VIRTUALDIMENSION_DIALOG     102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
@@ -52,6 +48,10 @@
 #define IDD_OSD_SETTINGS                140
 #define IDD_DISPLAY_SETTINGS            141
 #define IDD_SHORTCUT_SETTINGS           142
+#define IDI_KILL                        143  
+#define IDI_MAXIMIZE_VERT               144
+#define IDI_MAXIMIZE_HORIZ              145
+#define IDI_MINIMIZE_TRAY               146
 #define IDC_DESK_LIST                   1001
 #define IDC_INSERT_DESK                 1002
 #define IDC_REMOVE_DESK                 1003
@@ -120,7 +120,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        143
+#define _APS_NEXT_RESOURCE_VALUE        147
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1084
 #define _APS_NEXT_SYMED_VALUE           111
