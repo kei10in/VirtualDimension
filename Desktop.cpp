@@ -384,7 +384,7 @@ void Desktop::OnHotkey()
 void Desktop::SetWallpaper(LPTSTR fileName)
 {
    strncpy(m_wallpaperFile, fileName, sizeof(m_wallpaperFile)/sizeof(TCHAR));
-   m_wallpaper.SetImage(fileName);
+   m_wallpaper.SetImage(m_wallpaperFile);
 }
 
 bool Desktop::deskOrder(Desktop * first, Desktop * second)
