@@ -22,6 +22,10 @@
 // Used by VirtualDimension.rc
 //
 #define IDC_MYICON                      2
+#define IDB_MAXIMIZE_HORIZ              2
+#define IDB_MAXIMIZE_VERT               3
+#define IDB_MINIMIZE_TRAY               4
+#define IDB_KILL                        5
 #define IDD_VIRTUALDIMENSION_DIALOG     102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
