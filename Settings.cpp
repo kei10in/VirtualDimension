@@ -30,6 +30,7 @@ const char Settings::regValHasTrayIcon[] = "HasTrayIcon";
 const char Settings::regValAlwaysOnTop[] = "AlwaysOnTop";
 const char Settings::regValTransparencyLevel[] = "TransparencyLevel";
 const char Settings::regValHasCaption[] = "HasCaption";
+const char Settings::regValSnapSize[] = "SnapSize";
 const char Settings::regValEnableTooltips[] = "EnableToolTips";
 const char Settings::regValConfirmKilling[] = "ConfirmKilling";
 const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
@@ -213,6 +214,16 @@ bool Settings::LoadHasCaption()
 void Settings::SaveHasCaption(bool caption)
 {
    SaveDWord(m_regKey, m_keyOpened, regValHasCaption, caption);
+}
+
+int Settings::LoadSnapSize()
+{
+	return LoadDWord(m_regKey, m_keyOpened, regValSnapSize, 15);
+}
+
+void Settings::SaveSnapSize(int size)
+{
+	SaveDWord(m_regKey, m_keyOpened, regValSnapSize, size);
 }
 
 bool Settings::LoadConfirmKilling()

@@ -47,6 +47,8 @@ public:
    void SaveEnableTooltips(bool enable);
    bool LoadHasCaption();
    void SaveHasCaption(bool caption);
+	int LoadSnapSize();
+	void SaveSnapSize(int size);
 
    bool LoadConfirmKilling();
    void SaveConfirmKilling(bool confirm);
@@ -235,6 +237,7 @@ protected:
    static const char regValTransparencyLevel[];
    static const char regValEnableTooltips[];
    static const char regValHasCaption[];
+	static const char regValSnapSize[];
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
    static const char regValCloseToTray[];
