@@ -45,6 +45,9 @@ public:
    void SaveTransparencyLevel(unsigned char level);
    bool LoadEnableTooltips();
    void SaveEnableTooltips(bool enable);
+   bool LoadHasCaption();
+   void SaveHasCaption(bool caption);
+
    bool LoadConfirmKilling();
    void SaveConfirmKilling(bool confirm);
    bool LoadAutoSaveWindowsSettings();
@@ -57,6 +60,7 @@ public:
    void SaveAllWindowsInTaskList(bool all);
    bool LoadIntegrateWithShell();
    void SaveIntegrateWithShell(bool integ);
+
    int LoadSwitchToNextDesktopHotkey();
    void SaveSwitchToNextDesktopHotkey(int hotkey);
    int LoadSwitchToPreviousDesktopHotkey();
@@ -226,6 +230,7 @@ protected:
    static const char regValAlwaysOnTop[];
    static const char regValTransparencyLevel[];
    static const char regValEnableTooltips[];
+   static const char regValHasCaption[];
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
    static const char regValCloseToTray[];

@@ -29,6 +29,7 @@ const char Settings::regValShowWindow[] = "ShowWindow";
 const char Settings::regValHasTrayIcon[] = "HasTrayIcon";
 const char Settings::regValAlwaysOnTop[] = "AlwaysOnTop";
 const char Settings::regValTransparencyLevel[] = "TransparencyLevel";
+const char Settings::regValHasCaption[] = "HasCaption";
 const char Settings::regValEnableTooltips[] = "EnableToolTips";
 const char Settings::regValConfirmKilling[] = "ConfirmKilling";
 const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
@@ -200,6 +201,16 @@ bool Settings::LoadEnableTooltips()
 void Settings::SaveEnableTooltips(bool enable)
 {
    SaveDWord(m_regKey, m_keyOpened, regValEnableTooltips, enable);
+}
+
+bool Settings::LoadHasCaption()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValHasCaption, TRUE) ? true : false;
+}
+
+void Settings::SaveHasCaption(bool caption)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValHasCaption, caption);
 }
 
 bool Settings::LoadConfirmKilling()
