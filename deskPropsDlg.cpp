@@ -29,26 +29,39 @@ char desk_name[80] = "";
 char desk_wallpaper[256] = "";
 int  desk_hotkey = 0;
 
-//static HANDLE image_handle;
+#ifdef USE_IPICTURE
 static WNDPROC wpOrigEditProc;
 static IPicture * picture;
+#else
+static HANDLE picture;
+#endif /*USE_IPICTURE*/
 
 void FreePicture()
 {
    if (picture)
+#ifdef USE_IPICTURE
       picture->Release();
+#else
+      DeleteObject(picture);
+#endif /*USE_IPICTURE*/
    picture = NULL;
 }
 
-void LoadPicture(char * filename)
+void LoadPicture(HWND hDlg, char * filename)
 {
+#ifdef USE_IPICTURE
    int size = strlen(filename);
    WCHAR unicodeFileName[512];
    MultiByteToWideChar(CP_OEMCP, 0, filename, size, unicodeFileName, 512);  
    unicodeFileName[size] = 0;
    OleLoadPicturePath( (LPOLESTR)unicodeFileName, NULL, 0, 0, IID_IPicture, (void**)&picture);
+#else
+   picture = LoadImage(vdWindow, desk_wallpaper, IMAGE_BITMAP, 96, 72, LR_LOADFROMFILE);
+   SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)picture);
+#endif /*USE_IPICTURE*/
 }
 
+#ifdef USE_IPICTURE
 LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 { 
    switch(uMsg) 
@@ -88,7 +101,8 @@ LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
       return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
    } 
    return FALSE;
-} 
+}
+#endif /*USE_IPICTURE*/
 
 // Message handler for the desktop properties dialog box.
 LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -112,8 +126,10 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
          hWnd = GetDlgItem(hDlg, IDC_HOTKEY);
          SendMessage(hWnd, HKM_SETHOTKEY, (WPARAM)desk_hotkey, 0);
 
+#ifdef USE_IPICTURE
          hWnd = GetDlgItem(hDlg, IDC_PREVIEW);
          wpOrigEditProc = (WNDPROC)SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)ImageCtrlProc);
+#endif /*USE_IPICTURE*/
       }
 		return TRUE;
 
@@ -128,9 +144,11 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 
       case IDCANCEL:
          {
+#ifdef USE_IPICTURE
             //Unsubclass the image control
             HWND hWnd = GetDlgItem(hDlg, IDC_PREVIEW);
             SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)wpOrigEditProc);
+#endif /*USE_IPICTURE*/
             
             //Free the image, if any
             if (picture != NULL)
@@ -152,7 +170,11 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
             ofn.hwndOwner = hDlg;
             ofn.lpstrFile = desk_wallpaper;
             ofn.nMaxFile = sizeof(desk_wallpaper);
+#ifdef USE_IPICTURE
             ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
+#else
+            ofn.lpstrFilter = "Images\0*.BMP\0All\0*.*\0";
+#endif /*USE_IPICTURE*/
             ofn.nFilterIndex = 1;
             ofn.lpstrFileTitle = NULL;
             ofn.nMaxFileTitle = 0;
@@ -173,8 +195,7 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
                SendMessage((HWND)lParam, WM_GETTEXT, sizeof(desk_wallpaper), (LPARAM)desk_wallpaper);
                if (picture != NULL)
                   FreePicture();
-               LoadPicture(desk_wallpaper);
-               //SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)image_handle);
+               LoadPicture(hDlg, desk_wallpaper);
                InvalidateRect(hDlg, NULL, TRUE);
             }
             break;
