@@ -51,7 +51,7 @@ void ApplySettings(HWND hDlg)
 
    //Move the window to the appropriate desktop
    movedWindow->MoveToDesktop(desk);
-   InvalidateRect(mainWnd, NULL, TRUE);
+   InvalidateRect(vdWindow, NULL, TRUE);
 }
 
 LRESULT CALLBACK MoveWindowProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
@@ -141,5 +141,5 @@ void SelectDesktopForWindow(Window * window)
 {
    movedWindow = window;
    
-   DialogBox(hInst, MAKEINTRESOURCE(IDD_MOVEWINDOW), mainWnd, (DLGPROC)MoveWindowProc);
+   DialogBox(vdWindow, MAKEINTRESOURCE(IDD_MOVEWINDOW), vdWindow, (DLGPROC)MoveWindowProc);
 }
