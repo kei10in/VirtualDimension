@@ -36,17 +36,15 @@ Desktop::Desktop(void)
 
 Desktop::~Desktop(void)
 {
-   Desktop * curDesk;
    WindowsManager::Iterator it;
 
    /* Show the hidden windows, if any */
-   curDesk = deskMan->GetCurrentDesktop();
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
 
       if (win->IsOnDesk(this))
-         win->MoveToDesktop(curDesk);
+         win->ShowWindow();
    }
 
    //Unregister the hotkey
@@ -150,6 +148,8 @@ void Desktop::UpdateLayout()
          y += 16;
       }
    }
+
+   InvalidateRect(mainWnd, &m_rect, TRUE);
 }
 
 void Desktop::Draw(HDC hDc)
@@ -254,6 +254,20 @@ void Desktop::Remove()
 
    /* Remove the desktop from registry */
    desktop.Destroy();
+
+   /* Move all windows present only on this desktop to the current desk */
+   Desktop * curDesk;
+   WindowsManager::Iterator it;
+
+   curDesk = deskMan->GetCurrentDesktop();
+   for(it = winMan->GetIterator(); it; it++)
+   {
+      Window * win = it;
+
+      if ( (win->IsOnDesk(this)) &&
+          !(win->IsOnDesk(NULL)) )
+         win->MoveToDesktop(curDesk);
+   }
 }
 
 void Desktop::Save()
