@@ -24,23 +24,27 @@
 
 WindowsManager::WindowsManager(HWND hWnd): m_hWnd(hWnd), m_shellhook(hWnd)
 {
+   Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
+   
+   m_confirmKill = settings.LoadConfirmKilling();
 
    vdWindow.SetMessageHandler(uiShellHookMsg, this, &WindowsManager::OnShellHookMessage);
 }
 
 WindowsManager::~WindowsManager(void)
 {
-   Iterator it;
+   Settings settings;
 
-   for(it = GetIterator(); it; it++)
+   for(Iterator it = GetIterator(); it; it++)
    {
       Window* win = it;
       win->ShowWindow();
       delete win;
    }
-
    m_windows.clear();
+
+   settings.SaveConfirmKilling(m_confirmKill);
 }
 
 void WindowsManager::PopulateInitialWindowsSet()
@@ -177,4 +181,11 @@ BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )
    }
 
    return TRUE;
+}
+
+bool WindowsManager::ConfirmKillWindow()
+{
+   return (!m_confirmKill) ||
+          (MessageBox(vdWindow, "If you kill the window, you may lose some date. Continue ?",
+                      "Warning! Killing is bad", MB_OKCANCEL|MB_ICONWARNING) == IDOK);
 }
