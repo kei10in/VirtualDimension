@@ -25,6 +25,7 @@
 #include "settings.h"
 
 using namespace std;
+class Window;
 
 class Desktop
 {
@@ -34,7 +35,11 @@ public:
    ~Desktop(void);
 
    void BuildMenu(HMENU menu);
-   void Draw(HDC dc, LPRECT rect);
+   void OnMenuItemSelected(HMENU menu, int cmdId);
+   
+   void Draw(HDC dc);
+   void resize(LPRECT rect);
+   Window* GetWindowFromPoint(int x, int y);
    
    void Rename(char * name);
    void Remove();
@@ -52,6 +57,7 @@ public:
    char m_name[80];
    char m_wallpaper[256];
    int m_hotkey;
+   RECT m_rect;
 };
 
 #endif /*__DESKTOP_H__*/
