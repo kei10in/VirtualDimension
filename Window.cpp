@@ -41,9 +41,9 @@ HWND Window::m_hWndTasklist = NULL;
 UINT Window::m_ShellhookMsg = 0;
 #endif
 
-Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwnedWnd),
+Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwnedWindow(hWnd)),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
-                           m_transp(m_hOwnedWnd), m_transpLevel(128), m_autoSaveSettings(false),
+                           m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128), m_autoSaveSettings(false),
                            m_autosize(false), m_autopos(false), m_autodesk(false),
                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_style(0), m_HookDllHandle(NULL),
                            m_switching(false)
