@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include <map>
+#include "SharedMenuBuffer.h"
 
 //First, some data shared by all instances of the DLL
 #ifdef __GNUC__
@@ -28,6 +29,7 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(DWORD data, HWND hWnd);
 HMENU SetupMenu(HWND hWnd);
 void CleanupMenu(HWND hWnd, HMENU hMenu);
 void InitPopupMenu(HWND hWnd, HMENU hMenu);
+int FindMenuItem(UINT cmdid, HMENU hMenu);
 
 class HWNDHookData
 {
@@ -61,16 +63,20 @@ enum MenuItems {
 
    VDM_PROPERTIES,
 
-   VDM_MOVETODESK_SEP,
    VDM_MOVETODESK
 };
 
-#define VDM_SYSBASE 0xBA55-WM_USER-1
+#define VDM_SYSBASE 0xBA50
+
+UINT VDtoSysItemID(UINT id)   { return VDM_SYSBASE + (id<<4); }
+UINT SystoVDItemID(UINT msg)  { return (msg - VDM_SYSBASE) >> 4; }
+
 
 LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    HWNDHookData * pData;
    LRESULT res = 0;
+   UINT_PTR syscmd;
 
    //Get the hook information
    pData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
@@ -87,7 +93,8 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    switch(message)
    {
    case WM_SYSCOMMAND:
-      switch(wParam)
+      syscmd = wParam&0xfff0;
+      switch(syscmd)
       {
 		case SC_MINIMIZE:
          //Minimize using VD
@@ -116,28 +123,11 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 				res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_KILL, (WPARAM)pData->m_iData);
 			}
 			break;
-			
-		case VDM_SYSBASE+VDM_TOGGLEONTOP:
-			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_TOGGLEONTOP, (WPARAM)pData->m_iData);
-			break;
 
-		case VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY:
-			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_TOGGLEMINIMIZETOTRAY, (WPARAM)pData->m_iData);
-			break;
-
-		case VDM_SYSBASE+VDM_TOGGLETRANSPARENCY:
-			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_TOGGLETRANSPARENCY, (WPARAM)pData->m_iData);
-			break;
-
-		case VDM_SYSBASE+VDM_MOVEWINDOW:
-			SetForegroundWindow(hVDWnd);
-			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MOVEWINDOW, (WPARAM)pData->m_iData);
-			break;
-
-		case VDM_SYSBASE+VDM_PROPERTIES:
-			SetForegroundWindow(hVDWnd);
-			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_PROPERTIES, (WPARAM)pData->m_iData);
-			break;
+      default:
+         if (FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
+            res = PostMessageW(hVDWnd, WM_APP+0x100, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
+         break;
       }
       break;   
 
@@ -174,6 +164,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 {
    HWNDHookData * pData;
    LRESULT res = 0;
+   UINT_PTR syscmd;
 
    //Get the hook information
    pData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
@@ -190,7 +181,8 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    switch(message)
    {
    case WM_SYSCOMMAND:
-      switch(wParam)
+      syscmd = wParam&0xfff0;
+      switch(syscmd)
       {
       case SC_MINIMIZE:
          //Minimize using VD
@@ -216,31 +208,14 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			if (GetKeyState(VK_SHIFT) & 0x8000)
 			{
 				SetForegroundWindow(hVDWnd);
-				res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_KILL, (WPARAM)pData->m_iData);
+				res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_KILL, (WPARAM)pData->m_iData);
 			}
 			break;
 
-		case VDM_SYSBASE+VDM_TOGGLEONTOP:
-			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_TOGGLEONTOP, (WPARAM)pData->m_iData);
-			break;
-
-		case VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY:
-			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_TOGGLEMINIMIZETOTRAY, (WPARAM)pData->m_iData);
-			break;
-
-		case VDM_SYSBASE+VDM_TOGGLETRANSPARENCY:
-			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_TOGGLETRANSPARENCY, (WPARAM)pData->m_iData);
-			break;
-
-		case VDM_SYSBASE+VDM_MOVEWINDOW:
-			SetForegroundWindow(hVDWnd);
-			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MOVEWINDOW, (WPARAM)pData->m_iData);
-			break;
-
-		case VDM_SYSBASE+VDM_PROPERTIES:
-			SetForegroundWindow(hVDWnd);
-			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_PROPERTIES, (WPARAM)pData->m_iData);
-			break;
+      default:
+         if (FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
+            res = PostMessageA(hVDWnd, WM_APP+0x100, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
+         break;
       }
       break;   
 
@@ -385,19 +360,6 @@ HMENU SetupMenu(HWND hWnd)
 	HMENU hMenu;
 
 	hSubMenu = CreatePopupMenu();
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
-				  VDM_SYSBASE+VDM_TOGGLEONTOP, "Always on top");	
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
-				  VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray");
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
-				  VDM_SYSBASE+VDM_TOGGLETRANSPARENCY, "Transparent");
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_SEPARATOR, VDM_SYSBASE+VDM_MOVETODESK_SEP, NULL);
-   InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
-      VDM_SYSBASE+VDM_MOVEWINDOW, "Change desktop...");
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING,
-				  VDM_SYSBASE+VDM_PROPERTIES, "Properties");
-
 	hMenu = GetSystemMenu(hWnd, FALSE);
 	InsertMenu(hMenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING, (unsigned int)hSubMenu, "Virtual Dimension");
 	InsertMenu(hMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
@@ -424,51 +386,36 @@ void CleanupMenu(HWND hWnd, HMENU hSubMenu)
 
 void InitPopupMenu(HWND hWnd, HMENU hMenu)
 {
-	UINT check;
-   HWNDHookData* pData;
-   int i;
-   BOOL unicode = IsWindowUnicode(hWnd);
+   HWNDHookData * pHookData;
+   bool unicode = IsWindowUnicode(hWnd) ? true : false;
 
    if (unicode)
-      pData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+      pHookData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
    else
-      pData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+      pHookData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+   if (!pHookData)
+      return;
 
-	check = (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) ? MF_CHECKED : MF_UNCHECKED;
-	CheckMenuItem(hMenu, VDM_SYSBASE+VDM_TOGGLEONTOP, MF_BYCOMMAND | check);
-	
-	check = (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0) ? MF_CHECKED : MF_UNCHECKED;
-	CheckMenuItem(hMenu, VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY, MF_BYCOMMAND | check);
-
-	check = (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) ? MF_CHECKED : MF_UNCHECKED;
-	CheckMenuItem(hMenu, VDM_SYSBASE+VDM_TOGGLETRANSPARENCY, MF_BYCOMMAND | check);
-
-   //Remove all "direct" desktop entries
-   for(i=0; i<10; i++)
-      RemoveMenu(hMenu, VDM_SYSBASE+VDM_MOVETODESK+i, MF_BYCOMMAND);
-
-   //Retrieve the list of desktops
-   HANDLE hFileMapping = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 2000, NULL);
-   if (SendMessage(hVDWnd, WM_APP+0x101, (WPARAM)hFileMapping, (LPARAM)GetCurrentProcessId()))
+   //Retrieve the menu description
+   SharedMenuBuffer menuinfo;
+   if (SendMessage(hVDWnd, WM_APP+0x101, (WPARAM)menuinfo.GetFileMapping(), (LPARAM)pHookData->m_iData))
    {
-      LPVOID viewPtr = MapViewOfFile(hFileMapping, FILE_MAP_READ, 0, 0, 0);
-      char * buffer = (char*)viewPtr;
-      
-      //Find the position where to insert ("ChangeDesktop" item)
-      i=0;
-      while(GetMenuItemID(hMenu, i) != VDM_SYSBASE+VDM_MOVETODESK_SEP)
-         i++;
-      
-      while(*buffer)
-      {
-         //TODO: put a check-mark next to the current desktop
-         //TODO: let user put the window on all desktops
-         InsertMenu(hMenu, i++, MF_BYPOSITION | MF_STRING, VDM_SYSBASE+VDM_MOVETODESK+i, buffer);
-         buffer += strlen(buffer)+1;
-      }
-      UnmapViewOfFile(viewPtr);
+      //Clear the menu
+      while(GetMenuItemCount(hMenu))
+         RemoveMenu(hMenu, 0, MF_BYPOSITION);
+
+      //Build the menu as in the retrieved description
+      menuinfo.ReadMenu(hMenu, VDtoSysItemID);
    }
-   CloseHandle(hFileMapping);
+}
+
+int FindMenuItem(UINT cmdid, HMENU hMenu)
+{
+   for(int i = 0; i<GetMenuItemCount(hMenu); i++)
+      if (GetMenuItemID(hMenu, i) == cmdid)
+         return i;
+
+   return -1;
 }
 
 extern "C"

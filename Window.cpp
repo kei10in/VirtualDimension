@@ -28,6 +28,7 @@
 #include "ExplorerWrapper.h"
 #include "DesktopManager.h"
 #include "WindowsManager.h"
+#include "SharedMenuBuffer.h"
 
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
@@ -233,7 +234,7 @@ HMENU Window::BuildMenu()
       InsertMenuItem(hMenu, m_transp.GetTransparencyLevel() != 255, NULL, VDM_TOGGLETRANSPARENCY, "Transparent");
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
 
-   InsertMenuItem(hMenu, m_desk==NULL, NULL, VDM_TOGGLEALLDESKTOPS, "All desktops");
+   InsertMenuItem(hMenu, IsOnAllDesktops(), NULL, VDM_TOGGLEALLDESKTOPS, "All desktops");
    AppendMenu(hMenu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
 
@@ -255,6 +256,27 @@ HMENU Window::BuildMenu()
    InsertMenuItem(hMenu, false, NULL, VDM_PROPERTIES, "Properties");
 
    return hMenu;
+}
+
+bool Window::PrepareSysMenu(HANDLE filemapping)
+{
+   SharedMenuBuffer menuinfo(m_dwProcessId, filemapping);
+
+   menuinfo.InsertMenu(VDM_TOGGLEONTOP, "Always on top", IsAlwaysOnTop());
+   menuinfo.InsertMenu(VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray", IsMinimizeToTray());
+   if (m_transp.IsTransparencySupported())
+      menuinfo.InsertMenu(VDM_TOGGLETRANSPARENCY, "Transparent", IsTransparent());
+   menuinfo.InsertSeparator();
+   menuinfo.InsertMenu(VDM_TOGGLEALLDESKTOPS, "All desktops", IsOnAllDesktops());
+   Desktop * desk = deskMan->GetFirstDesktop();
+   int i = 0;
+   while(desk != NULL && menuinfo.InsertMenu(VDM_MOVETODESK+i++, desk->GetText(), GetDesk()==desk))
+      desk = deskMan->GetNextDesktop();
+   menuinfo.InsertSeparator();
+   menuinfo.InsertMenu(VDM_MOVEWINDOW, "Change desktop...", false);
+   menuinfo.InsertMenu(VDM_PROPERTIES, "Properties", false);
+
+   return true;
 }
 
 void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
@@ -318,6 +340,8 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       break;
 
    default:
+      if (cmdId >= VDM_MOVETODESK)
+         MoveToDesktop(deskMan->GetDesktop(cmdId-VDM_MOVETODESK));
       break;
    }
 }

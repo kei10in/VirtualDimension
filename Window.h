@@ -110,6 +110,7 @@ public:
     * @see OnMenuItemSelected
     */
    HMENU BuildMenu();
+   bool PrepareSysMenu(HANDLE filemapping);
    void OnMenuItemSelected(HMENU menu, int cmdId);
 
    inline void ShowWindow();
@@ -210,7 +211,9 @@ protected:
       VDM_CLOSE,
       VDM_KILL,
 
-      VDM_PROPERTIES
+      VDM_PROPERTIES,
+
+      VDM_MOVETODESK
    };
 
    HWND m_hWnd;
