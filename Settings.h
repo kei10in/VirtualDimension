@@ -68,6 +68,10 @@ public:
    void SaveBackgroundColor(COLORREF color);
    LPTSTR LoadBackgroundImage(LPTSTR buffer, unsigned int length);
    void SaveBackgroundImage(LPTSTR buffer);
+   void LoadPreviewWindowFont(LPLOGFONT lf);
+   void SavePreviewWindowFont(LPLOGFONT lf);
+   COLORREF LoadPreviewWindowFontColor();
+   void SavePreviewWindowFontColor(COLORREF col);
 
    bool LoadDesktopNameOSD();
    void SaveDesktopNameOSD(bool osd);
@@ -218,6 +222,8 @@ protected:
    static const char regValBackgroundColor[];
    static const char regValBackgroundImage[];
    static const char regValDesktopNameOSD[];
+   static const char regValPreviewWindowFont[];
+   static const char regValPreviewWindowFontColor[];
    static const char regValOSDTimeout[];
    static const char regValOSDFont[];
    static const char regValOSDFgColor[];

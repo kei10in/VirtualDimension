@@ -42,6 +42,8 @@ const char Settings::regValDisplayMode[] = "DisplayMode";
 const char Settings::regValBackgroundColor[] = "BackgroundColor";
 const char Settings::regValBackgroundImage[] = "BackgroundPicture";
 const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
+const char Settings::regValPreviewWindowFont[] = "PreviewWindowFont";
+const char Settings::regValPreviewWindowFontColor[] = "PreviewWindowFontColor";
 const char Settings::regValOSDTimeout[] = "OSDTimeout";
 const char Settings::regValOSDFont[] = "OSDFont";
 const char Settings::regValOSDFgColor[] = "OSDFgColor";
@@ -337,6 +339,36 @@ void Settings::SaveDesktopNameOSD(bool osd)
    SaveDWord(m_regKey, m_keyOpened, regValDesktopNameOSD, osd);
 }
 
+void Settings::LoadPreviewWindowFont(LPLOGFONT lf)
+{
+   if (!LoadBinary(m_regKey, m_keyOpened, regValPreviewWindowFont, (LPBYTE)lf, sizeof(*lf)))
+   {  
+      // Cannot load the font from registry
+      // --> set default value
+
+      memset(lf, 0, sizeof(*lf));
+      lf->lfHeight = -12;
+      lf->lfWeight = FW_BOLD;
+      lf->lfItalic = FALSE;
+      strcpy(lf->lfFaceName,"Arial");
+   }
+}
+
+void Settings::SavePreviewWindowFont(LPLOGFONT lf)
+{
+   SaveBinary(m_regKey, m_keyOpened, regValPreviewWindowFont, (LPBYTE)lf, sizeof(*lf));
+}
+
+COLORREF Settings::LoadPreviewWindowFontColor()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValPreviewWindowFontColor, RGB(0,0,0));
+}
+
+void Settings::SavePreviewWindowFontColor(COLORREF col)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValPreviewWindowFontColor, col);
+}
+
 int Settings::LoadOSDTimeout()
 {
    return LoadDWord(m_regKey, m_keyOpened, regValOSDTimeout, 2000);
@@ -355,7 +387,7 @@ void Settings::LoadOSDFont(LPLOGFONT lf)
       // --> set default value
 
       memset(lf, 0, sizeof(*lf));
-      lf->lfHeight = 30;
+      lf->lfHeight = -29;
       lf->lfWeight = FW_BOLD;
       lf->lfItalic = TRUE;
       strcpy(lf->lfFaceName,"Arial");
