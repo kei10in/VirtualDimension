@@ -40,11 +40,13 @@ protected:
    HICON GetIcon();
    char* GetText(); 
 
+   LRESULT OnCmdClose(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnLeftButtonDown();
    void OnContextMenu();
 
    HWND m_hWnd;
    bool m_iconLoaded;
+   bool m_closeToTray;
 };
 
 #endif /*__TRAYICON_H__*/
