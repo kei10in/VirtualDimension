@@ -498,7 +498,7 @@ LRESULT VirtualDimension::OnHookWindowMessage(HWND /*hWnd*/, UINT /*message*/, W
 
    win->OnMenuItemSelected(NULL, (int)wParam);
    if (win->IsOnCurrentDesk())
-   	SetForegroundWindow(*win);
+      SetForegroundWindow(win->GetOwnedWindow());
 
    return TRUE;
 }
