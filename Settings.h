@@ -47,6 +47,8 @@ public:
    void SaveConfirmKilling(bool confirm);
    bool LoadAutoSaveWindowsSettings();
    void SaveAutoSaveWindowsSettings(bool autosave);
+   bool LoadCloseToTray();
+   void SaveCloseToTray(bool totray);
 
    class Desktop 
    {
@@ -142,6 +144,7 @@ protected:
    static const char regValEnableTooltips[];
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
+   static const char regValCloseToTray[];
 
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);
    static void SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value);
