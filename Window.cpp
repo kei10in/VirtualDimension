@@ -158,7 +158,7 @@ void Window::ShowWindow()
 
    //Restore the window's style
    if (m_style)
-      SetWindowLong(m_hWnd, GWL_EXSTYLE, m_style);
+      SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
 
    //Restore the application if needed
    if (!m_iconic)
@@ -217,6 +217,7 @@ HICON Window::GetIcon(void)
    {
       m_ownIcon = false;
 
+      m_hIcon = NULL;
      	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
 	   if ( !m_hIcon )
 		   SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
