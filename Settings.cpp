@@ -222,42 +222,25 @@ void Settings::SaveHidingMethod(const char * windowclass, int method)
 }
 
 const char Settings::Desktop::regKeyDesktops[] = "Desktops";
-const char Settings::Desktop::regValIndex[] = "DeskIndex";
-const char Settings::Desktop::regValWallpaper[] = "DeskWallpaper";
-const char Settings::Desktop::regValHotkey[] = "DeskHotkey";
-const char Settings::Desktop::regValColor[] = "BackgroundColor";
 
-Settings::Desktop::Desktop(Settings * settings)
+DEFINE_SETTING(Settings::Desktop, DeskIndex, int, 0);
+DEFINE_SETTING(Settings::Desktop, DeskWallpaper, LPTSTR, "");
+DEFINE_SETTING(Settings::Desktop, DeskHotkey, int, 0);
+DEFINE_SETTING(Settings::Desktop, BackgroundColor, COLORREF, GetSysColor(COLOR_DESKTOP));
+
+Settings::Desktop::Desktop(Settings * settings): m_desktops(*settings, regKeyDesktops)
 {
-   Init(settings);
+   *m_name = 0;
 }
 
-Settings::Desktop::Desktop(Settings * settings, int index)
+Settings::Desktop::Desktop(Settings * settings, int index): m_desktops(*settings, regKeyDesktops)
 {
-   Init(settings);
    Open(index);
 }
 
-Settings::Desktop::Desktop(Settings * settings, char * name)
+Settings::Desktop::Desktop(Settings * settings, char * name): m_desktops(*settings, regKeyDesktops)
 {
-   Init(settings);
    Open(name);
-}
-
-Settings::Desktop::~Desktop()
-{
-   if (m_keyOpened)
-      Close();
-}
-
-void Settings::Desktop::Init(Settings * settings)
-{
-   *m_name = '\0';
-   m_keyOpened = false;
-
-   m_topKeyOpened = 
-      (settings->m_opened) &&
-      (RegCreateKeyEx(settings->m_regKey, regKeyDesktops, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_topKey, NULL) == ERROR_SUCCESS);
 }
 
 bool Settings::Desktop::Open(int index)
@@ -265,57 +248,37 @@ bool Settings::Desktop::Open(int index)
    DWORD length;
    HRESULT result;
 
-   if (m_keyOpened)
+   if (m_opened)
       Close();
 
    length = sizeof(m_name);
-   m_keyOpened =
-      (m_topKeyOpened) &&
-      (((result = RegEnumKeyEx(m_topKey, index, m_name, &length, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS) || (result == ERROR_MORE_DATA)) && 
-      (RegOpenKeyEx(m_topKey, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
+   m_opened =
+      (m_desktops.IsOpened()) &&
+      (((result = RegEnumKeyEx(m_desktops, index, m_name, &length, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS) || (result == ERROR_MORE_DATA)) && 
+      (RegOpenKeyEx(m_desktops, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
 
-   return m_keyOpened;
-}
-
-bool Settings::Desktop::Open(char * name)
-{
-   if (m_keyOpened)
-      Close();
-
-   strncpy(m_name, name, MAX_NAME_LENGTH);
-
-   m_keyOpened =
-      (m_topKeyOpened) &&
-      (RegCreateKeyEx(m_topKey, m_name, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &m_regKey, NULL) == ERROR_SUCCESS);
-
-   return m_keyOpened;
-}
-
-void Settings::Desktop::Close()
-{
-   RegCloseKey(m_regKey);
-   m_keyOpened = false;
+   return m_opened;
 }
 
 bool Settings::Desktop::IsValid()
 {
-   return m_keyOpened;
+   return m_opened;
 }
 
 void Settings::Desktop::Destroy()
 {
-   if (m_keyOpened)
+   if (m_opened)
       Close();
    else
       return;
 
-   if (m_topKeyOpened)
-      RegDeleteKey(m_topKey, m_name);
+   if (m_desktops)
+      RegDeleteKey(m_desktops, m_name);
 }
 
 char * Settings::Desktop::GetName(char * buffer, unsigned int length)
 {
-   if (m_keyOpened && (buffer != NULL))
+   if (m_opened && (buffer != NULL))
       strncpy(buffer, m_name, length);
    
    return buffer;
@@ -329,11 +292,11 @@ bool Settings::Desktop::Rename(char * buffer)
    LPBYTE data;
    DWORD value_len, type, data_len;
 
-   if (!m_keyOpened || (strncmp(buffer, m_name, MAX_NAME_LENGTH) == 0))
-      return m_keyOpened;
+   if (!m_opened || (strncmp(buffer, m_name, MAX_NAME_LENGTH) == 0))
+      return m_opened;
 
-   if ( (!m_topKeyOpened) ||
-        (RegCreateKeyEx(m_topKey, buffer, 0, NULL, REG_OPTION_NON_VOLATILE, 
+   if ( (!m_desktops) ||
+        (RegCreateKeyEx(m_desktops, buffer, 0, NULL, REG_OPTION_NON_VOLATILE, 
                         KEY_READ | KEY_WRITE, NULL, &newKey, NULL)  != ERROR_SUCCESS) )
       return false;
 
@@ -351,95 +314,10 @@ bool Settings::Desktop::Rename(char * buffer)
 
    Destroy();
    m_regKey = newKey;
-   m_keyOpened = true;
+   m_opened = true;
    strncpy(m_name, buffer, MAX_NAME_LENGTH);
 
    return true;
-}
-
-int Settings::Desktop::GetIndex(int * index)
-{
-   DWORD idx = LoadDWord(m_regKey, m_keyOpened, regValIndex, 0);
-
-   if (index != NULL)
-      *index = idx;
-
-   return idx;
-}
-
-void Settings::Desktop::SetIndex(int index)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValIndex, index);
-}
-
-char * Settings::Desktop::GetWallpaper(char * buffer, unsigned int length)
-{
-   DWORD size;
-
-   if (buffer == NULL)
-      return NULL;
-
-   if ( (!m_keyOpened) || 
-        (RegQueryValueEx(m_regKey, regValWallpaper, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
-        (size > length) || 
-        (size == 0) ||
-        (RegQueryValueEx(m_regKey, regValWallpaper, NULL, NULL, (LPBYTE)buffer, &size) != ERROR_SUCCESS) )
-   {  
-      // Cannot load the wallpaper from registry
-      // --> set default values
-
-      *buffer = '\0';
-   }
-
-   return buffer;
-}
-
-void Settings::Desktop::SetWallpaper(char * buffer)
-{
-   DWORD len;
-
-   len = (DWORD)(strlen(buffer)+sizeof(char));
-
-   if (m_keyOpened)
-      RegSetValueEx(m_regKey, regValWallpaper, 0, REG_SZ, (LPBYTE)buffer, len);
-}
-
-int Settings::Desktop::GetHotkey(int * hotkey)
-{
-   DWORD size;
-   DWORD hkey;
-
-   if ( (!m_keyOpened) || 
-        (RegQueryValueEx(m_regKey, regValHotkey, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
-        (size != sizeof(hkey)) || 
-        (RegQueryValueEx(m_regKey, regValHotkey, NULL, NULL, (LPBYTE)&hkey, &size) != ERROR_SUCCESS) )
-   {  
-      // Cannot load the hotkey from registry
-      // --> set default values
-
-      hkey = 0;
-   }
-
-   if (hotkey != NULL)
-      *hotkey = hkey;
-
-   return hkey;
-}
-
-void Settings::Desktop::SetHotkey(int hotkey)
-{
-   if (m_keyOpened)
-      RegSetValueEx(m_regKey, regValHotkey, 0, REG_DWORD, (LPBYTE)&hotkey, sizeof(hotkey));
-}
-
-COLORREF Settings::Desktop::GetColor()
-{
-   return (COLORREF)LoadDWord(m_regKey, m_keyOpened, regValColor, GetSysColor(COLOR_DESKTOP));
-}
-
-void Settings::Desktop::SetColor(COLORREF color)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValColor, color);
 }
 
 const char Settings::Window::regKeyWindows[] = "Windows";

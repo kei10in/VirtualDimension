@@ -87,48 +87,33 @@ public:
    int LoadHidingMethod(const char * windowclass);
    void SaveHidingMethod(const char * windowclass, int method);
 
-   class Desktop 
+   class Desktop: public Config::RegistryGroup
    {
    public:
       Desktop(Settings * settings);
       Desktop(Settings * settings, int index);
       Desktop(Settings * settings, char * name);
-      ~Desktop();
 
-      bool Open(int index);
-      bool Open(char * name);
-      void Close();
+      virtual bool Open(int index);
+      virtual bool Open(const char * name)     { return Config::RegistryGroup::Open(m_desktops, name); }
 
       bool IsValid();
       void Destroy();
 
       char * GetName(char * buffer, unsigned int length);
       bool Rename(char * buffer);
-      int GetIndex(int * index);
-      void SetIndex(int index);
-      char * GetWallpaper(char * buffer, unsigned int length);
-      void SetWallpaper(char * buffer);
-      int GetHotkey(int * hotkey);
-      void SetHotkey(int hotkey);
-      COLORREF GetColor();
-      void SetColor(COLORREF color);
+
+      static DECLARE_SETTING(DeskIndex, int);
+      static DECLARE_SETTING(DeskWallpaper, LPTSTR);
+      static DECLARE_SETTING(DeskHotkey, int);
+      static DECLARE_SETTING(BackgroundColor, COLORREF);
 
    protected:
-      void Init(Settings * settings);
-
       static const char regKeyDesktops[];
-      static const char regValIndex[];
-      static const char regValWallpaper[];
-      static const char regValHotkey[];
-      static const char regValColor[];
 
       char m_name[MAX_NAME_LENGTH];
 
-      HKEY m_regKey;
-      bool m_keyOpened;
-      
-      HKEY m_topKey;
-      bool m_topKeyOpened;
+      Config::RegistryGroup m_desktops;
    };
 
    class Window 

@@ -44,10 +44,10 @@ Desktop::Desktop(int i)
 Desktop::Desktop(Settings::Desktop * desktop)
 {
    desktop->GetName(m_name, sizeof(m_name));
-   desktop->GetWallpaper(m_wallpaperFile, sizeof(m_wallpaperFile));
-   desktop->GetIndex(&m_index);
-   desktop->GetHotkey(&m_hotkey);
-   m_bkColor = desktop->GetColor();
+   desktop->LoadSetting(Settings::Desktop::DeskWallpaper, m_wallpaperFile, sizeof(m_wallpaperFile));
+   m_index = desktop->LoadSetting(Settings::Desktop::DeskIndex);
+   m_hotkey = desktop->LoadSetting(Settings::Desktop::DeskHotkey);
+   m_bkColor = desktop->LoadSetting(Settings::Desktop::BackgroundColor);
 
    m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));
    m_wallpaper.SetColor(m_bkColor);
@@ -308,10 +308,10 @@ void Desktop::Save()
    Settings settings;
    Settings::Desktop desktop(&settings, m_name); 
 
-   desktop.SetWallpaper(m_wallpaperFile);
-   desktop.SetIndex(m_index);
-   desktop.SetHotkey(m_hotkey);
-   desktop.SetColor(m_bkColor);
+   desktop.SaveSetting(Settings::Desktop::DeskWallpaper, m_wallpaperFile);
+   desktop.SaveSetting(Settings::Desktop::DeskIndex, m_index);
+   desktop.SaveSetting(Settings::Desktop::DeskHotkey, m_hotkey);
+   desktop.SaveSetting(Settings::Desktop::BackgroundColor, m_bkColor);
 }
 
 void Desktop::ShowWindowWorkerProc(void * lpParam)
