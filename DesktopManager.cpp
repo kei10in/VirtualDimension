@@ -26,6 +26,7 @@
 #include "OnScreenDisplay.h"
 #include <algorithm>
 #include <Commdlg.h>
+#include "PlatformHelper.h"
 
 DesktopManager::DesktopManager(void)
 {
@@ -47,6 +48,8 @@ DesktopManager::DesktopManager(void)
    m_displayMode = (DisplayMode)settings.LoadDisplayMode();
    m_bkgrndColor = settings.LoadBackgroundColor();
    settings.LoadBackgroundImage(m_bkgrndPictureFile, MAX_PATH);
+   UpdateBackgroundPictureObjects();
+   UpdateBackgroundPlainColorObjects();
 
    //Bind the message handlers
    vdWindow.SetMessageHandler(WM_SIZE, this, &DesktopManager::OnSize);
@@ -74,6 +77,11 @@ DesktopManager::~DesktopManager(void)
 
    delete m_nextDeskEventHandler;
    delete m_prevDeskEventHandler;
+
+   DeleteObject(m_deskBkBrush);
+   DeleteObject(m_selDeskBkBrush);
+   DeleteObject(m_deskBkPicture);
+   DeleteObject(m_selDeskBkPicture);
 
    index = 0;
 
@@ -152,21 +160,98 @@ void DesktopManager::UpdateLayout()
       else
          x += deltaX;
    }
+
+   DeleteObject(m_deskBkPicture);
+   DeleteObject(m_selDeskBkPicture);
+   UpdateBackgroundPictureObjects();
 }
 
 LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	PAINTSTRUCT ps;
 	HDC hdc;
+   HDC deskHdc;
+   RECT rect;
+   HBITMAP deskBmp;
+   HDC picDC = NULL;
    vector<Desktop*>::const_iterator it;
 
+   //Start drawing
    hdc = BeginPaint(hWnd, &ps);
+
+   //Create the DC used for drawing 
+   deskHdc = CreateCompatibleDC(hdc);
+   deskBmp = CreateCompatibleBitmap(hdc, m_width, m_height); 
+   SelectObject(deskHdc, deskBmp);
+   
+   //Draw the background
+   rect.left = rect.top = 0;
+   rect.bottom = m_height;
+   rect.right = m_width;
+   FillRect(deskHdc, &rect, GetSysColorBrush(COLOR_WINDOW));
+
+   switch(m_displayMode)
+   {
+   case DM_PLAINCOLOR:
+      if (deskMan->GetCurrentDesktop())
+      {
+         RECT activeRect;
+         deskMan->GetCurrentDesktop()->GetRect(&activeRect);
+
+      }
+      break;
+
+   case DM_PICTURE:
+      picDC = CreateCompatibleDC(hdc);
+      break;
+
+   case DM_SCREENSHOT:
+      break;
+   }
+
+   //Draw the desktops
    for(it = m_desks.begin(); it != m_desks.end(); it ++)
    {
-      // Draw the desktop
-      (*it)->Draw(hdc);
+      RECT rect;
+
+      switch(m_displayMode)
+      {
+      case DM_PICTURE:
+         (*it)->GetRect(&rect);
+
+         if ((*it)->IsActive())
+            SelectObject(picDC, m_selDeskBkPicture);
+         else
+            SelectObject(picDC, m_deskBkPicture);
+
+         BitBlt(deskHdc, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, 
+                picDC, 0, 0, SRCCOPY);
+         break;
+
+      default:
+      case DM_PLAINCOLOR:
+         (*it)->GetRect(&rect);
+         if ((*it)->IsActive())
+            FillRect(deskHdc, &rect, m_selDeskBkBrush);
+         else
+            FillRect(deskHdc, &rect, m_deskBkBrush);
+         break;
+      }
+
+      (*it)->Draw(deskHdc);
    }
+
+   //Copy the resulting image to the actual DC
+   BitBlt(hdc, 0, 0, m_width, m_height, deskHdc, 0, 0, SRCCOPY);
+
+   //Drawing done ! 
    EndPaint(hWnd, &ps);
+
+   //Cleanup
+   DeleteDC(deskHdc);
+   DeleteObject(deskBmp);
+   if (m_displayMode == DM_PICTURE)
+      DeleteObject(picDC);
 
    return 0;
 }
@@ -335,6 +420,7 @@ void DesktopManager::SetDisplayMode(DisplayMode dm)
       return;
 
    m_displayMode = dm;
+   vdWindow.Refresh();
 
    return;
 }
@@ -356,7 +442,12 @@ bool DesktopManager::ChooseBackgroundColor(HWND hWnd)
    m_bkgrndColor = cc.rgbResult;
    
    if (res && (GetDisplayMode() == DM_PLAINCOLOR))
+   {
+      DeleteObject(m_selDeskBkBrush);
+      DeleteObject(m_deskBkBrush);
+      UpdateBackgroundPlainColorObjects();
       vdWindow.Refresh();
+   }
 
    return res ? true : false;
 }
@@ -382,7 +473,78 @@ bool DesktopManager::ChooseBackgroundPicture(HWND hWnd)
    res = GetOpenFileName(&ofn);
    
    if (res && (GetDisplayMode() == DM_PICTURE))
+   {
+      DeleteObject(m_selDeskBkPicture);
+      DeleteObject(m_deskBkPicture);
+      UpdateBackgroundPictureObjects();
       vdWindow.Refresh();
+   }
 
    return res ? true : false;
+}
+
+void DesktopManager::UpdateBackgroundPlainColorObjects()
+{
+   COLORREF selected = RGB((GetRValue(m_bkgrndColor) * 255) / 192,
+                           (GetGValue(m_bkgrndColor) * 255) / 192,
+                           (GetBValue(m_bkgrndColor) * 255) / 192);
+   m_selDeskBkBrush = CreateSolidBrush(selected);
+   m_deskBkBrush = CreateSolidBrush(m_bkgrndColor);
+}
+
+void DesktopManager::UpdateBackgroundPictureObjects()
+{
+   IPicture * image;
+
+   //Open the picture
+   image = PlatformHelper::OpenImage(m_bkgrndPictureFile);
+
+   //If succesful, get the bitmap handles
+   if (image && (m_desks.size()>0))
+   {
+      HBITMAP bmp;
+      HDC memDC;
+      HDC picDC;
+      RECT rect;
+      BLENDFUNCTION bf;
+      HDC winDC;
+      int Width = m_width / min(m_nbColumn, (int)m_desks.size());
+      int Height = m_height / (((int)m_desks.size()+m_nbColumn-1) / m_nbColumn);
+
+      //Deselected picture
+      image->get_Handle((OLE_HANDLE *)&bmp);
+      m_deskBkPicture = (HBITMAP)CopyImage(bmp, IMAGE_BITMAP, Width, Height, 0);
+
+      //Selected picture
+      winDC = GetWindowDC(vdWindow);
+      memDC = CreateCompatibleDC(winDC);
+      m_selDeskBkPicture = CreateCompatibleBitmap(winDC, Width, Height);
+      SelectObject(memDC, m_selDeskBkPicture);
+      //ReleaseDC(vdWindow, winDC);
+
+      picDC = CreateCompatibleDC(memDC);
+      SelectObject(picDC, m_deskBkPicture);
+
+      rect.left = rect.top = 0;
+      rect.right = Width;
+      rect.bottom = Height;
+      FillRect(memDC, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
+
+      bf.AlphaFormat = 0;
+      bf.BlendFlags = 0;
+      bf.BlendOp = AC_SRC_OVER;
+      bf.SourceConstantAlpha = 128;
+      AlphaBlend(memDC, 0, 0, Width, Height,
+                 picDC, 0, 0, Width, Height,
+                 bf);
+
+      DeleteDC(picDC);
+      DeleteDC(memDC);
+   }
+   else
+      m_deskBkPicture = m_selDeskBkPicture = NULL;
+
+   //Release the IPicture object
+   if (image)
+      image->Release();
 }

@@ -72,6 +72,8 @@ protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   void UpdateBackgroundPictureObjects();
+   void UpdateBackgroundPlainColorObjects();
 
    class DeskChangeEventHandler: public HotKeyManager::EventHandler {
    public:
@@ -99,6 +101,11 @@ protected:
    DisplayMode m_displayMode;
    COLORREF m_bkgrndColor;
    TCHAR m_bkgrndPictureFile[MAX_PATH];
+
+   HBRUSH m_selDeskBkBrush;
+   HBRUSH m_deskBkBrush;
+   HBITMAP m_selDeskBkPicture;
+   HBITMAP m_deskBkPicture;
 };
 
 inline Desktop * DesktopManager::AddDesktop()
