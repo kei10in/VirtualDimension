@@ -228,22 +228,22 @@ DEFINE_SETTING(Settings::Desktop, DeskWallpaper, LPTSTR, "");
 DEFINE_SETTING(Settings::Desktop, DeskHotkey, int, 0);
 DEFINE_SETTING(Settings::Desktop, BackgroundColor, COLORREF, GetSysColor(COLOR_DESKTOP));
 
-Settings::Desktop::Desktop(Settings * settings): m_desktops(*settings, regKeyDesktops)
+Settings::SubkeyList::SubkeyList(Settings * settings, const char regKey[]): m_group(*settings, regKey)
 {
    *m_name = 0;
 }
 
-Settings::Desktop::Desktop(Settings * settings, int index): m_desktops(*settings, regKeyDesktops)
+Settings::SubkeyList::SubkeyList(Settings * settings, const char regKey[], int index): m_group(*settings, regKey)
 {
    Open(index);
 }
 
-Settings::Desktop::Desktop(Settings * settings, char * name): m_desktops(*settings, regKeyDesktops)
+Settings::SubkeyList::SubkeyList(Settings * settings, const char regKey[], char * name, bool create): m_group(*settings, regKey)
 {
-   Open(name);
+   Open(name, create);
 }
 
-bool Settings::Desktop::Open(int index)
+bool Settings::SubkeyList::Open(int index)
 {
    DWORD length;
    HRESULT result;
@@ -253,30 +253,30 @@ bool Settings::Desktop::Open(int index)
 
    length = sizeof(m_name);
    m_opened =
-      (m_desktops.IsOpened()) &&
-      (((result = RegEnumKeyEx(m_desktops, index, m_name, &length, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS) || (result == ERROR_MORE_DATA)) && 
-      (RegOpenKeyEx(m_desktops, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
+      (m_group.IsOpened()) &&
+      (((result = RegEnumKeyEx(m_group, index, m_name, &length, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS) || (result == ERROR_MORE_DATA)) && 
+      (RegOpenKeyEx(m_group, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
 
    return m_opened;
 }
 
-bool Settings::Desktop::IsValid()
+bool Settings::SubkeyList::IsValid()
 {
    return m_opened;
 }
 
-void Settings::Desktop::Destroy()
+void Settings::SubkeyList::Destroy()
 {
    if (m_opened)
       Close();
    else
       return;
 
-   if (m_desktops)
-      RegDeleteKey(m_desktops, m_name);
+   if (m_group)
+      RegDeleteKey(m_group, m_name);
 }
 
-char * Settings::Desktop::GetName(char * buffer, unsigned int length)
+char * Settings::SubkeyList::GetName(char * buffer, unsigned int length)
 {
    if (m_opened && (buffer != NULL))
       strncpy(buffer, m_name, length);
@@ -284,7 +284,7 @@ char * Settings::Desktop::GetName(char * buffer, unsigned int length)
    return buffer;
 }
 
-bool Settings::Desktop::Rename(char * buffer)
+bool Settings::SubkeyList::Rename(char * buffer)
 {
    HKEY newKey;
    DWORD index, max_index;
@@ -295,8 +295,8 @@ bool Settings::Desktop::Rename(char * buffer)
    if (!m_opened || (strncmp(buffer, m_name, MAX_NAME_LENGTH) == 0))
       return m_opened;
 
-   if ( (!m_desktops) ||
-        (RegCreateKeyEx(m_desktops, buffer, 0, NULL, REG_OPTION_NON_VOLATILE, 
+   if ( (!m_group) ||
+        (RegCreateKeyEx(m_group, buffer, 0, NULL, REG_OPTION_NON_VOLATILE, 
                         KEY_READ | KEY_WRITE, NULL, &newKey, NULL)  != ERROR_SUCCESS) )
       return false;
 
@@ -321,247 +321,17 @@ bool Settings::Desktop::Rename(char * buffer)
 }
 
 const char Settings::Window::regKeyWindows[] = "Windows";
-const char Settings::Window::regValAlwaysOnTop[] = "AlwaysOnTop";
-const char Settings::Window::regValOnAllDesktops[] = "OnAllDesktops";
-const char Settings::Window::regValMinimizeToTray[] = "MinimizeToTray";
-const char Settings::Window::regValTransparencyLevel[] = "TransparencyLevel";
-const char Settings::Window::regValEnableTransparency[] = "EnableTransparency";
-const char Settings::Window::regValAutoSaveSettings[] = "AutoSaveSettings";
-const char Settings::Window::regValPosition[] = "WindowPosition";
-const char Settings::Window::regValAutoSetSize[] = "AutoSetSize";
-const char Settings::Window::regValAutoSetPos[] = "AutoSetPos";
-const char Settings::Window::regValAutoSetDesk[] = "AutoSetDesk";
-const char Settings::Window::regValDesktopIndex[] = "DesktopIndex";
 
-Settings::Window::Window(Settings * settings)
-{
-   Init(settings);
-}
+static const RECT DefaultWindowAutoPosition = { 0, 200, 0, 300 };
 
-Settings::Window::Window(Settings * settings, int index)
-{
-   Init(settings);
-   Open(index);
-}
-
-Settings::Window::Window(Settings * settings, char * name, bool create)
-{
-   Init(settings);
-   Open(name, create);
-}
-
-Settings::Window::~Window()
-{
-   if (m_keyOpened)
-      Close();
-}
-
-void Settings::Window::Init(Settings * settings)
-{
-   *m_name = '\0';
-   m_keyOpened = false;
-
-   m_topKeyOpened = 
-      (settings->m_opened) &&
-      (RegCreateKeyEx(settings->m_regKey, regKeyWindows, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_topKey, NULL) == ERROR_SUCCESS);
-}
-
-bool Settings::Window::OpenDefault()
-{
-   if (m_keyOpened)
-      Close();
-
-   m_keyOpened =
-      (m_topKeyOpened) &&
-      (RegOpenKeyEx(m_topKey, NULL, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
-
-   strcpy(m_name, "Default");
-
-   return m_keyOpened;
-}
-
-bool Settings::Window::Open(int index)
-{
-   DWORD length;
-   HRESULT result;
-
-   if (m_keyOpened)
-      Close();
-
-   length = sizeof(m_name);
-   m_keyOpened =
-      (m_topKeyOpened) &&
-      (((result = RegEnumKeyEx(m_topKey, index, m_name, &length, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS) || (result == ERROR_MORE_DATA)) && 
-      (RegOpenKeyEx(m_topKey, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
-
-   return m_keyOpened;
-}
-
-bool Settings::Window::Open(char * name, bool create)
-{
-   if (m_keyOpened)
-      Close();
-
-   strncpy(m_name, name, MAX_NAME_LENGTH);
-
-   m_keyOpened =
-      (m_topKeyOpened) &&
-      (create ?
-         (RegCreateKeyEx(m_topKey, m_name, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_regKey, NULL) == ERROR_SUCCESS) 
-       : (RegOpenKeyEx(m_topKey, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS));
-
-   return m_keyOpened;
-}
-
-void Settings::Window::Close()
-{
-   RegCloseKey(m_regKey);
-   m_keyOpened = false;
-}
-
-bool Settings::Window::IsValid()
-{
-   return m_keyOpened;
-}
-
-void Settings::Window::Destroy()
-{
-   if (m_keyOpened)
-      Close();
-   else
-      return;
-
-   if (m_topKeyOpened)
-      RegDeleteKey(m_topKey, m_name);
-}
-
-char * Settings::Window::GetName(char * buffer, unsigned int length)
-{
-   if (m_keyOpened && (buffer != NULL))
-      strncpy(buffer, m_name, length);
-   
-   return buffer;
-}
-
-bool Settings::Window::LoadAlwaysOnTop()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, FALSE) ? true : false;
-}
-
-void Settings::Window::SaveAlwaysOnTop(bool ontop)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, ontop);
-}
-
-bool Settings::Window::LoadOnAllDesktops()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValOnAllDesktops, FALSE) ? true : false;
-}
-
-void Settings::Window::SaveOnAllDesktops(bool all)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValOnAllDesktops, all);
-}
-
-bool Settings::Window::LoadMinimizeToTray()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValMinimizeToTray, FALSE) ? true : false;
-}
-
-void Settings::Window::SaveMinimizeToTray(bool totray)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValMinimizeToTray, totray);
-}
-
-unsigned char Settings::Window::LoadTransparencyLevel()
-{
-   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, 0xc0);
-}
-
-void Settings::Window::SaveTransparencyLevel(unsigned char level)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValTransparencyLevel, level);
-}
-
-bool Settings::Window::LoadEnableTransparency()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValEnableTransparency, false) ? true : false;
-}
-
-void Settings::Window::SaveEnableTransparency(bool enable)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValEnableTransparency, enable);
-}
-
-bool Settings::Window::LoadAutoSaveSettings()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAutoSaveSettings, false) ? true : false;
-}
-
-void Settings::Window::SaveAutoSaveSettings(bool autosave)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAutoSaveSettings, autosave);
-}
-
-bool Settings::Window::LoadPosition(LPRECT rect)
-{
-   if (!LoadBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect)))
-   {  
-      // Cannot load the position from registry
-      // --> set default values
-
-      rect->top = 0;
-      rect->bottom = 200;
-      rect->left = 0;
-      rect->right = 300;
-
-      return false;
-   }
-   else
-      return true;
-}
-
-void Settings::Window::SavePosition(LPRECT rect)
-{
-   SaveBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect));
-}
-
-bool Settings::Window::LoadAutoSetSize()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAutoSetSize, false) ? true : false;
-}
-
-void Settings::Window::SaveAutoSetSize(bool autoset)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAutoSetSize, autoset);
-}
-
-bool Settings::Window::LoadAutoSetPos()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAutoSetPos, false) ? true : false;
-}
-
-void Settings::Window::SaveAutoSetPos(bool autoset)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAutoSetPos, autoset);
-}
-
-bool Settings::Window::LoadAutoSetDesk()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAutoSetDesk, false) ? true : false;
-}
-
-void Settings::Window::SaveAutoSetDesk(bool autodesk)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAutoSetDesk, autodesk);
-}
-
-int Settings::Window::LoadDesktopIndex()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValDesktopIndex, (DWORD)-1);
-}
-
-void Settings::Window::SaveDesktopIndex(int desktop)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValDesktopIndex, desktop);
-}
+DEFINE_SETTING(Settings::Window, AlwaysOnTop, bool, false);
+DEFINE_SETTING(Settings::Window, OnAllDesktops, bool, false);
+DEFINE_SETTING(Settings::Window, MinimizeToTray, bool, false);
+DEFINE_SETTING(Settings::Window, TransparencyLevel, unsigned char, 0xc0);
+DEFINE_SETTING(Settings::Window, EnableTransparency, bool, false);
+DEFINE_SETTING(Settings::Window, AutoSaveSettings, bool, false);
+DEFINE_SETTING(Settings::Window, WindowPosition, RECT, DefaultWindowAutoPosition);
+DEFINE_SETTING(Settings::Window, AutoSetSize, bool, false);
+DEFINE_SETTING(Settings::Window, AutoSetPos, bool, false);
+DEFINE_SETTING(Settings::Window, AutoSetDesk, bool, false);
+DEFINE_SETTING(Settings::Window, DesktopIndex, int, -1);

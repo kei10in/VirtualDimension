@@ -87,21 +87,34 @@ public:
    int LoadHidingMethod(const char * windowclass);
    void SaveHidingMethod(const char * windowclass, int method);
 
-   class Desktop: public Config::RegistryGroup
+   class SubkeyList: public Config::RegistryGroup
    {
    public:
-      Desktop(Settings * settings);
-      Desktop(Settings * settings, int index);
-      Desktop(Settings * settings, char * name);
+      SubkeyList(Settings * settings, const char regKey[]);
+      SubkeyList(Settings * settings, const char regKey[], int index);
+      SubkeyList(Settings * settings, const char regKey[], char * name, bool create=true);
 
       virtual bool Open(int index);
-      virtual bool Open(const char * name)     { return Config::RegistryGroup::Open(m_desktops, name); }
+      virtual bool Open(const char * name, bool create=true)     { return Config::RegistryGroup::Open(m_group, name, create); }
 
       bool IsValid();
       void Destroy();
 
       char * GetName(char * buffer, unsigned int length);
       bool Rename(char * buffer);
+
+   protected:
+      char m_name[MAX_NAME_LENGTH];
+
+      Config::RegistryGroup m_group;
+   };
+
+   class Desktop: public SubkeyList
+   {
+   public:
+      Desktop(Settings * settings): SubkeyList(settings, regKeyDesktops)                     {}
+      Desktop(Settings * settings, int index): SubkeyList(settings, regKeyDesktops, index)   {}
+      Desktop(Settings * settings, char * name): SubkeyList(settings, regKeyDesktops, name)  {}
 
       static DECLARE_SETTING(DeskIndex, int);
       static DECLARE_SETTING(DeskWallpaper, LPTSTR);
@@ -110,80 +123,38 @@ public:
 
    protected:
       static const char regKeyDesktops[];
-
-      char m_name[MAX_NAME_LENGTH];
-
-      Config::RegistryGroup m_desktops;
    };
 
-   class Window 
+   class Window: public SubkeyList
    {
    public:
-      Window(Settings * settings);
-      Window(Settings * settings, int index);
-      Window(Settings * settings, char * name, bool create=false);
-      ~Window();
+      Window(Settings * settings): SubkeyList(settings, regKeyWindows)                       {}
+      Window(Settings * settings, int index): SubkeyList(settings, regKeyWindows, index) {}
+      Window(Settings * settings, char * name, bool create=false): SubkeyList(settings, regKeyWindows, name, create)  {}
 
-      bool OpenDefault();
-      bool Open(int index);
-      bool Open(char * name, bool create=false);
-      void Close();
+      bool OpenDefault()                                       { return Open(NULL); }
+      virtual bool Open(const char * name, bool create=false)  { return SubkeyList::Open(name, create); }
 
-      bool IsValid();
-      void Destroy();
-
-      char * GetName(char * buffer, unsigned int length);
-      bool LoadOnAllDesktops();
-      void SaveOnAllDesktops(bool all);
-      bool LoadAlwaysOnTop();
-      void SaveAlwaysOnTop(bool ontop);
-      bool LoadMinimizeToTray();
-      void SaveMinimizeToTray(bool totray);
-      unsigned char LoadTransparencyLevel();
-      void SaveTransparencyLevel(unsigned char level);
-      bool LoadEnableTransparency();
-      void SaveEnableTransparency(bool enable);
-      bool LoadAutoSaveSettings();
-      void SaveAutoSaveSettings(bool autosave);
-      bool LoadPosition(LPRECT rect);
-      void SavePosition(LPRECT rect);
-      bool LoadAutoSetSize();
-      void SaveAutoSetSize(bool autoset);
-      bool LoadAutoSetPos();
-      void SaveAutoSetPos(bool autoset);
-      bool LoadAutoSetDesk();
-      void SaveAutoSetDesk(bool autodesk);
-      int LoadDesktopIndex();
-      void SaveDesktopIndex(int desktop);
+      static DECLARE_SETTING(AlwaysOnTop, bool);
+      static DECLARE_SETTING(OnAllDesktops, bool);
+      static DECLARE_SETTING(MinimizeToTray, bool);
+      static DECLARE_SETTING(TransparencyLevel, unsigned char);
+      static DECLARE_SETTING(EnableTransparency, bool);
+      static DECLARE_SETTING(AutoSaveSettings, bool);
+      static DECLARE_SETTING(WindowPosition, RECT);
+      static DECLARE_SETTING(AutoSetSize, bool);
+      static DECLARE_SETTING(AutoSetPos, bool);
+      static DECLARE_SETTING(AutoSetDesk, bool);
+      static DECLARE_SETTING(DesktopIndex, int);
 
    protected:
-      void Init(Settings * settings);
-
       static const char regKeyWindows[];
-      static const char regValOnAllDesktops[];
-      static const char regValAlwaysOnTop[];
-      static const char regValMinimizeToTray[];
-      static const char regValTransparencyLevel[];
-      static const char regValEnableTransparency[];
-      static const char regValAutoSaveSettings[];
-      static const char regValPosition[];
-      static const char regValAutoSetSize[];
-      static const char regValAutoSetPos[];
-      static const char regValAutoSetDesk[];
-      static const char regValDesktopIndex[];
-      
-      char m_name[MAX_NAME_LENGTH];
-
-      HKEY m_regKey;
-      bool m_keyOpened;
-      
-      HKEY m_topKey;
-      bool m_topKeyOpened;
    };
 
 protected:
    static const char regKeyName[];
    static const char regKeyWindowsStartup[];
+
    static const char regSubKeyDisableShellIntegration[];
    static const char regSubKeyHidingMethods[];
    static const char regValStartWithWindows[];

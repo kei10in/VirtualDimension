@@ -134,21 +134,21 @@ void Window::SaveSettings()
       return;
    }
 
-   settings.SaveAlwaysOnTop(IsAlwaysOnTop());
-   settings.SaveMinimizeToTray(IsMinimizeToTray());
-   settings.SaveOnAllDesktops(IsOnAllDesktops());
-   settings.SaveEnableTransparency(IsTransparent());
-   settings.SaveTransparencyLevel(GetTransparencyLevel());
+   settings.SaveSetting(Settings::Window::AlwaysOnTop, IsAlwaysOnTop());
+   settings.SaveSetting(Settings::Window::MinimizeToTray, IsMinimizeToTray());
+   settings.SaveSetting(Settings::Window::OnAllDesktops, IsOnAllDesktops());
+   settings.SaveSetting(Settings::Window::EnableTransparency, IsTransparent());
+   settings.SaveSetting(Settings::Window::TransparencyLevel, GetTransparencyLevel());
 
    if (m_autopos || m_autosize)
    {
       RECT rect;
 
       if (GetWindowRect(m_hWnd, &rect))
-         settings.SavePosition(&rect);
+         settings.SaveSetting(Settings::Window::WindowPosition, &rect);
    }
    if (m_autodesk && GetDesk())
-      settings.SaveDesktopIndex(GetDesk()->GetIndex());
+      settings.SaveSetting(Settings::Window::DesktopIndex, GetDesk()->GetIndex());
 }
 
 void Window::OnApplySettingsBtn(HWND hDlg)
@@ -339,10 +339,10 @@ void Window::OnApplyAutoSettingsBtn(HWND hDlg)
    }
 
    //Save the auto-settings configuration to the registry
-   settings.SaveAutoSaveSettings(m_autoSaveSettings);
-   settings.SaveAutoSetSize(m_autosize);
-   settings.SaveAutoSetPos(m_autopos);
-   settings.SaveAutoSetDesk(m_autodesk);
+   settings.SaveSetting(Settings::Window::AutoSaveSettings, m_autoSaveSettings);
+   settings.SaveSetting(Settings::Window::AutoSetSize, m_autosize);
+   settings.SaveSetting(Settings::Window::AutoSetPos, m_autopos);
+   settings.SaveSetting(Settings::Window::AutoSetDesk, m_autodesk);
 }
 
 void Window::OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode)

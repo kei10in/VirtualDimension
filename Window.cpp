@@ -63,29 +63,29 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
    m_hidingMethod->Attach(this);
 
    //Load settings for this window
-   m_desk = settings.LoadOnAllDesktops() ? NULL : deskMan->GetCurrentDesktop();
+   m_desk = settings.LoadSetting(Settings::Window::OnAllDesktops) ? NULL : deskMan->GetCurrentDesktop();
 
-   SetMinimizeToTray(settings.LoadMinimizeToTray());
-   SetAlwaysOnTop(settings.LoadAlwaysOnTop());
+   SetMinimizeToTray(settings.LoadSetting(Settings::Window::MinimizeToTray));
+   SetAlwaysOnTop(settings.LoadSetting(Settings::Window::AlwaysOnTop));
 
-   SetTransparencyLevel(settings.LoadTransparencyLevel());
-   SetTransparent(settings.LoadEnableTransparency());
+   SetTransparencyLevel(settings.LoadSetting(Settings::Window::TransparencyLevel));
+   SetTransparent(settings.LoadSetting(Settings::Window::EnableTransparency));
 
-   m_autoSaveSettings = settings.LoadAutoSaveSettings();
-   m_autosize = settings.LoadAutoSetSize();
-   m_autopos = settings.LoadAutoSetPos();
-   m_autodesk = settings.LoadAutoSetDesk();
+   m_autoSaveSettings = settings.LoadSetting(Settings::Window::AutoSaveSettings);
+   m_autosize = settings.LoadSetting(Settings::Window::AutoSetSize);
+   m_autopos = settings.LoadSetting(Settings::Window::AutoSetPos);
+   m_autodesk = settings.LoadSetting(Settings::Window::AutoSetDesk);
 
    //Auto-switch desktop
    if (m_autodesk && !IsOnAllDesktops())
    {
-      Desktop * desk = deskMan->GetDesktop(settings.LoadDesktopIndex());
+      Desktop * desk = deskMan->GetDesktop(settings.LoadSetting(Settings::Window::DesktopIndex));
       if (desk)
          //Move the window to its associated desk
          MoveToDesktop(desk);
       else if (!m_autoSaveSettings)
          //Disable auto-move window to desktop (keep enabled if auto-saving settings)
-         settings.SaveAutoSetDesk(m_autodesk = false);
+         settings.SaveSetting(Settings::Window::AutoSetDesk, m_autodesk = false);
    }
 
    //Delay-update
@@ -135,7 +135,8 @@ void Window::OnDelayUpdate()
    }
 
    //Auto-size/position
-   if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
+   OpenSettings(settings, false);
+   if ( (m_autosize || m_autopos) && settings.LoadSetting(Settings::Window::WindowPosition, &rect) )
       SetWindowPos(m_hOwnedWnd, 0, 
       rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
       SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
