@@ -31,8 +31,8 @@
 #define MNS_CHECKORBMP 0x04000000
 #endif
 
-HINSTANCE HookWindow(HWND hWnd, int data, HANDLE minToTrayEvent);
-bool UnHookWindow(HINSTANCE hInstance, HWND hWnd);
+HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
+bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 
 ITaskbarList* Window::m_tasklist = NULL;
 
@@ -87,7 +87,11 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
 
    m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
    if (winMan->IsIntegrateWithShell())
-      m_HookDllHandle = HookWindow(GetOwnedWindow(m_hWnd), (int)this, m_hMinToTrayEvent);
+   {
+      HWND hWnd = GetOwnedWindow(m_hWnd);
+      GetWindowThreadProcessId(hWnd, &m_dwProcessId);
+      m_HookDllHandle = HookWindow(hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
+   }
    else
       m_HookDllHandle = NULL;
 }
@@ -97,7 +101,7 @@ Window::~Window(void)
    ULONG count;
 
    if (m_HookDllHandle)
-      UnHookWindow(m_HookDllHandle, GetOwnedWindow(m_hWnd));
+      UnHookWindow(m_HookDllHandle, m_dwProcessId, GetOwnedWindow(m_hWnd));
 
    if (m_hMinToTrayEvent)
       CloseHandle(m_hMinToTrayEvent);
