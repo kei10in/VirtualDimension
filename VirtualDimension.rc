@@ -17,7 +17,7 @@
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
- 
+
 //
 #include "resource.h"
 
@@ -160,6 +160,21 @@ BEGIN
     CTEXT           "255",IDC_TRANSP_DISP,9,94,195,8
 END
 
+IDD_MOVEWINDOW DIALOGEX 0, 0, 178, 127
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+    WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Move window to desktop"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,106,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,121,106,50,14
+    LISTBOX         IDC_DESK_LIST,7,20,164,77,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Apply",IDC_APPLY,64,106,50,14
+    CONTROL         "Make window visible on all desktops",IDC_ALLDESKS_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,129,10
+END
+
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -224,6 +239,14 @@ BEGIN
         RIGHTMARGIN, 207
         TOPMARGIN, 7
         BOTTOMMARGIN, 107
+    END
+
+    IDD_MOVEWINDOW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 171
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 120
     END
 END
 #endif    // APSTUDIO_INVOKED
