@@ -598,9 +598,8 @@ void Window::Hook()
    if (m_HookDllHandle)
       return;
 
-   HWND hWnd = GetOwnedWindow();
-   GetWindowThreadProcessId(hWnd, &m_dwProcessId);
-   m_HookDllHandle = HookWindow(hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
+   GetWindowThreadProcessId(m_hOwnedWnd, &m_dwProcessId);
+   m_HookDllHandle = HookWindow(m_hOwnedWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
 }
 
 void Window::UnHook()
