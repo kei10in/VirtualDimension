@@ -38,8 +38,6 @@ AlwaysOnTop::~AlwaysOnTop(void)
 
 void AlwaysOnTop::SetAlwaysOnTop(bool onTop)
 {
-   DWORD style;
-
    if (onTop == m_ontop)
       return;
 
