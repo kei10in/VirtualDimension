@@ -21,11 +21,12 @@ TARGET = VirtualDimension.exe
 BUILDDIR = mingw
 SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp
 RES_FILE = VirtualDimension.res
-OBJ_FILE = ConfigBox.o Desktop.o DesktopManager.o HotKeyManager.o Settings.o VirtualDimension.o deskPropsDlg.o stdafx.o Transparency.o
+OBJ_FILE = ConfigBox.o Desktop.o DesktopManager.o HotKeyManager.o Settings.o VirtualDimension.o deskPropsDlg.o stdafx.o Transparency.o libtransp.a
 
 CXXFLAGS = -fexpensive-optimizations -O3
 
 vpath %.o ${BUILDDIR}
+vpath %.a ${BUILDDIR}
 vpath %.res ${BUILDDIR}
 
 all: pre_comp ${TARGET}
@@ -39,7 +40,10 @@ pre_comp:
 
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	g++ $^ -o $@ -mwindows -lcomctl32 $(CXXFLAGS)
-	
+
+libtransp.a: transp.def
+	dlltool --def $< --dllname /c/WINDOWS/system32/user32.dll  --output-lib ${BUILDDIR}/$@
+
 VirtualDimension.res: VirtualDimension.rc
 	windres -i $< -I rc -o ${BUILDDIR}/$@ -O coff 
 
