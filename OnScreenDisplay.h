@@ -32,6 +32,7 @@ public:
    void Display(char * str, int timeout);
    void Display(char * str)               { Display(str, m_timeout); }
    void SetDefaultTimeout(int timeout)    { m_timeout = timeout; }
+   void SelectFont();
 
 protected:
    HWND m_hWnd;
@@ -39,9 +40,21 @@ protected:
    char m_text[50];
    int m_timeout;
 
+   int m_lastTimeout;
+
+   LOGFONT m_lf;
+   HFONT m_font;
+   COLORREF m_fgColor;
+   HBRUSH m_bgBrush;
+   POINT m_position;
+
    static ATOM s_classAtom;
 
    void paint(HDC hdc);
+   void OnLeftButtonDown(LPARAM lParam);
+   void OnLeftButtonDblClk();
+   void OnMove(LPARAM lParam);
+   void OnTimer();
 
    static void RegisterClass();
    static LRESULT CALLBACK osdProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
