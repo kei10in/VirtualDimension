@@ -46,16 +46,17 @@ void HidingMethodHide::Show(Window * wnd)
    int iconic = GetWindowData(wnd) & 0x10;
    int state = GetWindowData(wnd) & 0xf;
 
-   if (state == HIDING)
+   switch(state)
    {
+   case HIDING:
       SetWindowData(wnd, HIDING_TO_SHOW | iconic);
-   }
-   else if (state == SHOWING_TO_HIDE)
-   {
+      break;
+   
+   case SHOWING_TO_HIDE:
       SetWindowData(wnd, SHOWING | iconic);
-   }
-   else if (state == HIDDEN)
-   {
+      break;
+   
+   case HIDDEN:
       SetWindowData(wnd, SHOWING | iconic);
 
       winMan->DisableAnimations();
@@ -63,25 +64,28 @@ void HidingMethodHide::Show(Window * wnd)
       if (!iconic)
          ShowOwnedPopups(*wnd, TRUE);
       winMan->EnableAnimations();
+      break;
    }
 }
 
 void HidingMethodHide::Hide(Window * wnd)
 {
    int state = GetWindowData(wnd) & 0xf;
+   int iconic;
 
-   if (state == SHOWING)
+   switch(state)
    {
-      int iconic = GetWindowData(wnd) & 0x10;
+   case SHOWING:
+      iconic = GetWindowData(wnd) & 0x10;
       SetWindowData(wnd, SHOWING_TO_HIDE | iconic);
-   }
-   else if (state == HIDING_TO_SHOW)
-   {
-      int iconic = GetWindowData(wnd) & 0x10;
+      break;
+
+   case HIDING_TO_SHOW:
+      iconic = GetWindowData(wnd) & 0x10;
       SetWindowData(wnd, HIDING | iconic);
-   }
-   else if (state == SHOWN)
-   {
+      break;
+
+   case SHOWN:
       SetWindowData(wnd, HIDING);
 
       winMan->DisableAnimations();
@@ -92,43 +96,60 @@ void HidingMethodHide::Hide(Window * wnd)
       else
          ShowOwnedPopups(*wnd, FALSE);
       winMan->EnableAnimations();
+      break;
    }
 }
 
 bool HidingMethodHide::CheckCreated(Window * wnd)
 {
    int data = GetWindowData(wnd);
-   if ((data&0xf) == SHOWING)
+   bool res;
+
+   switch(data&0xf)
    {
+   case SHOWING:
       SetWindowData(wnd, SHOWN|(data&0x10));
-      return false;
-   } 
-   else if ((data&0xf) == SHOWING_TO_HIDE)
-   {
+      res = false;
+      break;
+
+   case SHOWING_TO_HIDE:
       SetWindowData(wnd, SHOWN|(data&0x10));
       Hide(wnd);
-      return false;
+      res = false;
+      break;
+
+   default:
+      res = true;
+      break;
    }
-   else
-      return true;
+
+   return res;
 }
 
 bool HidingMethodHide::CheckDestroyed(Window * wnd)
 {
    int data = GetWindowData(wnd);
-   if ((data&0xf) == HIDING)
+   bool res;
+
+   switch(data&0xf)
    {
+   case HIDING:
       SetWindowData(wnd, HIDDEN|(data&0x10));
-      return false;
-   }
-   else if ((data&0xf) == HIDING_TO_SHOW)
-   {
+      res = false;
+      break;
+
+   case HIDING_TO_SHOW:
       SetWindowData(wnd, HIDDEN|(data&0x10));
       Show(wnd);
-      return false;
+      res = false;
+      break;
+
+   default:
+      res = true;
+      break;
    }
-   else
-      return true;
+
+   return res;
 }
 
 bool HidingMethodHide::CheckSwitching(const Window * wnd)
