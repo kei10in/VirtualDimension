@@ -29,6 +29,7 @@
 #include "windowsmanager.h"
 #include "ToolTip.h"
 #include "FastWindow.h"
+#include "TrayIconsManager.h"
 
 extern HWND configBox;
 extern DesktopManager * deskMan;
@@ -37,6 +38,7 @@ extern Transparency * transp;
 extern TrayIcon * trayIcon;
 extern AlwaysOnTop * ontop;
 extern ToolTip * tooltip;
+extern TrayIconsManager * trayManager;
 
 #define WM_VIRTUALDIMENSION (WM_APP + 1)
 #define VD_MOVEWINDOW 1
