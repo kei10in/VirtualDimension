@@ -26,7 +26,6 @@
 #include "HotkeyManager.h"
 #include "WindowsManager.h"
 #include "VirtualDimension.h"
-#include "BackgroundColor.h"
 
 #ifdef __GNUC__
 #define MIM_STYLE 0x10
@@ -53,6 +52,7 @@ Desktop::Desktop(Settings::Desktop * desktop)
    m_bkColor = desktop->GetColor();
 
    m_wallpaper.SetImage(m_wallpaperFile);
+   m_wallpaper.SetColor(m_bkColor);
 
    m_active = false;
 
@@ -340,9 +340,6 @@ void Desktop::Activate(void)
    /* Set the wallpaper */
    m_wallpaper.Activate();
 
-   /* Set the background color */
-   BackgroundColor::GetInstance().SetColor(m_bkColor);
-
    SetForegroundWindow(vdWindow);
 
    // Show the windows
@@ -351,9 +348,15 @@ void Desktop::Activate(void)
       Window * win = it;
 
       if (win->IsOnDesk(this))
-         m_taskPool.QueueJob(ShowWindowWorkerProc, win);
+      {
+         if (!m_taskPool.UpdateJob(HideWindowWorkerProc, win, ShowWindowWorkerProc, win))
+            m_taskPool.QueueJob(ShowWindowWorkerProc, win);
+      }
       else
-         m_taskPool.QueueJob(HideWindowWorkerProc, win);
+      {
+         if (!m_taskPool.UpdateJob(ShowWindowWorkerProc, win, ShowWindowWorkerProc, win))
+            m_taskPool.QueueJob(HideWindowWorkerProc, win);
+      }
    }
 }
 
@@ -391,8 +394,7 @@ void Desktop::SetBackgroundColor(COLORREF col)
 
    m_bkColor = col;
 
-   if (m_active)
-      BackgroundColor::GetInstance().SetColor(m_bkColor);
+   m_wallpaper.SetColor(m_bkColor);
 }
 
 bool Desktop::deskOrder(Desktop * first, Desktop * second)
