@@ -102,12 +102,14 @@ void Desktop::BuildMenu(HMENU menu)
 void Desktop::OnMenuItemSelected(HMENU menu, int cmdId)
 {
    MENUITEMINFO mii;
+   Window * win;
 
    mii.cbSize = sizeof(mii);
    mii.fMask = MIIM_DATA;
    GetMenuItemInfo(menu, cmdId, FALSE, &mii);
 
-   PostMessage(mainWnd, WM_VIRTUALDIMENSION, (WPARAM)VD_MOVEWINDOW, (LPARAM)mii.dwItemData);
+   win = (Window *)mii.dwItemData;
+   win->OnMenuItemSelected(menu, Window::VDM_ACTIVATEWINDOW);
 }
 
 void Desktop::resize(LPRECT rect)
@@ -149,7 +151,7 @@ void Desktop::UpdateLayout()
       }
    }
 
-   InvalidateRect(mainWnd, &m_rect, TRUE);
+   InvalidateRect(vdWindow, &m_rect, TRUE);
 }
 
 void Desktop::Draw(HDC hDc)
