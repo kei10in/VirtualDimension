@@ -71,7 +71,7 @@ public:
    bool IsOnDesk(Desktop * desk) const        { return (m_desk == NULL) || (m_desk == desk); }
 
    /** Tell if the window is visible on the current desktop.
-    * This function work eaxctly as IsOnDesk(), except that it checks only for the current
+    * This function work exactly as IsOnDesk(), except that it checks only for the current
     * desktop.
     *
     * @retval true if the window is visible on the specified desktop
@@ -103,7 +103,7 @@ public:
     * with both the handle of the menu and the id of the selected command. After all this is done, the
     * menu should be destroyed.
     *
-    * Notice that it is the responsability of the caller to do so: the method does not display the menu
+    * Notice that it is the responsibility of the caller to do so: the method does not display the menu
     * nor enable the user to select anything. It simply creates the menu in memory.
     *
     * @return Handle to the newly created menu
@@ -195,28 +195,6 @@ protected:
    void OnApplyAutoSettingsBtn(HWND hDlg);
    void OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode);
    static LRESULT CALLBACK AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-
-   enum MenuItems {
-      VDM_TOGGLEONTOP = WM_USER+1,
-      VDM_TOGGLEMINIMIZETOTRAY,
-      VDM_TOGGLETRANSPARENCY,
-
-      VDM_TOGGLEALLDESKTOPS,
-      VDM_MOVEWINDOW,
-
-      VDM_ACTIVATEWINDOW,
-      VDM_RESTORE,
-      VDM_MINIMIZE,
-      VDM_MAXIMIZE,
-      VDM_MAXIMIZEHEIGHT,
-      VDM_MAXIMIZEWIDTH,
-      VDM_CLOSE,
-      VDM_KILL,
-
-      VDM_PROPERTIES,
-
-      VDM_MOVETODESK
-   };
 
    HWND m_hWnd;
    HWND m_hOwnedWnd;

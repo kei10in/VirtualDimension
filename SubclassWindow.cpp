@@ -19,6 +19,7 @@
  */
 
 #include "StdAfx.h"
+#include "HookDLL.h"
 
 typedef struct RemoteStartupArgs {
 	HINSTANCE (WINAPI *fnLoadLibrary)(LPCTSTR);
@@ -46,20 +47,30 @@ static HINSTANCE WINAPI RemoteStartup (RemoteStartupArgs* args)
 {
 	HINSTANCE hinstLib;
    DWORD (WINAPI *fnFunc)(HWND,int,HANDLE);
+   DWORD res;
 
-	hinstLib = args->fnLoadLibrary(args->pbLibFile);
+   //Try to load the library
+  	hinstLib = args->fnLoadLibrary(args->pbLibFile);
    if (!hinstLib)
       return NULL;
 
    fnFunc = (DWORD (WINAPI *)(HWND,int,HANDLE))args->fnGetProcAddress(hinstLib, (LPCSTR)MAKEINTRESOURCE(args->fnIndex));
 
-   if (fnFunc &&
-		 fnFunc(args->hWnd, args->data, args->minToTrayEvent))
-      return hinstLib;
-   else
+   res = fnFunc ? fnFunc(args->hWnd, args->data, args->minToTrayEvent) : HOOK_ERROR;
+
+   if (res == HOOK_ERROR)  //error
    {
       args->fnFreeLibrary(hinstLib);
       return NULL;
+   }
+   else  // OK
+   {
+      if (res == HOOK_OK_REHOOK)  //window was already hooked!
+         //free the library to decrease its load count, and ensure it will be unloaded
+         //when all windows are unhooked. This should NOT unload the library now.
+         args->fnFreeLibrary(hinstLib);
+
+      return hinstLib;
    }
 }
 

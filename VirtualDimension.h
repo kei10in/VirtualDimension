@@ -37,12 +37,6 @@ extern AlwaysOnTop * ontop;
 extern ToolTip * tooltip;
 extern MouseWarp * mousewarp;
 
-enum {
-   WM_VD_HOOK = WM_APP + 100,
-   WM_VD_HOOK2,
-   WM_VD_MOUSEWARP,
-};
-
 class VirtualDimension: public FastWindow
 {
 public:
@@ -136,8 +130,8 @@ protected:
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-   LRESULT OnHookWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-   LRESULT OnHookWindowMessage2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnHookMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnPrepareHookMenu(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    static LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/);
 };

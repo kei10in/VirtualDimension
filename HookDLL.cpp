@@ -1,9 +1,27 @@
-// HookDLL.cpp : Defines the entry point for the DLL application.
-//
+/* 
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+ * for the Microsoft Windows platform.
+ * Copyright (C) 2003 Francois Ferrand
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with 
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ */
 
 #include "stdafx.h"
 #include <map>
 #include "SharedMenuBuffer.h"
+#include "HookDLL.h"
 
 //First, some data shared by all instances of the DLL
 #ifdef __GNUC__
@@ -44,33 +62,10 @@ public:
 
 map<HWND,HWNDHookData*> m_HookData;
 
-enum MenuItems {
-   VDM_TOGGLEONTOP = WM_USER+1,
-   VDM_TOGGLEMINIMIZETOTRAY,
-   VDM_TOGGLETRANSPARENCY,
-
-   VDM_TOGGLEALLDESKTOPS,
-   VDM_MOVEWINDOW,
-
-   VDM_ACTIVATEWINDOW,
-   VDM_RESTORE,
-   VDM_MINIMIZE,
-   VDM_MAXIMIZE,
-   VDM_MAXIMIZEHEIGHT,
-   VDM_MAXIMIZEWIDTH,
-   VDM_CLOSE,
-   VDM_KILL,
-
-   VDM_PROPERTIES,
-
-   VDM_MOVETODESK
-};
-
 #define VDM_SYSBASE 0xBA50
 
 UINT VDtoSysItemID(UINT id)   { return VDM_SYSBASE + (id<<4); }
 UINT SystoVDItemID(UINT msg)  { return (msg - VDM_SYSBASE) >> 4; }
-
 
 LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -99,7 +94,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		case SC_MINIMIZE:
          //Minimize using VD
          if (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0)
-            res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
+            res = PostMessageW(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MINIMIZE, (WPARAM)pData->m_iData);
          break;
 
       case SC_MAXIMIZE:
@@ -109,10 +104,10 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
             if (shift && !ctrl)
                //Maximize width using VD
-               res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
+               res = PostMessageW(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
             else if (ctrl && !shift)
                //Maximize height using VD
-               res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
+               res = PostMessageW(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
          }
          break;
 
@@ -120,13 +115,16 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			if (GetKeyState(VK_SHIFT) & 0x8000)
 			{
 				SetForegroundWindow(hVDWnd);
-				res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_KILL, (WPARAM)pData->m_iData);
+				res = PostMessageW(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_KILL, (WPARAM)pData->m_iData);
 			}
 			break;
 
       default:
          if (FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
-            res = PostMessageW(hVDWnd, WM_APP+0x100, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
+			{
+		 		SetForegroundWindow(hVDWnd);
+            res = PostMessageW(hVDWnd, WM_VD_HOOK_MENU_COMMAND, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
+			}
          break;
       }
       break;   
@@ -187,7 +185,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       case SC_MINIMIZE:
          //Minimize using VD
          if (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0)
-            res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
+            res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MINIMIZE, (WPARAM)pData->m_iData);
          break;
 
       case SC_MAXIMIZE:
@@ -197,10 +195,10 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			
 				if (shift && !ctrl)
 					//Maximize width using VD
-					res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
+					res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
 				else if (ctrl && !shift)
 					//Maximize height using VD
-					res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
+					res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
 				break;
 			}
 
@@ -208,13 +206,16 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			if (GetKeyState(VK_SHIFT) & 0x8000)
 			{
 				SetForegroundWindow(hVDWnd);
-				res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_KILL, (WPARAM)pData->m_iData);
+				res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_KILL, (WPARAM)pData->m_iData);
 			}
 			break;
 
       default:
          if (FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
-            res = PostMessageA(hVDWnd, WM_APP+0x100, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
+         {
+            SetForegroundWindow(hVDWnd);
+            res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
+         }
          break;
       }
       break;   
@@ -258,7 +259,21 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    else
       pHookData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
    if (pHookData)
-      return FALSE;
+   {
+      // The window was already hooked... This is likely due to a previous VD crash
+      // -> free old, unneeded resources, and re-setup various data members properly.
+      WaitForSingleObject(pHookData->m_hMutex, INFINITE);
+      CloseHandle(pHookData->m_hMinToTrayEvent);
+      pHookData->m_hMinToTrayEvent = minToTrayEvent;
+      pHookData->m_iData = data;
+      ReleaseMutex(pHookData->m_hMutex);
+
+      // Also, get the VD window again, just to be sure...
+      hVDWnd = FindWindow("VIRTUALDIMENSION", NULL);
+
+      // Special return value to tell that things went OK but we were already hooked
+      return HOOK_OK_REHOOK;
+   }
 
    pHookData = new HWNDHookData;
 
@@ -266,7 +281,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    if (!pHookData->m_hMutex)
    {
       delete pHookData;
-      return FALSE;
+      return HOOK_ERROR;
    }
 
    pHookData->m_iData = data;
@@ -290,14 +305,14 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
       CloseHandle(pHookData->m_hMutex);
       CloseHandle(pHookData->m_hMinToTrayEvent);
       delete pHookData;
-      return FALSE;
+      return HOOK_ERROR;
    }
    else
    {
    	pHookData->m_hSubMenu = SetupMenu(hWnd);
       m_HookData[hWnd] = pHookData;
       ReleaseMutex(pHookData->m_hMutex);
-      return TRUE;
+      return HOOK_OK;
    }
 }
 
@@ -398,7 +413,7 @@ void InitPopupMenu(HWND hWnd, HMENU hMenu)
 
    //Retrieve the menu description
    SharedMenuBuffer menuinfo;
-   if (SendMessage(hVDWnd, WM_APP+0x101, (WPARAM)menuinfo.GetFileMapping(), (LPARAM)pHookData->m_iData))
+   if (SendMessage(hVDWnd, WM_VD_PREPARE_HOOK_MENU, (WPARAM)menuinfo.GetFileMapping(), (LPARAM)pHookData->m_iData))
    {
       //Clear the menu
       while(GetMenuItemCount(hMenu))
@@ -430,10 +445,11 @@ BOOL APIENTRY DllMain( HANDLE /*hModule*/,
       if (g_iProcessCount == 0)
 		{
          g_aPropName = GlobalAddAtom("Virtual Dimension hook data property");
-			hVDWnd = FindWindow("VIRTUALDIMENSION", NULL);
 			g_uiHookMessageId = RegisterWindowMessage("Virtual Dimension Message");
 			g_uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
 		}
+      //update hVDWnd each time, so that it may work again after a VD crash
+		hVDWnd = FindWindow("VIRTUALDIMENSION", NULL);
       g_iProcessCount++;
       break;
 

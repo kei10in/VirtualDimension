@@ -23,6 +23,7 @@
 #include "VirtualDimension.h"
 #include "DesktopManager.h"
 #include "Settings.h"
+#include "HookDLL.h"
 
 MouseWarp * mousewarp;
 

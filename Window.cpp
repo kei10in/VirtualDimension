@@ -29,6 +29,7 @@
 #include "DesktopManager.h"
 #include "WindowsManager.h"
 #include "SharedMenuBuffer.h"
+#include "HookDLL.h"
 
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
@@ -590,7 +591,7 @@ void Window::Hook()
 
    GetWindowThreadProcessId(m_hWnd, &m_dwProcessId);
    m_HookDllHandle = HookWindow(m_hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
-   if (m_hWnd != m_hOwnedWnd)
+   if (m_HookDllHandle && m_hWnd != m_hOwnedWnd)
       HookWindow(m_hOwnedWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
 }
 

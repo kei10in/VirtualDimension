@@ -36,6 +36,7 @@
 #include "ExplorerWrapper.h"
 #include <shellapi.h>
 #include <assert.h>
+#include "HookDLL.h"
 
 // Global Variables:
 HWND configBox = NULL;
@@ -150,8 +151,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	SetMessageHandler(WM_MOUSELEAVE, this, &VirtualDimension::OnMouseLeave);
 	SetMessageHandler(WM_NCHITTEST, this, &VirtualDimension::OnNCHitTest);
 
-   SetMessageHandler(WM_APP+0x100, this, &VirtualDimension::OnHookWindowMessage);
-   SetMessageHandler(WM_APP+0x101, this, &VirtualDimension::OnHookWindowMessage2);
+   SetMessageHandler(WM_VD_HOOK_MENU_COMMAND, this, &VirtualDimension::OnHookMenuCommand);
+   SetMessageHandler(WM_VD_PREPARE_HOOK_MENU, this, &VirtualDimension::OnPrepareHookMenu);
 
 	// Compate the window's style
    m_hasCaption = settings.LoadSetting(Settings::HasCaption);
@@ -647,7 +648,7 @@ LRESULT VirtualDimension::OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPA
    return TRUE;
 }
 
-LRESULT VirtualDimension::OnHookWindowMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnHookMenuCommand(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
    Window * win = (Window*)lParam;
 
@@ -658,7 +659,7 @@ LRESULT VirtualDimension::OnHookWindowMessage(HWND /*hWnd*/, UINT /*message*/, W
    return TRUE;
 }
 
-LRESULT VirtualDimension::OnHookWindowMessage2(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnPrepareHookMenu(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
    return ((Window*)lParam)->PrepareSysMenu((HANDLE)wParam);
 }
