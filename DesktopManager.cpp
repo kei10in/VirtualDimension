@@ -26,6 +26,8 @@
 #include "OnScreenDisplay.h"
 #include <algorithm>
 #include "BackgroundDisplayMode.h"
+#include ".\desktopmanager.h"
+#include <Commdlg.h>
 
 DesktopManager::DesktopManager(void)
 {
@@ -46,6 +48,10 @@ DesktopManager::DesktopManager(void)
    m_bkDisplayMode = NULL;
    m_displayMode = (DisplayMode)-1;
    SetDisplayMode((DisplayMode)settings.LoadDisplayMode());
+         
+   settings.LoadPreviewWindowFont(&m_lfPreviewWindowFontInfo);
+   m_hPreviewWindowFont = CreateFontIndirect(&m_lfPreviewWindowFontInfo); 
+   m_crPreviewWindowFontColor = settings.LoadPreviewWindowFontColor();
 
    //Bind the message handlers
    vdWindow.SetMessageHandler(WM_SIZE, this, &DesktopManager::OnSize);
@@ -94,11 +100,16 @@ DesktopManager::~DesktopManager(void)
    }
    m_desks.clear();
 
+   if (m_hPreviewWindowFont)
+      DeleteObject(m_hPreviewWindowFont);
+
    settings.SaveSwitchToNextDesktopHotkey(GetSwitchToNextDesktopHotkey());
    settings.SaveSwitchToPreviousDesktopHotkey(GetSwitchToPreviousDesktopHotkey());
    settings.SaveNbCols(m_nbColumn);
    settings.SaveDesktopNameOSD(m_useOSD);
    settings.SaveDisplayMode(m_displayMode);
+   settings.SavePreviewWindowFont(&m_lfPreviewWindowFontInfo);
+   settings.SavePreviewWindowFontColor(m_crPreviewWindowFontColor);
 }
 
 LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
@@ -183,6 +194,8 @@ LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, 
    m_bkDisplayMode->BeginPainting(deskHdc);
 
    //Draw the desktops
+   SelectObject(deskHdc, GetPreviewWindowFont());
+   SetTextColor(deskHdc, GetPreviewWindowFontColor());
    for(it = m_desks.begin(); it != m_desks.end(); it ++)
    {
       RECT rect;
@@ -498,4 +511,36 @@ void DesktopManager::SetSwitchToPreviousDesktopHotkey(int key)
 
    //Register the new hotkey
    keyMan->RegisterHotkey(m_previousDesktopHotkey, m_prevDeskEventHandler);
+}
+
+void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)
+{
+   CHOOSEFONT cf; 
+
+   cf.lStructSize = sizeof(CHOOSEFONT); 
+   cf.hwndOwner = hDlg; 
+   cf.hDC = (HDC)NULL; 
+   cf.lpLogFont = &m_lfPreviewWindowFontInfo; 
+   cf.iPointSize = 0; 
+   cf.Flags = CF_SCREENFONTS | CF_EFFECTS | CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT; 
+   cf.rgbColors = m_crPreviewWindowFontColor; 
+   cf.lCustData = 0; 
+   cf.lpfnHook = (LPCFHOOKPROC)NULL; 
+   cf.lpTemplateName = (LPSTR)NULL; 
+   cf.hInstance = (HINSTANCE)vdWindow; 
+   cf.lpszStyle = (LPSTR)NULL; 
+   cf.nFontType = SCREEN_FONTTYPE; 
+   cf.nSizeMin = 0; 
+   cf.nSizeMax = 0; 
+
+   if (ChooseFont(&cf))
+   {
+      if (m_hPreviewWindowFont)
+         DeleteObject(m_hPreviewWindowFont);
+
+      m_hPreviewWindowFont = CreateFontIndirect(cf.lpLogFont); 
+      m_crPreviewWindowFontColor = cf.rgbColors;
+
+      vdWindow.Refresh();
+   }
 }

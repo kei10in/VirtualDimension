@@ -75,6 +75,10 @@ public:
    int GetSwitchToPreviousDesktopHotkey()     { return m_previousDesktopHotkey; }
    void SetSwitchToPreviousDesktopHotkey(int key);
 
+   void ChoosePreviewWindowFont(HWND hDlg);
+   HFONT GetPreviewWindowFont()               { return m_hPreviewWindowFont; }
+   COLORREF GetPreviewWindowFontColor()       { return m_crPreviewWindowFontColor; }
+
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -107,6 +111,10 @@ protected:
 
    DisplayMode m_displayMode;
    BackgroundDisplayMode * m_bkDisplayMode;
+
+   HFONT m_hPreviewWindowFont;
+   LOGFONT m_lfPreviewWindowFontInfo;
+   COLORREF m_crPreviewWindowFontColor;
 };
 
 inline Desktop * DesktopManager::AddDesktop()
