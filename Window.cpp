@@ -75,7 +75,8 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
       m_autopos = settings.LoadAutoSetPos();
 
       if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
-         SetWindowPos(m_hWnd, 0, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
+         SetWindowPos(GetOwnedWindow(m_hWnd), 0, 
+                      rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
                       SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
                       (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
    }
@@ -490,10 +491,11 @@ void Window::MaximizeHeight()
 {
    RECT rect;
    RECT screen;
+   HWND hWnd = GetOwnedWindow(m_hWnd);
 
-   GetWindowRect(m_hWnd, &rect);
+   GetWindowRect(hWnd, &rect);
    SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
-   MoveWindow( m_hWnd, rect.left, screen.top, 
+   MoveWindow( hWnd, rect.left, screen.top, 
                rect.right-rect.left, screen.bottom-screen.top,
                TRUE);
 }
@@ -502,10 +504,11 @@ void Window::MaximizeWidth()
 {
    RECT rect;
    RECT screen;
+   HWND hWnd = GetOwnedWindow(m_hWnd);
 
-   GetWindowRect(m_hWnd, &rect);
+   GetWindowRect(hWnd, &rect);
    SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
-   MoveWindow( m_hWnd, screen.left, rect.top, 
+   MoveWindow( hWnd, screen.left, rect.top, 
                screen.right-screen.left, rect.bottom - rect.top, 
                TRUE);
 }
