@@ -23,6 +23,7 @@
 
 #include <objbase.h>
 #include <oaidl.h>
+#include <ocidl.h>
 #include <olectl.h>
 
 class PlatformHelper
