@@ -235,11 +235,7 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
          break;
 
       case IDC_EXTRAPARAM_BTN:
-         switch(deskMan->GetDisplayMode())
-         {
-         case DesktopManager::DM_PLAINCOLOR: deskMan->ChooseBackgroundColor(hDlg); break;         
-         case DesktopManager::DM_PICTURE: deskMan->ChooseBackgroundPicture(hDlg); break;  
-         }
+         deskMan->ChooseBackgroundDisplayModeOptions(hDlg);
          break;
 
       case IDC_FONT_BTN:
