@@ -31,6 +31,7 @@ const char Settings::regValAlwaysOnTop[] = "AlwaysOnTop";
 const char Settings::regValTransparencyLevel[] = "TransparencyLevel";
 const char Settings::regValHasCaption[] = "HasCaption";
 const char Settings::regValSnapSize[] = "SnapSize";
+const char Settings::regValAutoHideDelay[] = "AutoHideDelay";
 const char Settings::regValEnableTooltips[] = "EnableToolTips";
 const char Settings::regValConfirmKilling[] = "ConfirmKilling";
 const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
@@ -224,6 +225,16 @@ int Settings::LoadSnapSize()
 void Settings::SaveSnapSize(int size)
 {
 	SaveDWord(m_regKey, m_keyOpened, regValSnapSize, size);
+}
+
+int Settings::LoadAutoHideDelay()
+{
+	return LoadDWord(m_regKey, m_keyOpened, regValAutoHideDelay, 0);
+}
+
+void Settings::SaveAutoHideDelay(int delay)
+{
+	SaveDWord(m_regKey, m_keyOpened, regValAutoHideDelay, delay);
 }
 
 bool Settings::LoadConfirmKilling()

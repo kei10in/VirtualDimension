@@ -49,6 +49,8 @@ public:
    void SaveHasCaption(bool caption);
 	int LoadSnapSize();
 	void SaveSnapSize(int size);
+	int LoadAutoHideDelay();
+	void SaveAutoHideDelay(int delay);
 
    bool LoadConfirmKilling();
    void SaveConfirmKilling(bool confirm);
@@ -238,6 +240,7 @@ protected:
    static const char regValEnableTooltips[];
    static const char regValHasCaption[];
 	static const char regValSnapSize[];
+	static const char regValAutoHideDelay[];
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
    static const char regValCloseToTray[];
