@@ -71,7 +71,7 @@ void OnScreenDisplayWnd::Create()
                             (LPTSTR)MAKEINTRESOURCE(s_classAtom), "OSD", WS_POPUP, 
                             m_position.x, m_position.y, 0, 0, 
                             NULL, NULL, vdWindow, this);
-   ShowWindow(m_hWnd, SW_HIDE);
+   ShowWindowAsync(m_hWnd, SW_HIDE);
 
    m_transp = new Transparency(m_hWnd);
    m_transp->SetTransparencyLevel(m_hasBackground ? m_transpLevel : (unsigned char)255 );
@@ -93,11 +93,15 @@ void OnScreenDisplayWnd::Display(char * str, int timeout)
    SelectObject(hdc, defFont);
    ReleaseDC(m_hWnd, hdc);
 
+   //HACK: to erase the background, hide the window...
+   if (!m_hasBackground && IsWindowVisible(m_hWnd))
+      ShowWindowAsync(m_hWnd, SW_HIDE);
+
    SetWindowPos(m_hWnd, NULL, 0, 0, size.cx+10, size.cy+10, 
                 SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOREPOSITION);
    InvalidateRect(m_hWnd, NULL, TRUE);
 
-   ShowWindow(m_hWnd, SW_SHOW);
+   ShowWindowAsync(m_hWnd, SW_SHOW);
    m_lastTimeout = timeout;
    if (timeout)
       SetTimer(m_hWnd, 1, timeout, NULL);
