@@ -30,6 +30,9 @@
 #define MNS_CHECKORBMP 0x04000000
 #endif
 
+HINSTANCE HookWindow(HWND hWnd, int data);
+bool UnHookWindow(HINSTANCE hInstance, HWND hWnd);
+
 ITaskbarList* Window::m_tasklist = NULL;
 
 Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
@@ -79,11 +82,16 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
    else
       //Find out on which desktop the window is
       m_desk = deskMan->GetCurrentDesktop();
+
+   m_HookDllHandle = HookWindow(m_hWnd, (int)this);
 }
 
 Window::~Window(void)
 {
    ULONG count;
+
+   if (m_HookDllHandle)
+      UnHookWindow(m_HookDllHandle, m_hWnd);
 
    if (m_ownIcon)
       DestroyIcon(m_hIcon);
@@ -546,5 +554,3 @@ void Window::OnContextMenu()
 
    DestroyMenu(hMenu);
 }
-
-
