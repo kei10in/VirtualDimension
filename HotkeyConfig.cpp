@@ -280,6 +280,9 @@ LRESULT CALLBACK ShortcutsConfigurationDlg::DlgProc(HWND hDlg, UINT message, WPA
          break;
 
       case PSN_KILLACTIVE:
+         self = (ShortcutsConfigurationDlg*)GetWindowLongPtr(hDlg, DWLP_USER);
+         if (self->IsEditing())
+            self->EndEdit();
          SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
          return TRUE;
 
