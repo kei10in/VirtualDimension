@@ -25,16 +25,12 @@
 #include <Shellapi.h>
 #include "PlatformHelper.h"
 #include "window.h"
+#include "ExplorerWrapper.h"
+#include "DesktopManager.h"
+#include "WindowsManager.h"
 
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
-
-#ifdef HIDEWINDOW_COMINTERFACE
-ITaskbarList* Window::m_tasklist = NULL;
-#else
-HWND Window::m_hWndTasklist = NULL;
-UINT Window::m_ShellhookMsg = 0;
-#endif
 
 Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwnedWindow(hWnd)),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
@@ -45,31 +41,6 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwn
 {
    Settings s;
    Settings::Window settings(&s);
-
-#ifdef HIDEWINDOW_COMINTERFACE
-   if (m_tasklist == NULL)
-   {
-      CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist);
-      if (m_tasklist != NULL)
-         m_tasklist->HrInit();
-   }
-   else
-      m_tasklist->AddRef();
-#else
-   if (!m_hWndTasklist)
-   {
-      m_ShellhookMsg = RegisterWindowMessage("SHELLHOOK");
-
-      HWND hwndTray = FindWindowEx(NULL, NULL, "Shell_TrayWnd", NULL);
-      HWND hwndBar = FindWindowEx(hwndTray, NULL, "ReBarWindow32", NULL );
-   
-      // Maybe "RebarWindow32" is not a child to "Shell_TrayWnd", then try this
-      if( hwndBar == NULL )
-         hwndBar = hwndTray;
-   
-      m_hWndTasklist = FindWindowEx(hwndBar, NULL, "MSTaskSwWClass", NULL);
-   }
-#endif
 
    InitializeCriticalSection(&m_CriticalSection);
 
@@ -202,11 +173,7 @@ void Window::ShowWindow()
    }
 
    //Show the icon
-#ifdef HIDEWINDOW_COMINTERFACE
-   m_tasklist->AddTab(m_hWnd);
-#else
-   PostMessage(m_hWndTasklist, m_ShellhookMsg, 1, (LPARAM)m_hWnd);
-#endif
+   explorerWrapper->ShowWindowInTaskbar(m_hWnd);
 
    //Restore the application if needed
    if (!m_iconic)
@@ -246,11 +213,7 @@ void Window::HideWindow()
    }
 
    //Hide the icon
-#ifdef HIDEWINDOW_COMINTERFACE
-   m_tasklist->DeleteTab(m_hWnd);
-#else
-   PostMessage(m_hWndTasklist, m_ShellhookMsg, 2, (LPARAM)m_hWnd);
-#endif
+   explorerWrapper->HideWindowInTaskbar(m_hWnd);
 
    //disable the window so that it does not appear in task list
    if (m_setStyle)

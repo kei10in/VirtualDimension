@@ -236,16 +236,6 @@ protected:
 
    CRITICAL_SECTION m_CriticalSection;
    bool m_switching;
-
-#ifdef HIDEWINDOW_COMINTERFACE
-   /** Pointer to the COM taskbar interface.
-    * This interface is used to add/remove the icons from the taskbar, when showing/hiding
-    */
-   static ITaskbarList* m_tasklist;
-#else
-   static HWND m_hWndTasklist;
-   static UINT m_ShellhookMsg;
-#endif
 };
 
 HWND Window::GetOwnedWindow(HWND hWnd)
