@@ -69,7 +69,7 @@ LRESULT CALLBACK MoveWindowProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /
              desk != NULL;
              desk = deskMan->GetNextDesktop())
          {
-            LRESULT index = SendMessage(hWnd, LB_ADDSTRING, 0, (LPARAM)desk->m_name);
+            LRESULT index = SendMessage(hWnd, LB_ADDSTRING, 0, (LPARAM)desk->GetText());
             SendMessage(hWnd, LB_SETITEMDATA, index, (LPARAM)desk);
          }
 

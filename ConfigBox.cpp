@@ -261,7 +261,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
              desk != NULL;
              desk = deskMan->GetNextDesktop())
          {
-            LRESULT index = SendMessage(hWnd, LB_ADDSTRING, 0, (LPARAM)desk->m_name);
+            LRESULT index = SendMessage(hWnd, LB_ADDSTRING, 0, (LPARAM)desk->GetText());
             SendMessage(hWnd, LB_SETITEMDATA, index, (LPARAM)desk);
          }
 
@@ -288,7 +288,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          {
             HWND listBox = GetDlgItem(hDlg, IDC_DESK_LIST);
             Desktop * desk = deskMan->AddDesktop();
-            LRESULT index = SendMessage(listBox, LB_ADDSTRING, 0, (LPARAM)desk->m_name);
+            LRESULT index = SendMessage(listBox, LB_ADDSTRING, 0, (LPARAM)desk->GetText());
             SendMessage(listBox, LB_SETITEMDATA, index, (LPARAM)desk);
             bool result = (SendMessage(listBox, LB_SETCURSEL, index, 0) != LB_ERR);
             EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), result);
@@ -328,19 +328,19 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             if (index != LB_ERR)
             {
                Desktop * desk = (Desktop*)SendMessage(listBox, LB_GETITEMDATA, index, 0);
-               strncpy(desk_name, desk->m_name, sizeof(desk_name));
-               strncpy(desk_wallpaper, desk->m_wallpaper, sizeof(desk_wallpaper));
-               desk_hotkey = desk->m_hotkey;
+               strncpy(desk_name, desk->GetText(), sizeof(desk_name));
+               strncpy(desk_wallpaper, desk->GetWallpaper(), sizeof(desk_wallpaper));
+               desk_hotkey = desk->GetHotkey();
                if (DialogBox(vdWindow, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties) == IDOK)
                {
                   /* Update the desk informations */
                   desk->Rename(desk_name);
-                  strncpy(desk->m_wallpaper, desk_wallpaper, sizeof(desk->m_wallpaper));
+                  desk->SetWallpaper(desk_wallpaper);
                   desk->SetHotkey(desk_hotkey);
 
                   /* Update the lsit box content */
                   SendMessage(listBox, LB_DELETESTRING, index, 0);
-                  index = SendMessage(listBox, LB_INSERTSTRING, index, (LPARAM)desk->m_name);
+                  index = SendMessage(listBox, LB_INSERTSTRING, index, (LPARAM)desk->GetText());
                   SendMessage(listBox, LB_SETITEMDATA, index, (LPARAM)desk);
                   SendMessage(listBox, LB_SETCURSEL, index, 0);
 
@@ -439,7 +439,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                if ((newIndex < 0) || (newIndex >= nbDesks))
                   break;
                SendMessage(listBox, LB_DELETESTRING, index, 0);
-               newIndex = SendMessage(listBox, LB_INSERTSTRING, newIndex/*+1*/, (LPARAM)desk->m_name);
+               newIndex = SendMessage(listBox, LB_INSERTSTRING, newIndex/*+1*/, (LPARAM)desk->GetText());
                SendMessage(listBox, LB_SETITEMDATA, newIndex, (LPARAM)desk);
                SendMessage(listBox, LB_SETCURSEL, newIndex, 0);
 
@@ -447,7 +447,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                for(int i=0; i<nbDesks; i++)
                {
                   Desktop * desk = (Desktop*)SendMessage(listBox, LB_GETITEMDATA, i, 0);
-                  desk->m_index = i;
+                  desk->SetIndex(i);
                }
                deskMan->Sort();
 

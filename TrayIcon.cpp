@@ -116,13 +116,13 @@ void TrayIcon::OnContextMenu()
 
       mii.cbSize = sizeof(mii);
       mii.fMask = MIIM_STATE | MIIM_STRING | MIIM_ID | MIIM_DATA;
-      if (desk->m_active)
+      if (desk->IsActive())
          mii.fState = MFS_CHECKED;
       else
          mii.fState = MFS_UNCHECKED;
       mii.dwItemData = (DWORD)desk;
-      mii.dwTypeData = desk->m_name;
-      mii.cch = strlen(desk->m_name);
+      mii.dwTypeData = desk->GetText();
+      mii.cch = strlen(mii.dwTypeData);
       mii.wID = WM_USER + i++;
       InsertMenuItem(hmenuTrackPopup, 0, TRUE, &mii);
    }
