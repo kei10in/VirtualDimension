@@ -22,27 +22,33 @@
 #include "TaskPool.h"
 #include "Window.h"
 
-TaskPool::TaskPool(void)
+TaskPool::TaskPool(int minThread, int maxThread)
 {
    m_hPendingWindowsSem = CreateSemaphore(NULL, 0, 50, NULL);
    m_hStopThread = CreateEvent(NULL, FALSE, FALSE, NULL);
    m_hQueueMutex = CreateMutex(NULL, FALSE, NULL);
 
    m_nThreadCount = 0;
-   m_nextJobId = 0;
 
-   m_dwThreadTimeout = 1000*1800;   // half an hour
+   m_dwThreadTimeout = 1000*600;   // 10 minutes
+   m_nMinThreadCount = minThread;
+   m_nMaxThreadCount = maxThread;
+
+   for(int i=0; i<m_nMinThreadCount; i++)
+      AddThread();
 }
 
 TaskPool::~TaskPool(void)
 {
+   m_nMinThreadCount = 0;  //Ensure all threads will get distroyed
    for(int i = 0; i < m_nThreadCount; i++)
       DelThread();
 }
 
 void TaskPool::AddThread()
 {
-   CreateThread(NULL, 0, &taskProxy, this, 0, NULL);
+   if (m_nThreadCount < m_nMaxThreadCount)
+      CreateThread(NULL, 0, &taskProxy, this, 0, NULL);
 }
 
 void TaskPool::DelThread()
@@ -62,14 +68,14 @@ void TaskPool::SetThreadCount(LONG count)
       for(LONG i=0; i<delta; i++)
          AddThread();
    }
-   else
+   else if (delta < 0)
    {
       for(LONG i=delta; i<0; i++)
          DelThread();
    }
 }
 
-unsigned long long TaskPool::QueueJob(JobProc * fun, void * arg)
+void TaskPool::QueueJob(JobProc * fun, void * arg)
 {
    static JobInfo info;
    int length;
@@ -80,12 +86,11 @@ unsigned long long TaskPool::QueueJob(JobProc * fun, void * arg)
    //Build the job info
    info.fun = fun;
    info.arg = arg;
-   info.jobId = m_nextJobId++;
 
    //Add the job
-   m_jobsQueue.push(info);
+   m_jobsQueue.push_back(info);
 
-   //Get the queue length
+   //Get the length of the queue
    length = m_jobsQueue.size();
 
    //Release access to the queue
@@ -95,14 +100,54 @@ unsigned long long TaskPool::QueueJob(JobProc * fun, void * arg)
    ReleaseSemaphore(m_hPendingWindowsSem, 1, NULL);
 
    //Increase the number of thread, if needed
-   if (length > m_nThreadCount)
+   if ((length<<1) > m_nThreadCount)
       AddThread();
-
-   return m_nextJobId;
 }
 
-bool TaskPool::DeQueueJob(unsigned long long /*jobId*/)
+bool TaskPool::DeQueueJob(JobProc * fun, void * arg)
 {
+   //Get access to the queue
+   WaitForSingleObject(m_hQueueMutex, INFINITE);
+
+   list<JobInfo>::iterator it;
+   for(it = m_jobsQueue.begin(); it != m_jobsQueue.end(); it++)
+   {
+      if ((it->arg == arg) && (it->fun == fun))
+      {
+         m_jobsQueue.erase(it);
+            
+         ReleaseMutex(m_hQueueMutex);
+         return true;
+      }
+   }
+
+   //Release access to the queue
+   ReleaseMutex(m_hQueueMutex);
+
+   return false;
+}
+
+bool TaskPool::UpdateJob(JobProc * oldFun, void * oldArg, JobProc * newFun, void * newArg)
+{
+   //Get access to the queue
+   WaitForSingleObject(m_hQueueMutex, INFINITE);
+
+   list<JobInfo>::iterator it;
+   for(it = m_jobsQueue.begin(); it != m_jobsQueue.end(); it++)
+   {
+      if ((it->arg == oldArg) && (it->fun == oldFun))
+      {
+         it->arg = newArg;
+         it->fun = newFun;
+
+         ReleaseMutex(m_hQueueMutex);
+         return true;
+      }
+   }
+
+   //Release access to the queue
+   ReleaseMutex(m_hQueueMutex);
+
    return false;
 }
 
@@ -111,34 +156,39 @@ DWORD TaskPool::task()
    HANDLE objects[2] = { m_hStopThread, m_hPendingWindowsSem };
 
    InterlockedIncrement(&m_nThreadCount);
-   while(WaitForMultipleObjects(2, objects, FALSE, m_dwThreadTimeout) == WAIT_OBJECT_0+1)
-   {
-      JobProc * fun;
-      void * arg;
-
-      //Get access to the queue
-      WaitForSingleObject(m_hQueueMutex, INFINITE);
-
-      //Remove a job from the queue
-      if (!m_jobsQueue.empty())
+   do
+      while(WaitForMultipleObjects(2, objects, FALSE, m_dwThreadTimeout) == WAIT_OBJECT_0+1)
       {
-         JobInfo& info = m_jobsQueue.front();
+         JobProc * fun;
+         void * arg;
 
-         fun = info.fun;
-         arg = info.arg;
+         //Get access to the queue
+         WaitForSingleObject(m_hQueueMutex, INFINITE);
 
-         m_jobsQueue.pop();
+         //Remove a job from the queue
+         if (!m_jobsQueue.empty())
+         {
+            JobInfo& info = m_jobsQueue.front();
+
+            fun = info.fun;
+            arg = info.arg;
+
+            m_jobsQueue.pop_front();
+         }
+         else
+         {
+            fun = NULL;
+            arg = NULL;
+         }
+
+         //Release access to the queue
+         ReleaseMutex(m_hQueueMutex);
+
+         //Do the job !
+         if (fun)
+            fun(arg);
       }
-      else
-         fun = NULL;
-
-      //Release access to the queue
-      ReleaseMutex(m_hQueueMutex);
-
-      //Do the job !
-      if (fun)
-         fun(arg);
-   }
+   while(m_nThreadCount <= m_nMinThreadCount);  //Ensure a minimum number of threads is running
    InterlockedDecrement(&m_nThreadCount);
 
    return 0;
