@@ -415,7 +415,7 @@ WindowsManager::MoveWindowToDesktopEventHandler::~MoveWindowToDesktopEventHandle
 void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
 {
    Window * window = winMan->GetForegroundWindow();
-   if (window != NULL)
+   if ((window != NULL) && (window->IsOnCurrentDesk()))
    {
       SetForegroundWindow(vdWindow);
       SelectDesktopForWindow(window);
