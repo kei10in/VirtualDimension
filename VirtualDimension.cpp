@@ -144,6 +144,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetMessageHandler(WM_MEASUREITEM, this, &VirtualDimension::OnMeasureItem);
    SetMessageHandler(WM_DRAWITEM, this, &VirtualDimension::OnDrawItem);
 
+	SetMessageHandler(WM_TIMER, this, &VirtualDimension::OnTimer);
+	SetMessageHandler(WM_ACTIVATEAPP, this, &VirtualDimension::OnActivateApp);
+
    SetMessageHandler(WM_APP+0x100, this, &VirtualDimension::OnHookWindowMessage);
 
    // Create the main window
@@ -161,6 +164,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
 	// Load some settings
 	m_snapSize = settings.LoadSnapSize();
+	m_autoHideDelay = settings.LoadAutoHideDelay();
 
    // Show window if needed
    if (settings.LoadShowWindow())
@@ -332,6 +336,9 @@ LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam
 
 	//Save the snapsize
 	settings.SaveSnapSize(m_snapSize);
+
+	//Save the auto-hide delay
+	settings.SaveAutoHideDelay(m_autoHideDelay);
 
    //Save the visibility state of the window before it is hidden
    settings.SaveShowWindow(IsWindowVisible(hWnd) ? true:false);
@@ -627,6 +634,21 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 	}
 
    return TRUE;
+}
+
+LRESULT VirtualDimension::OnTimer(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	ShowWindow(hWnd, SW_HIDE);	
+	return 0;
+}
+
+LRESULT VirtualDimension::OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (wParam == TRUE)
+		KillTimer(hWnd, TIMERID_AUTOHIDE);
+	else if (m_autoHideDelay > 0)
+		SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
+	return 0;
 }
 
 // Message handler for about box.

@@ -43,6 +43,8 @@ extern TrayIconsManager * trayManager;
 #define WM_VIRTUALDIMENSION (WM_APP + 1)
 #define VD_MOVEWINDOW 1
 
+#define TIMERID_AUTOHIDE	1
+
 class VirtualDimension: public FastWindow
 {
 public:
@@ -84,6 +86,7 @@ protected:
 
    bool m_lockPreviewWindow;
    bool m_hasCaption;
+	int m_autoHideDelay;
 
    bool IsPreviewWindowLocked() const     { return m_lockPreviewWindow; }
    void LockPreviewWindow(bool lock);
@@ -112,6 +115,9 @@ protected:
 
    LRESULT OnMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnWindowPosChanging(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	LRESULT OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT OnTimer(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnHookWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
