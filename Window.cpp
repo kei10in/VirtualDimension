@@ -39,7 +39,7 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
-                           m_hIcon(NULL), m_ownIcon(false)
+                           m_hIcon(NULL), m_ownIcon(false), m_style(0)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -187,7 +187,7 @@ void Window::HideWindow()
    //make the window a tool window so that it does not appear in task list
    if (!winMan->IsShowAllWindowsInTaskList())
    {
-      style = (style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
+      style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
       SetWindowLong(m_hWnd, GWL_EXSTYLE, style);
    }
 
