@@ -227,7 +227,7 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
 		   }
       }
       else
-         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, "", 0);
+         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (void*)"", 0);
 
       // Set the background color
       BackgroundColor::GetInstance().SetColor(wallpaper->m_bkColor);
