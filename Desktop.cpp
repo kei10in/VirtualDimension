@@ -320,7 +320,7 @@ void Desktop::Save()
 void Desktop::Activate(void)
 {
    WindowsManager::Iterator it;
-   HWND topmost = NULL;
+   Window * topmost = NULL;
 
    m_active = true;
 
@@ -344,7 +344,7 @@ void Desktop::Activate(void)
             win->ShowWindow();
 
             if (!topmost)
-               topmost = *win;
+               topmost = win;
          }
       }
       else
@@ -357,7 +357,8 @@ void Desktop::Activate(void)
    }
 
    // Restore the foreground window
-   SetForegroundWindow(Window::GetOwnedWindow(topmost));
+   if (topmost)
+      SetForegroundWindow(topmost->GetOwnedWindow());
 }
 
 void Desktop::Desactivate(void)
