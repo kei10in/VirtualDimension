@@ -31,7 +31,7 @@ VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cp
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
 FastWindow.cpp TrayIconsManager.cpp WindowDialogs.cpp HotKeyControl.cpp \
 OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp WindowsList.cpp  \
-WallPaper.c guids.c
+WallPaper.c BackgroundDisplayMode.cpp guids.c
 RES_FILE = VirtualDimension.res
 OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
