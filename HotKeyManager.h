@@ -28,20 +28,25 @@ using namespace std;
 class HotKeyManager
 {
 public:
+   class EventHandler {
+   public:
+      virtual void OnHotkey() = 0;
+   };
+
    HotKeyManager(void);
    ~HotKeyManager(void);
    static HotKeyManager* GetInstance()  { return &instance; }
 
-   void RegisterHotkey(int hotkey, int data);
-   void UnregisterHotkey(int data);
-   int GetHotkeyData(int id);
+   void RegisterHotkey(int hotkey, EventHandler* handler);
+   void UnregisterHotkey(EventHandler* handler);
+   EventHandler* GetHotkeyData(int id);
 
 protected:
    LRESULT OnHotkey(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    static HotKeyManager instance; //the singleton instance
 
-   map<int, int> * m_map;
+   map<int, EventHandler*> * m_map;
 };
 
 #endif /*__HOTKEYMANAGER_H__*/

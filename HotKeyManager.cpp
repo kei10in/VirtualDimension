@@ -26,7 +26,7 @@ HotKeyManager HotKeyManager::instance;
 
 HotKeyManager::HotKeyManager(void)
 {
-   m_map = new map<int, int>;
+   m_map = new map<int, EventHandler*>;
 }
 
 HotKeyManager::~HotKeyManager(void)
@@ -34,10 +34,11 @@ HotKeyManager::~HotKeyManager(void)
    delete m_map;
 }
 
-void HotKeyManager::RegisterHotkey(int hotkey, int data)
+void HotKeyManager::RegisterHotkey(int hotkey, EventHandler* handler)
 {
-   map<int, int>::iterator finder;
+   map<int, EventHandler*>::iterator finder;
    int id;
+   int data = (int)handler;
    
    if (m_map->size() >= 0xBFFF)
       return;  //No more hotkey id can be defined
@@ -74,19 +75,20 @@ void HotKeyManager::RegisterHotkey(int hotkey, int data)
    {
       //Put the data in the map, indexed by the id, as the hotkey was
       //succesfully registered
-      m_map->insert( pair<int, int>(id, data) );
+      m_map->insert( pair<int, EventHandler*>(id, handler) );
    }
 }
 
-void HotKeyManager::UnregisterHotkey(int data)
+void HotKeyManager::UnregisterHotkey(EventHandler* handler)
 {
-   map<int, int>::iterator finder;
+   map<int, EventHandler*>::iterator finder;
    int id;
+   int data = (int)handler;
    
    //Find the entry in the map
    id = data & 0x7FFF;  //ensure this is less than 0xBFFF
    finder = m_map->find(id);
-   while( (finder == m_map->end()) || (finder->second != data) )
+   while( (finder == m_map->end()) || (finder->second != handler) )
    {
       id ++;
       id &= 0x7FFF;  //ensure this is less than 0xBFFF
@@ -100,9 +102,9 @@ void HotKeyManager::UnregisterHotkey(int data)
    UnregisterHotKey(vdWindow, id);
 };
 
-int HotKeyManager::GetHotkeyData(int id)
+HotKeyManager::EventHandler* HotKeyManager::GetHotkeyData(int id)
 {
-   map<int, int>::const_iterator finder;
+   map<int, EventHandler*>::const_iterator finder;
 
    finder = m_map->find(id);
    if (finder == m_map->end())
@@ -111,15 +113,12 @@ int HotKeyManager::GetHotkeyData(int id)
       return finder->second;
 }
 
-LRESULT HotKeyManager::OnHotkey(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
+LRESULT HotKeyManager::OnHotkey(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
 {
-   Desktop * desk = (Desktop*)HotKeyManager::GetInstance()->GetHotkeyData((int)wParam);
+   EventHandler * handler = HotKeyManager::GetInstance()->GetHotkeyData((int)wParam);
 
-   if (desk != NULL)
-   {
-      deskMan->SwitchToDesktop(desk);
-      InvalidateRect(hWnd, NULL, TRUE);
-   }
+   if (handler != NULL)
+      handler->OnHotkey();
 
    return 0;
 }
