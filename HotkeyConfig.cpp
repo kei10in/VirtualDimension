@@ -23,21 +23,6 @@
 #include "VirtualDimension.h"
 #include "Resource.h"
 
-#ifdef __GNUC__
-
-#define LVS_EX_FULLROWSELECT     0x20  
-#define LVS_EX_GRIDLINES         0x01
-
-#define LVM_GETSUBITEMRECT           (LVM_FIRST+56)
-#define ListView_GetSubItemRect(hWnd, iItem, iSubItem, code, lpRect)       \
-   SendMessage(hWnd, LVM_GETSUBITEMRECT, iItem, (LPARAM)((lpRect)->left = code, (lpRect)->top = iSubItem, lpRect))
-
-#define LVM_SETEXTENDEDLISTVIEWSTYLE (LVM_FIRST+54)
-#define ListView_SetExtendedListViewStyleEx(hWnd, dwExMask, dwExStyle)     \
-   SendMessage(hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, dwExMask, dwExStyle)
-
-#endif
-
 list<ConfigurableHotkey*> ShortcutsConfigurationDlg::m_hotkeys;
 
 ConfigurableHotkey::ConfigurableHotkey(): m_hotkey(0)  

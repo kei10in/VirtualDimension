@@ -29,11 +29,6 @@
 #include "ZOrderKeeper.h"
 #include "PlatformHelper.h"
 
-#ifdef __GNUC__
-#define MIM_STYLE 0x10
-#define MNS_CHECKORBMP 0x04000000
-#endif
-
 Desktop::Desktop(int i)
 {
    m_active = false;

@@ -26,11 +26,6 @@
 #include "PlatformHelper.h"
 #include "window.h"
 
-#ifdef __GNUC__
-#define MIM_STYLE 0x10
-#define MNS_CHECKORBMP 0x04000000
-#endif
-
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 

@@ -21,23 +21,8 @@
 #ifndef __HOTKEYCONFIG_H__
 #define __HOTKEYCONFIG_H__
 
-#ifdef __GNUC__
-
-typedef struct tagNMITEMACTIVATE {
-    NMHDR hdr;
-    int iItem;
-    int iSubItem;
-    UINT uNewState;
-    UINT uOldState;
-    UINT uChanged;
-    POINT ptAction;
-    LPARAM lParam;
-    UINT uKeyFlags;
-} NMITEMACTIVATE,*LPNMITEMACTIVATE;
-
-#endif
-
 #include <list>
+#include "PlatformHelper.h"
 #include "HotkeyManager.h"
 
 using namespace std;

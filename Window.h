@@ -27,28 +27,6 @@
 #include "Transparency.h"
 #include "AlwaysOnTop.h"
 
-#ifdef __GNUC__
-
-extern "C" const GUID CLSID_TaskbarList;
-extern "C" const GUID IID_ITaskbarList;
-
-#undef INTERFACE
-#define INTERFACE ITaskbarList
-DECLARE_INTERFACE_(ITaskbarList, IUnknown)
-{
-	STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
-	STDMETHOD_(ULONG,AddRef)(THIS) PURE;
-	STDMETHOD_(ULONG,Release)(THIS) PURE;
-
-   STDMETHOD(ActivateTab)(THIS_ HWND) PURE;
-   STDMETHOD(AddTab)(THIS_ HWND) PURE;
-   STDMETHOD(DeleteTab)(THIS_ HWND) PURE;
-   STDMETHOD(HrInit)(THIS) PURE;
-   STDMETHOD(SetActiveAtl)(THIS_ HWND) PURE;
-};
-
-#endif /*__GNUC__*/
-
 class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler, public AlwaysOnTop
 {
 public:

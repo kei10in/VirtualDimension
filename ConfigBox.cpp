@@ -29,10 +29,6 @@
 #include <assert.h>
 #include "HotkeyConfig.h"
 
-#ifdef __GNUC__
-#define TBM_SETBUDDY (WM_USER+32)
-#endif
-
 extern char desk_name[80];
 extern char desk_wallpaper[256];
 extern int desk_hotkey;
