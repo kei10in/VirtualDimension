@@ -145,11 +145,6 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
 
       vdWindow.Refresh();
    }
-   else
-   {
-      if (window->IsHidden())
-         window->HideWindow();
-   }
 }
 
 void WindowsManager::OnWindowDestroyed(HWND hWnd)
