@@ -86,10 +86,10 @@ static void BuildDisplayString(char mods, char vk, char* str, int bufLen)
 static HFONT GetFont(HWND hWnd)
 {
    HFONT font = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
-   if (font == NULL)
+   if (!GetObjectType(font))
    {
       font = (HFONT)SendMessage(GetParent(hWnd), WM_GETFONT, 0, 0);
-      if (font == NULL)
+      if (!GetObjectType(font))
          font = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
       SendMessage(hWnd, WM_SETFONT, (WPARAM)font, FALSE);
       return font;
@@ -109,7 +109,7 @@ static void RepositionCaret(HWND hWnd, char * str)
    RECT rect;
    GetClientRect(hWnd, &rect);
 
-   SetCaretPos(size.cx+1, (rect.bottom-rect.top-size.cy)/2); 
+   SetCaretPos(size.cx+1, (rect.bottom-rect.top-size.cy)/2);
 }
 
 static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
