@@ -103,7 +103,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
       }
    }
-   else if ((message == WM_ACTIVATEAPP) && (wParam == TRUE))
+   else if ((message == WM_ACTIVATE) && (LOWORD(wParam) != WA_INACTIVE))
    {
       PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
@@ -168,7 +168,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
       }
    }
-   else if ((message == WM_ACTIVATEAPP) && (wParam == TRUE))
+   else if ((message == WM_ACTIVATE) && (LOWORD(wParam) != WA_INACTIVE))
    {
       PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
