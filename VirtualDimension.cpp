@@ -300,20 +300,21 @@ LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam
 LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
    POINT pt;
+   BOOL screenPos = FALSE;
 
    pt.x = GET_X_LPARAM(lParam);
    pt.y = GET_Y_LPARAM(lParam);
 
    Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
    if ( (desk) &&
-         ((m_draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
-         (!m_draggedWindow->IsOnDesk(NULL)) &&
-         (ClientToScreen(hWnd, &pt)) &&
-         (DragDetect(hWnd, pt)) )
+        ((m_draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
+        (!m_draggedWindow->IsOnDesk(NULL)) &&
+        (screenPos = ClientToScreen(hWnd, &pt)) &&
+        (DragDetect(hWnd, pt)) )
    {
       ICONINFO icon;
 
-      //Dragging a window
+      //Dragging a window's icon
       SetCapture(hWnd);
 
       GetIconInfo(m_draggedWindow->GetIcon(), &icon);
@@ -321,10 +322,19 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
       m_dragCursor = (HCURSOR)CreateIconIndirect(&icon);
       SetCursor(m_dragCursor);
    }
+   else if (!IsPreviewWindowLocked() &&         //for performance reasons only
+            (screenPos || ClientToScreen(hWnd, &pt)) &&
+            (DragDetect(hWnd, pt)))
+   {
+      //trick windows into thinking we are dragging the title bar, to let the user move the window
+      m_draggedWindow = NULL;
+      ReleaseCapture();
+      ::SendMessage(hWnd,WM_NCLBUTTONDOWN,HTCAPTION,(LPARAM)&pt);
+   }
    else
    {
+      //switch to the desktop that was clicked
       m_draggedWindow = NULL;
-
       deskMan->SwitchToDesktop(desk);
    }
 
