@@ -86,7 +86,7 @@ protected:
       NextDesktopEventHandler();
       virtual ~NextDesktopEventHandler();
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Skip to next desktop"; }
+      virtual LPCSTR GetName() const   { return "Activate next desk"; }
    };
 
    class PrevDesktopEventHandler: public ConfigurableHotkey
@@ -95,7 +95,7 @@ protected:
       PrevDesktopEventHandler();
       virtual ~PrevDesktopEventHandler();
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Skip to previous desktop"; }
+      virtual LPCSTR GetName() const   { return "Activate previous desk"; }
    };
 
    int m_nbColumn;
