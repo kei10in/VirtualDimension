@@ -400,6 +400,7 @@ void WindowsManager::CancelDelayedUpdate(Window * win)
 void CALLBACK WindowsManager::OnDelayedUpdateTimer(HWND /*hwnd*/, UINT /*uMsg*/, UINT_PTR idEvent, DWORD /*dwTime*/)
 {
    unsigned int idx = idEvent - FIRST_WINDOW_MANAGER_TIMER;
+   assert(winMan->m_delayedUpdateWndTab[idx] != NULL);
    winMan->m_delayedUpdateWndTab[idx]->OnDelayUpdate();
    winMan->RemoveDelayedUpdateWnd(idx);
 }
