@@ -74,7 +74,7 @@ pre_comp:
 	fi
 
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
-	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 -lolepro32 $(CXXFLAGS)
+	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 -lpsapi $(CXXFLAGS)
 ifndef DEBUG
 	strip $@
 endif
