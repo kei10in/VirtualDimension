@@ -244,7 +244,7 @@ protected:
 
    TCHAR m_className[30];
    HICON m_hIcon;
-   bool m_ownIcon;
+   HICON m_hDefaulIcon;
 
    HINSTANCE m_HookDllHandle;
    DWORD m_dwProcessId;

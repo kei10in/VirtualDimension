@@ -40,7 +40,7 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(m_hOwnedWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
-                           m_hIcon(NULL), m_ownIcon(false), m_style(0), m_HookDllHandle(NULL)
+                           m_hIcon(NULL), m_hDefaulIcon(NULL), m_style(0), m_HookDllHandle(NULL)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -99,8 +99,8 @@ Window::~Window(void)
    if (m_hMinToTrayEvent)
       CloseHandle(m_hMinToTrayEvent);
 
-   if (m_ownIcon)
-      DestroyIcon(m_hIcon);
+   if (m_hDefaulIcon)
+      DestroyIcon(m_hDefaulIcon);
 
    if (m_autoSaveSettings)
       SaveSettings();
@@ -154,6 +154,10 @@ void Window::ShowWindow()
    if (!m_hidden)
       return;
 
+   //Check if hung before doing anything
+   if (SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
+      return;
+
    //Restore the window's style
    if (m_style)
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
@@ -171,6 +175,10 @@ void Window::ShowWindow()
 void Window::HideWindow()
 {
    if (m_hidden)
+      return;
+
+   //Check if hung before doing anything
+   if (SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
       return;
 
    if (!winMan->IsShowAllWindowsInTaskList())
@@ -206,7 +214,6 @@ HICON Window::GetIcon(void)
    if (GetObjectType(m_hIcon))
       return m_hIcon;
 
-   m_ownIcon = false;
    m_hIcon = NULL;
      	
    //Get normal icon
@@ -224,18 +231,17 @@ HICON Window::GetIcon(void)
    if (m_hIcon)
       return m_hIcon;
 
-   //Get default small icon from file
+   //Return default icon
+   if (m_hDefaulIcon)
+      return m_hDefaulIcon;
+
+   //No default icon yet: get it from application file, or use generic default icon
    TCHAR lpFileName[256];
    PlatformHelper::GetWindowFileName(m_hWnd, lpFileName, 256);
-   if (ExtractIconEx(lpFileName, 0, NULL, &m_hIcon, 1))
-   {
-      m_ownIcon = true;
-      return m_hIcon;
-   }
+   if (!ExtractIconEx(lpFileName, 0, NULL, &m_hDefaulIcon, 1))
+      m_hDefaulIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
 
-   m_hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
-
-   return m_hIcon;
+   return m_hDefaulIcon;
 }
 
 void Window::InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str)
