@@ -22,11 +22,148 @@
 #include "VirtualDimension.h"
 #include "settings.h"
 #include "desktopmanager.h"
+#include "transparency.h"
 
 #include <string.h>
+#include <prsht.h>
 
-// Message handler for configuration box.
-LRESULT CALLBACK Configuration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+#ifndef TBM_SETBUDDY
+#define TBM_SETBUDDY (WM_USER+32)
+#endif
+
+void FormatTransparencyLevel(HWND hWnd, int level)
+{
+   char buffer[15];
+
+   if (level == 255)
+      sprintf(buffer, "%3i (disabled)", level);
+   else
+      sprintf(buffer, "%3i", level);
+
+   SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)buffer);
+}
+
+// Message handler for the global settings page.
+LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_INITDIALOG:
+      {
+         HWND hWnd;
+         bool supportTransparency;   //is transparency supported on the platform ?
+         Settings settings;
+         
+         supportTransparency = Transparency::IsTransparencySupported();
+
+         //Setup the transparency slider and associated controls
+         hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
+         SendMessage(hWnd, TBM_SETRANGE, FALSE, MAKELONG(0,255));
+         SendMessage(hWnd, TBM_SETTICFREQ, 16, 0);
+         SendMessage(hWnd, TBM_SETBUDDY, TRUE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC1));
+         SendMessage(hWnd, TBM_SETBUDDY, FALSE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC2));
+         SendMessage(hWnd, TBM_SETPOS, TRUE, transp->GetTransparencyLevel());
+         EnableWindow(hWnd, supportTransparency);
+        
+         hWnd = GetDlgItem(hDlg, IDC_TRANSP_DISP);
+         FormatTransparencyLevel(hWnd, transp->GetTransparencyLevel());
+         EnableWindow(hWnd, supportTransparency);
+
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC), supportTransparency);
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC1), supportTransparency);
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC2), supportTransparency);
+
+         //Setup always on top
+         hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
+         SendMessage(hWnd, BM_SETCHECK, ontop->IsAlwaysOnTop() ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         //Setup always on top
+         hWnd = GetDlgItem(hDlg, IDC_TRAYICON_CHECK);
+         SendMessage(hWnd, BM_SETCHECK, trayIcon->HasIcon() ? BST_CHECKED : BST_UNCHECKED, 0);
+      }
+		return TRUE;
+
+	case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+      case IDC_ONTOP_CHECK:
+         break;
+
+      case IDC_TRAYICON_CHECK:
+         break;
+      }
+      break;
+
+   case WM_HSCROLL:
+      {
+         int pos;
+
+         switch(LOWORD(wParam))
+         {
+         case TB_THUMBPOSITION:
+         case TB_THUMBTRACK:
+            pos = HIWORD(wParam);
+            break;
+
+         case TB_BOTTOM :
+         case TB_ENDTRACK:
+         case TB_LINEDOWN:
+         case TB_LINEUP:
+         case TB_PAGEDOWN:
+         case TB_PAGEUP:
+         case TB_TOP :
+         default:
+            pos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+            break;
+         }
+
+         FormatTransparencyLevel(GetDlgItem(hDlg, IDC_TRANSP_DISP), pos);
+         transp->SetTransparencyLevel((unsigned char)pos);
+      }
+      break;
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      switch(pnmh->idFrom)
+      {
+
+
+      default:
+         switch (pnmh->code)
+         {
+         case PSN_KILLACTIVE:
+            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+            return TRUE;
+
+         case PSN_APPLY:
+            {
+               Settings settings;
+               bool res;
+               HWND hWnd;
+
+               //Apply always on top
+               hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
+               res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+               ontop->SetAlwaysOnTop(res);
+
+               //Apply tray icon
+               hWnd = GetDlgItem(hDlg, IDC_TRAYICON_CHECK);
+               res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+               trayIcon->SetIcon(res);
+
+               //Apply succeeded
+               SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+            }
+            return TRUE; 
+         }
+      }
+      break;
+	}
+	return FALSE;
+}
+
+// Message handler for desktop configuration page.
+LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -62,15 +199,6 @@ LRESULT CALLBACK Configuration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 	case WM_COMMAND:
       switch(LOWORD(wParam))
       {
-      case IDOK:
-      case IDCANCEL:
-         {
-   			DestroyWindow(hDlg);
-            configBox = NULL;
-	   		return TRUE;
-		   }
-   		break;
-
       case IDC_INSERT_DESK:
          {
             HWND listBox = GetDlgItem(hDlg, IDC_DESK_LIST);
@@ -231,8 +359,53 @@ LRESULT CALLBACK Configuration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
                MessageBeep(MB_ICONEXCLAMATION);            
          }
          break;
+
+      default:
+         switch (pnmh->code)
+         {
+         case PSN_KILLACTIVE:
+            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+            return TRUE;
+
+         case PSN_APPLY:
+            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+            return TRUE; 
+         }
       }
       break;
 	}
 	return FALSE;
+}
+
+//Property Sheet initialization
+HWND CreateConfigBox()
+{
+   PROPSHEETPAGE pages[2];
+   PROPSHEETHEADER propsheet;
+
+   memset(&pages, 0, sizeof(pages));
+
+   pages[0].dwSize = sizeof(PROPSHEETPAGE);
+   pages[0].hInstance = hInst;
+   pages[0].dwFlags = PSP_USETITLE ;
+   pages[0].pfnDlgProc = (DLGPROC)SettingsConfiguration;
+   pages[0].pszTitle = "Settings";
+   pages[0].pszTemplate = MAKEINTRESOURCE(IDD_GLOBAL_SETTINGS);
+
+   pages[1].dwSize = sizeof(PROPSHEETPAGE);
+   pages[1].hInstance = hInst;
+   pages[1].dwFlags = PSP_USETITLE ;
+   pages[1].pfnDlgProc = (DLGPROC)DeskConfiguration;
+   pages[1].pszTitle = "Desktops";
+   pages[1].pszTemplate = MAKEINTRESOURCE(IDD_DESKS_SETTINGS);
+
+   memset(&propsheet, 0, sizeof(propsheet));
+   propsheet.dwSize = sizeof(PROPSHEETHEADER);
+   propsheet.dwFlags = PSH_MODELESS | PSH_NOAPPLYNOW | PSH_PROPSHEETPAGE;
+   propsheet.hwndParent = mainWnd;
+   propsheet.hInstance = hInst;
+   propsheet.pszCaption = "Settings";
+   propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
+   propsheet.ppsp = pages;
+   return (HWND)PropertySheet(&propsheet);
 }
