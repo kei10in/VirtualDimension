@@ -41,6 +41,8 @@ public:
    void EnableTooltips(bool enable);
    bool IsEnabled() const { return m_enabled; }
 
+   void ShowTooltips(bool visible=true);
+
 protected:
    HWND m_hWnd;
    HWND m_hOwnerWnd;

@@ -89,5 +89,13 @@ void ToolTip::EnableTooltips(bool enable)
 {
    m_enabled = enable;
 
-   SendMessage(m_hWnd, TTM_ACTIVATE, (WPARAM)(BOOL)m_enabled, 0);
+   ShowTooltips();
+}
+
+void ToolTip::ShowTooltips(bool visible)
+{
+   if (visible)
+      SendMessage(m_hWnd, TTM_ACTIVATE, (WPARAM)(BOOL)m_enabled, 0);
+   else
+      SendMessage(m_hWnd, TTM_ACTIVATE, 0, 0);
 }
