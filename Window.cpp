@@ -165,16 +165,8 @@ void Window::ShowWindow()
 
 void Window::HideWindow()
 {
-   LONG style;
-
    if (m_hidden)
       return;
-
-   //Save the window's style
-   if (!winMan->IsShowAllWindowsInTaskList())
-      m_enabled = IsWindowEnabled(m_hWnd);
-   else
-      m_enabled = FALSE;
 
    //Minimize the application
    m_iconic = IsIconic();
@@ -184,9 +176,11 @@ void Window::HideWindow()
    //Hide the icon
    m_tasklist->DeleteTab(m_hWnd);
 
-   //make the window a tool window so that it does not appear in task list
+   //disable the window so that it does not appear in task list
    if (!winMan->IsShowAllWindowsInTaskList())
-      EnableWindow(m_hWnd, FALSE);
+      m_enabled = !EnableWindow(m_hWnd, FALSE);
+   else
+      m_enabled = FALSE;
 
    m_hidden = true;
 }
