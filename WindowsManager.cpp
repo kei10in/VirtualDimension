@@ -132,6 +132,8 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
       win->GetDesk()->UpdateLayout();
 
    //Delete the object
+   if (win->IsInTray())
+      trayManager->DelIcon(win);
    delete win;
 
    InvalidateRect(m_hWnd, NULL, FALSE);
