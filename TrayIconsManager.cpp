@@ -58,7 +58,7 @@ bool TrayIconsManager::AddIcon(TrayIconHandler* handler)
    data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
    data.uCallbackMessage = handler->m_callbackMessage;
    data.hIcon = handler->GetIcon();
-   strncpy(data.szTip, handler->GetText(), 128);
+   strcpy(data.szTip, handler->GetText());
 
    res = Shell_NotifyIcon(NIM_ADD, &data);
 
