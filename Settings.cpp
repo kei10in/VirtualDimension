@@ -22,49 +22,59 @@
 #include "settings.h"
 
 const char Settings::regKeyName[] = "Software\\Typz Software\\Virtual Dimension\\";
-const char Settings::regValPosition[] = "WindowPosition";
-const char Settings::regValDockedBorders[] = "DockedBorders";
-const char Settings::regValNbColumns[] = "ColumnNumber";
-const char Settings::regValLockPreviewWindow[] = "LockPreviewWindow";
-const char Settings::regValShowWindow[] = "ShowWindow";
-const char Settings::regValHasTrayIcon[] = "HasTrayIcon";
-const char Settings::regValAlwaysOnTop[] = "AlwaysOnTop";
-const char Settings::regValTransparencyLevel[] = "TransparencyLevel";
-const char Settings::regValHasCaption[] = "HasCaption";
-const char Settings::regValSnapSize[] = "SnapSize";
-const char Settings::regValAutoHideDelay[] = "AutoHideDelay";
-const char Settings::regValEnableTooltips[] = "EnableToolTips";
-const char Settings::regValConfirmKilling[] = "ConfirmKilling";
-const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
-const char Settings::regValCloseToTray[] = "CloseToTray";
-const char Settings::regValAutoSwitchDesktop[] = "AutoSwitchDesktop";
-const char Settings::regValAllWindowsInTaskList[] = "AllWindowsInTaskList";
-const char Settings::regValIntegrateWithShell[] = "IntegrateWithShell";
-const char Settings::regValSwitchToNextDesktopHotkey[] = "SwitchToNextDesktopHotkey";
-const char Settings::regValSwitchToPreviousDesktopHotkey[] = "SwitchToPreviousDesktopHotkey";
-const char Settings::regValSwitchToBottomDesktopHotkey[] = "SwitchToTopDesktopHotkey";
-const char Settings::regValSwitchToTopDesktopHotkey[] = "SwitchToBottomDesktopHotkey";
-const char Settings::regValMoveWindowToNextDesktopHotkey[] = "MoveWindowToNextDesktopHotkey";
-const char Settings::regValMoveWindowToPreviousDesktopHotkey[] = "MoveWindowToPreviousDesktopHotkey";
-const char Settings::regValMoveWindowToDesktopHotkey[] = "MoveWindowToDesktopHotkey";
-const char Settings::regValMaximizeHeightHotkey[] = "MaximizeHeightHotkey";
-const char Settings::regValMaximizeWidthHotkey[] = "MaximizeWidthHotkey";
-const char Settings::regValAlwaysOnTopHotkey[] = "AlwaysOnTopHotkey";
-const char Settings::regValTransparencyHotkey[] = "TransparencyHotkey";
-const char Settings::regValDisplayMode[] = "DisplayMode";
-const char Settings::regValBackgroundColor[] = "BackgroundColor";
-const char Settings::regValBackgroundImage[] = "BackgroundPicture";
-const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
-const char Settings::regValPreviewWindowFont[] = "PreviewWindowFont";
-const char Settings::regValPreviewWindowFontColor[] = "PreviewWindowFontColor";
-const char Settings::regValOSDTimeout[] = "OSDTimeout";
-const char Settings::regValOSDFont[] = "OSDFont";
-const char Settings::regValOSDFgColor[] = "OSDFgColor";
-const char Settings::regValOSDBgColor[] = "OSDBgColor";
-const char Settings::regValOSDPosition[] = "OSDPosition";
-const char Settings::regValOSDTransparencyLevel[] = "OSDTransparencyLevel";
-const char Settings::regValOSDHasBackground[] = "OSDHasBackground";
-const char Settings::regValOSDIsTransparent[] = "OSDIsTransparent";
+
+static const RECT DefaultWindowPosition = {0, 100, 0, 100};
+static const LOGFONT DefaultPreviewWindowFont = {-12/*height*/,0,0,0,FW_BOLD/*weight*/,FALSE/*italic*/,0,0,0,0,0,0,0,"Arial"/*fontname*/};
+static const LOGFONT DefaultOSDFont = {-29/*height*/,0,0,0,FW_BOLD/*weight*/,TRUE/*italic*/,0,0,0,0,0,0,0,"Arial"/*fontname*/};
+static const POINT DefaultOSDPosition = {50,50};
+
+DEFINE_SETTING(Settings, WindowPosition, RECT, &DefaultWindowPosition);
+DEFINE_SETTING(Settings, DockedBorders, int, 0);
+DEFINE_SETTING(Settings, ColumnNumber, unsigned long, 2);
+DEFINE_SETTING(Settings, LockPreviewWindow, bool, false);
+DEFINE_SETTING(Settings, ShowWindow, bool, true);
+DEFINE_SETTING(Settings, HasTrayIcon, bool, true);
+DEFINE_SETTING(Settings, AlwaysOnTop, bool, false);
+DEFINE_SETTING(Settings, TransparencyLevel, unsigned char, 0xff);
+DEFINE_SETTING(Settings, HasCaption, bool, true);
+DEFINE_SETTING(Settings, SnapSize, int, 15);
+DEFINE_SETTING(Settings, AutoHideDelay, int, 0);
+DEFINE_SETTING(Settings, EnableToolTips, bool, true);
+DEFINE_SETTING(Settings, ConfirmKilling, bool, true);
+DEFINE_SETTING(Settings, AutoSaveWindowSettings, bool, false);
+DEFINE_SETTING(Settings, CloseToTray, bool, false);
+DEFINE_SETTING(Settings, AutoSwitchDesktop, bool, true);
+DEFINE_SETTING(Settings, AllWindowsInTaskList, bool, false);
+DEFINE_SETTING(Settings, IntegrateWithShell, bool, true);
+DEFINE_SETTING(Settings, SwitchToNextDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, SwitchToPreviousDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, SwitchToTopDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, SwitchToBottomDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, MoveWindowToNextDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, MoveWindowToPreviousDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, MoveWindowToDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, MaximizeHeightHotkey, int, 0);
+DEFINE_SETTING(Settings, MaximizeWidthHotkey, int, 0);
+DEFINE_SETTING(Settings, AlwaysOnTopHotkey, int, 0);
+DEFINE_SETTING(Settings, TransparencyHotkey, int, 0);
+DEFINE_SETTING(Settings, DisplayMode, int, 0);
+DEFINE_SETTING(Settings, BackgroundColor, COLORREF, RGB(0xc0,0xc0,0xc0));
+DEFINE_SETTING(Settings, BackgroundPicture, LPTSTR, "");
+DEFINE_SETTING(Settings, DesktopNameOSD, bool, false);
+DEFINE_SETTING(Settings, PreviewWindowFont, LOGFONT, &DefaultPreviewWindowFont);
+DEFINE_SETTING(Settings, PreviewWindowFontColor, COLORREF, RGB(0,0,0));
+DEFINE_SETTING(Settings, OSDTimeout, int, 2000);
+DEFINE_SETTING(Settings, OSDFont, LOGFONT, DefaultOSDFont);
+DEFINE_SETTING(Settings, OSDFgColor, COLORREF, RGB(0,0,0));
+DEFINE_SETTING(Settings, OSDBgColor, COLORREF, RGB(255,255,255));
+DEFINE_SETTING(Settings, OSDPosition, POINT, &DefaultOSDPosition);
+DEFINE_SETTING(Settings, OSDTransparencyLevel, unsigned char, 200);
+DEFINE_SETTING(Settings, OSDHasBackground, bool, true);
+DEFINE_SETTING(Settings, OSDIsTransparent, bool, true);
+DEFINE_SETTING(Settings, WarpEnable, bool, false);
+DEFINE_SETTING(Settings, WarpSensibility, LONG, 3);
+DEFINE_SETTING(Settings, WarpMinDuration, DWORD, 500);
+DEFINE_SETTING(Settings, WarpRewarpDelay, DWORD, 3000);
 
 Settings::Settings(void)
 {
@@ -121,492 +131,59 @@ void Settings::SaveBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYT
       RegSetValueEx(regKey, entry, 0, REG_BINARY, buffer, length);
 }
 
-void Settings::LoadPosition(LPRECT rect)
+bool Settings::LoadBinarySetting(const char * name, LPBYTE data, const LPBYTE defval, DWORD size)
 {
-   if (!LoadBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect)))
+   bool res;
+
+   res = LoadBinary(m_regKey, m_keyOpened, name, data, size);
+   if (!res)
    {  
       // Cannot load the position from registry
       // --> set default values
-
-      rect->top = 0;
-      rect->bottom = 100;
-      rect->left = 0;
-      rect->right = 100;
+      memcpy(data, defval, size);
    }
+
+   return res;
 }
 
-void Settings::SavePosition(LPRECT rect)
+void Settings::SaveBinarySetting(const char * name, const LPBYTE data, DWORD size)
 {
-   SaveBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect));
+   return SaveBinary(m_regKey, m_keyOpened, name, data, size);
 }
 
-int Settings::LoadDockedBorders()
-{
-	return LoadDWord(m_regKey, m_keyOpened, regValDockedBorders, 0);
-}
-
-void Settings::SaveDockedBorders(int pos)
-{
-	SaveDWord(m_regKey, m_keyOpened, regValDockedBorders, pos);
-}
-
-bool Settings::LoadLockPreviewWindow()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValLockPreviewWindow, false) ? true : false;
-}
-
-void Settings::SaveLockPreviewWindow(bool lock)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValLockPreviewWindow, lock);
-}
-
-unsigned long Settings::LoadNbCols()
-{
-   return (unsigned long)LoadDWord(m_regKey, m_keyOpened, regValNbColumns, 2);
-}
-
-void Settings::SaveNbCols(unsigned long cols)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValNbColumns, cols);
-}
-
-bool Settings::LoadHasTrayIcon()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValHasTrayIcon, TRUE) ? true : false;
-}
-
-void Settings::SaveHasTrayIcon(bool val)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValHasTrayIcon, val);
-}
-
-bool Settings::LoadShowWindow()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValShowWindow, TRUE) ? true : false;
-}
-
-void Settings::SaveShowWindow(bool val)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValShowWindow, val);
-}
-
-bool Settings::LoadAlwaysOnTop()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, FALSE) ? true : false;
-}
-
-void Settings::SaveAlwaysOnTop(bool val)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, val);
-}
-
-unsigned char Settings::LoadTransparencyLevel()
-{
-   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, DEFAULT_VD_TRANSPARENCY_LEVEL);
-}
-
-void Settings::SaveTransparencyLevel(unsigned char level)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValTransparencyLevel, level);
-}
-
-bool Settings::LoadEnableTooltips()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValEnableTooltips, TRUE) ? true : false;
-}
-
-void Settings::SaveEnableTooltips(bool enable)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValEnableTooltips, enable);
-}
-
-bool Settings::LoadHasCaption()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValHasCaption, TRUE) ? true : false;
-}
-
-void Settings::SaveHasCaption(bool caption)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValHasCaption, caption);
-}
-
-int Settings::LoadSnapSize()
-{
-	return LoadDWord(m_regKey, m_keyOpened, regValSnapSize, 15);
-}
-
-void Settings::SaveSnapSize(int size)
-{
-	SaveDWord(m_regKey, m_keyOpened, regValSnapSize, size);
-}
-
-int Settings::LoadAutoHideDelay()
-{
-	return LoadDWord(m_regKey, m_keyOpened, regValAutoHideDelay, 0);
-}
-
-void Settings::SaveAutoHideDelay(int delay)
-{
-	SaveDWord(m_regKey, m_keyOpened, regValAutoHideDelay, delay);
-}
-
-bool Settings::LoadConfirmKilling()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValConfirmKilling, TRUE) ? true : false;
-}
-
-void Settings::SaveConfirmKilling(bool confirm)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValConfirmKilling, confirm);
-}
-
-bool Settings::LoadAutoSaveWindowsSettings()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAutoSaveWindowsSettings, FALSE) ? true : false;
-}
-
-void Settings::SaveAutoSaveWindowsSettings(bool autosave)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAutoSaveWindowsSettings, autosave);
-}
-
-bool Settings::LoadCloseToTray()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValCloseToTray, FALSE) ? true : false;
-}
-
-void Settings::SaveCloseToTray(bool totray)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValCloseToTray, totray);
-}
-
-bool Settings::LoadAutoSwitchDesktop()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAutoSwitchDesktop, TRUE) ? true : false;
-}
-
-void Settings::SaveAutoSwitchDesktop(bool autoSwitch)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAutoSwitchDesktop, autoSwitch);
-}
-
-bool Settings::LoadAllWindowsInTaskList()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValAllWindowsInTaskList, FALSE) ? true : false;
-}
-
-void Settings::SaveAllWindowsInTaskList(bool all)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAllWindowsInTaskList, all);
-}
-
-bool Settings::LoadIntegrateWithShell()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValIntegrateWithShell, TRUE) ? true : false;
-}
-
-void Settings::SaveIntegrateWithShell(bool integ)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValIntegrateWithShell, integ);
-}
-
-int Settings::LoadSwitchToNextDesktopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToNextDesktopHotkey, 0);
-}
-
-void Settings::SaveSwitchToNextDesktopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValSwitchToNextDesktopHotkey, hotkey);
-}
-
-int Settings::LoadSwitchToPreviousDesktopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToPreviousDesktopHotkey, 0);
-}
-
-void Settings::SaveSwitchToPreviousDesktopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValSwitchToPreviousDesktopHotkey, hotkey);
-}
-
-int Settings::LoadSwitchToBottomDesktopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToBottomDesktopHotkey, 0);
-}
-
-void Settings::SaveSwitchToBottomDesktopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValSwitchToBottomDesktopHotkey, hotkey);
-}
-
-int Settings::LoadSwitchToTopDesktopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToTopDesktopHotkey, 0);
-}
-
-void Settings::SaveSwitchToTopDesktopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValSwitchToTopDesktopHotkey, hotkey);
-}
-
-
-int Settings::LoadMoveWindowToNextDesktopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValMoveWindowToNextDesktopHotkey, 0);
-}
-
-void Settings::SaveMoveWindowToNextDesktopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValMoveWindowToNextDesktopHotkey, hotkey);
-}
-
-int Settings::LoadMoveWindowToPreviousDesktopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValMoveWindowToPreviousDesktopHotkey, 0);
-}
-
-void Settings::SaveMoveWindowToPreviousDesktopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValMoveWindowToPreviousDesktopHotkey, hotkey);
-}
-
-int Settings::LoadMoveWindowToDesktopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValMoveWindowToDesktopHotkey, 0);
-}
-
-void Settings::SaveMoveWindowToDesktopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValMoveWindowToDesktopHotkey, hotkey);
-}
-
-int Settings::LoadMaximizeHeightHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValMaximizeHeightHotkey, 0);
-}
-
-void Settings::SaveMaximizeHeightHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValMaximizeHeightHotkey, hotkey);
-}
-
-int Settings::LoadMaximizeWidthHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValMaximizeWidthHotkey, 0);
-}
-
-void Settings::SaveMaximizeWidthHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValMaximizeWidthHotkey, hotkey);
-}
-
-int Settings::LoadAlwaysOnTopHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTopHotkey, 0);
-}
-
-void Settings::SaveAlwaysOnTopHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTopHotkey, hotkey);
-}
-
-int Settings::LoadTransparencyHotkey()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValTransparencyHotkey, 0);
-}
-
-void Settings::SaveTransparencyHotkey(int hotkey)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValTransparencyHotkey, hotkey);
-}
-
-int Settings::LoadDisplayMode()
-{
-   return (int)LoadDWord(m_regKey, m_keyOpened, regValDisplayMode, 0);
-}
-
-void Settings::SaveDisplayMode(int mode)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValDisplayMode, mode);
-}
-
-COLORREF Settings::LoadBackgroundColor()
-{
-   return (COLORREF)LoadDWord(m_regKey, m_keyOpened, regValBackgroundColor, RGB(0xc0,0xc0,0xc0));
-}
-
-void Settings::SaveBackgroundColor(COLORREF color)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValBackgroundColor, color);
-}
-
-LPTSTR Settings::LoadBackgroundImage(LPTSTR buffer, unsigned int length)
+unsigned int Settings::LoadSetting(const Setting<LPTSTR> setting, LPTSTR buffer, unsigned int length, const StringSetting& /*type*/)
 {
    DWORD size;
-
+   
    if (buffer == NULL)
-      return NULL;
-
-   if ( (!m_keyOpened) || 
-        (RegQueryValueEx(m_regKey, regValBackgroundImage, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
-        (size > length) || 
-        (size == 0) ||
-        (RegQueryValueEx(m_regKey, regValBackgroundImage, NULL, NULL, (LPBYTE)buffer, &size) != ERROR_SUCCESS) )
+   {
+      if ( (!m_keyOpened) || 
+         (RegQueryValueEx(m_regKey, setting.m_name, NULL, NULL, NULL, &size) != ERROR_SUCCESS) )
+         size = _tcslen(setting.m_default);
+   }
+   else if ( (!m_keyOpened) || 
+             (RegQueryValueEx(m_regKey, setting.m_name, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
+             (size > length) || 
+             (size == 0) ||
+             (RegQueryValueEx(m_regKey, setting.m_name, NULL, NULL, (LPBYTE)buffer, &size) != ERROR_SUCCESS) )
    {  
-      // Cannot load the wallpaper from registry
-      // --> set default values
-
-      *buffer = '\0';
+      // Cannot load the string from registry
+      // --> set default value
+      size = _tcslen(setting.m_default);
+      strncpy(buffer, setting.m_default, length-1);
+      buffer[length-1] = 0;
    }
 
-   return buffer;
+   return size;
 }
 
-void Settings::SaveBackgroundImage(LPTSTR buffer)
+void Settings::SaveSetting(const Setting<LPTSTR> setting, LPTSTR buffer, const StringSetting& /*type*/)
 {
    DWORD len;
 
-   len = (DWORD)(strlen(buffer)+sizeof(char));
-
+   len = (DWORD)((_tcslen(buffer)+1) * sizeof(TCHAR));
    if (m_keyOpened)
-      RegSetValueEx(m_regKey, regValBackgroundImage, 0, REG_SZ, (LPBYTE)buffer, len);
-}
-
-bool Settings::LoadDesktopNameOSD()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValDesktopNameOSD, false) ? true : false;
-}
-
-void Settings::SaveDesktopNameOSD(bool osd)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValDesktopNameOSD, osd);
-}
-
-void Settings::LoadPreviewWindowFont(LPLOGFONT lf)
-{
-   if (!LoadBinary(m_regKey, m_keyOpened, regValPreviewWindowFont, (LPBYTE)lf, sizeof(*lf)))
-   {  
-      // Cannot load the font from registry
-      // --> set default value
-
-      memset(lf, 0, sizeof(*lf));
-      lf->lfHeight = -12;
-      lf->lfWeight = FW_BOLD;
-      lf->lfItalic = FALSE;
-      strcpy(lf->lfFaceName,"Arial");
-   }
-}
-
-void Settings::SavePreviewWindowFont(LPLOGFONT lf)
-{
-   SaveBinary(m_regKey, m_keyOpened, regValPreviewWindowFont, (LPBYTE)lf, sizeof(*lf));
-}
-
-COLORREF Settings::LoadPreviewWindowFontColor()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValPreviewWindowFontColor, RGB(0,0,0));
-}
-
-void Settings::SavePreviewWindowFontColor(COLORREF col)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValPreviewWindowFontColor, col);
-}
-
-int Settings::LoadOSDTimeout()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValOSDTimeout, 2000);
-}
-
-void Settings::SaveOSDTimeout(int timeout)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValOSDTimeout, timeout);
-}
-
-void Settings::LoadOSDFont(LPLOGFONT lf)
-{
-   if (!LoadBinary(m_regKey, m_keyOpened, regValOSDFont, (LPBYTE)lf, sizeof(*lf)))
-   {  
-      // Cannot load the font from registry
-      // --> set default value
-
-      memset(lf, 0, sizeof(*lf));
-      lf->lfHeight = -29;
-      lf->lfWeight = FW_BOLD;
-      lf->lfItalic = TRUE;
-      strcpy(lf->lfFaceName,"Arial");
-   }
-}
-
-void Settings::SaveOSDFont(LPLOGFONT lf)
-{
-   SaveBinary(m_regKey, m_keyOpened, regValOSDFont, (LPBYTE)lf, sizeof(*lf));
-}
-
-COLORREF Settings::LoadOSDFgColor()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValOSDFgColor, RGB(0,0,0));
-}
-
-void Settings::SaveOSDFgColor(COLORREF col)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValOSDFgColor, col);
-}
-
-COLORREF Settings::LoadOSDBgColor()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValOSDBgColor, RGB(255,255,255));
-}
-
-void Settings::SaveOSDBgColor(COLORREF col)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValOSDBgColor, col);
-}
-
-void Settings::LoadOSDPosition(LPPOINT pt)
-{
-   if (!LoadBinary(m_regKey, m_keyOpened, regValOSDPosition, (LPBYTE)pt, sizeof(*pt)))
-   {  
-      // Cannot load the position from registry
-      // --> set default values
-
-      pt->x = pt->y = 50;
-   }
-}
-
-void Settings::SaveOSDPosition(LPPOINT pt)
-{
-   SaveBinary(m_regKey, m_keyOpened, regValOSDPosition, (LPBYTE)pt, sizeof(*pt));
-}
-
-unsigned char Settings::LoadOSDTransparencyLevel()
-{
-   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValOSDTransparencyLevel, 200);
-}
-
-void Settings::SaveOSDTransparencyLevel(unsigned char level)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValOSDTransparencyLevel, level);
-}
-
-bool Settings::LoadOSDHasBackground()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValOSDHasBackground, true) ? true : false;
-}
-
-void Settings::SaveOSDHasBackground(bool background)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValOSDHasBackground, background);
-}
-
-bool Settings::LoadOSDIsTransparent()
-{
-   return LoadDWord(m_regKey, m_keyOpened, regValOSDIsTransparent, true) ? true : false;
-}
-
-void Settings::SaveOSDIsTransparent(bool transp)
-{
-   SaveDWord(m_regKey, m_keyOpened, regValOSDIsTransparent, transp);
+      RegSetValueEx(m_regKey, setting.m_name, 0, REG_SZ, (LPBYTE)buffer, len);
 }
 
 const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
@@ -1087,7 +664,7 @@ void Settings::Window::SaveMinimizeToTray(bool totray)
 
 unsigned char Settings::Window::LoadTransparencyLevel()
 {
-   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, DEFAULT_WINDOW_TRANSPARENCY_LEVEL);
+   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, 0xc0);
 }
 
 void Settings::Window::SaveTransparencyLevel(unsigned char level)

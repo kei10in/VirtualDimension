@@ -21,9 +21,32 @@
 #ifndef __SETTINGS_H__
 #define __SETTINGS_H__
 
+#include <assert.h>
+
 #define MAX_NAME_LENGTH 255
-#define DEFAULT_WINDOW_TRANSPARENCY_LEVEL 0xc0
-#define DEFAULT_VD_TRANSPARENCY_LEVEL     0xff
+
+class BinarySetting  { };
+class DWordSetting   { };
+class StringSetting  { };
+
+template <class T> class SettingType: public BinarySetting { };
+template <> class SettingType<int>: public DWordSetting { };
+template <> class SettingType<unsigned long>: public DWordSetting { };
+template <> class SettingType<unsigned char>: public DWordSetting { };
+template <> class SettingType<bool>: public DWordSetting { };
+template <> class SettingType<LPTSTR>: public StringSetting { };
+
+template <class T> class Setting: public SettingType<T>
+{
+public:
+   Setting(T defval, char * name): m_default(defval), m_name(name) { }
+   Setting(const T* defval, char * name): m_default(*defval), m_name(name) { }
+   T m_default;
+   char * m_name;
+};
+
+#define DECLARE_SETTING(name, type)          const Setting<type> name
+#define DEFINE_SETTING(clas, name, type, defval)   const Setting<type> clas::name(defval, #name)
 
 class Settings
 {
@@ -31,100 +54,70 @@ public:
    Settings(void);
    virtual ~Settings(void);
 
-   void LoadPosition(LPRECT rect);
-   void SavePosition(LPRECT rect);
-	int LoadDockedBorders();
-	void SaveDockedBorders(int pos);
-   unsigned long LoadNbCols();
-   void SaveNbCols(unsigned long cols);
-   bool LoadLockPreviewWindow();
-   void SaveLockPreviewWindow(bool lock);
-   bool LoadHasTrayIcon();
-   void SaveHasTrayIcon(bool val);
-   bool LoadShowWindow();
-   void SaveShowWindow(bool val);
-   bool LoadAlwaysOnTop();
-   void SaveAlwaysOnTop(bool val);
-   unsigned char LoadTransparencyLevel();
-   void SaveTransparencyLevel(unsigned char level);
-   bool LoadEnableTooltips();
-   void SaveEnableTooltips(bool enable);
-   bool LoadHasCaption();
-   void SaveHasCaption(bool caption);
-	int LoadSnapSize();
-	void SaveSnapSize(int size);
-	int LoadAutoHideDelay();
-	void SaveAutoHideDelay(int delay);
+   static DECLARE_SETTING(WindowPosition, RECT);
+   static DECLARE_SETTING(DockedBorders, int);
+   static DECLARE_SETTING(ColumnNumber, unsigned long);
+   static DECLARE_SETTING(LockPreviewWindow, bool);
+   static DECLARE_SETTING(ShowWindow, bool);
+   static DECLARE_SETTING(HasTrayIcon, bool);
+   static DECLARE_SETTING(AlwaysOnTop, bool);
+   static DECLARE_SETTING(TransparencyLevel, unsigned char);
+   static DECLARE_SETTING(HasCaption, bool);
+   static DECLARE_SETTING(SnapSize, int);
+   static DECLARE_SETTING(AutoHideDelay, int);
+   static DECLARE_SETTING(EnableToolTips, bool);
+   static DECLARE_SETTING(ConfirmKilling, bool);
+   static DECLARE_SETTING(AutoSaveWindowSettings, bool);
+   static DECLARE_SETTING(CloseToTray, bool);
+   static DECLARE_SETTING(AutoSwitchDesktop, bool);
+   static DECLARE_SETTING(AllWindowsInTaskList, bool);
+   static DECLARE_SETTING(IntegrateWithShell, bool);
+   static DECLARE_SETTING(SwitchToNextDesktopHotkey, int);
+   static DECLARE_SETTING(SwitchToPreviousDesktopHotkey, int);
+   static DECLARE_SETTING(SwitchToTopDesktopHotkey, int);
+   static DECLARE_SETTING(SwitchToBottomDesktopHotkey, int);
+   static DECLARE_SETTING(MoveWindowToNextDesktopHotkey, int);
+   static DECLARE_SETTING(MoveWindowToPreviousDesktopHotkey, int);
+   static DECLARE_SETTING(MoveWindowToDesktopHotkey, int);
+   static DECLARE_SETTING(MaximizeHeightHotkey, int);
+   static DECLARE_SETTING(MaximizeWidthHotkey, int);
+   static DECLARE_SETTING(AlwaysOnTopHotkey, int);
+   static DECLARE_SETTING(TransparencyHotkey, int);
+   static DECLARE_SETTING(DisplayMode, int);
+   static DECLARE_SETTING(BackgroundColor, COLORREF);
+   static DECLARE_SETTING(BackgroundPicture, LPTSTR);
+   static DECLARE_SETTING(DesktopNameOSD, bool);
+   static DECLARE_SETTING(PreviewWindowFont, LOGFONT);
+   static DECLARE_SETTING(PreviewWindowFontColor, COLORREF);
+   static DECLARE_SETTING(OSDTimeout, int);
+   static DECLARE_SETTING(OSDFont, LOGFONT);
+   static DECLARE_SETTING(OSDFgColor, COLORREF);
+   static DECLARE_SETTING(OSDBgColor, COLORREF);
+   static DECLARE_SETTING(OSDPosition, POINT);
+   static DECLARE_SETTING(OSDTransparencyLevel, unsigned char);
+   static DECLARE_SETTING(OSDHasBackground, bool);
+   static DECLARE_SETTING(OSDIsTransparent, bool);
+   static DECLARE_SETTING(WarpEnable, bool);
+   static DECLARE_SETTING(WarpSensibility, LONG);
+   static DECLARE_SETTING(WarpMinDuration, DWORD);
+   static DECLARE_SETTING(WarpRewarpDelay, DWORD);
 
-   bool LoadConfirmKilling();
-   void SaveConfirmKilling(bool confirm);
-   bool LoadAutoSaveWindowsSettings();
-   void SaveAutoSaveWindowsSettings(bool autosave);
-   bool LoadCloseToTray();
-   void SaveCloseToTray(bool totray);
-   bool LoadAutoSwitchDesktop();
-   void SaveAutoSwitchDesktop(bool autoSwitch);
-   bool LoadAllWindowsInTaskList();
-   void SaveAllWindowsInTaskList(bool all);
-   bool LoadIntegrateWithShell();
-   void SaveIntegrateWithShell(bool integ);
+   // Generic settings accessors for "large", fixed size, settings, saved in registry as binary
+   template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data)          { return LoadSetting(setting, data, setting); }
+   template<class T> inline void SaveSetting(const Setting<T> &setting, const T* data)    { SaveSetting(setting, data, setting); }
 
-   int LoadSwitchToNextDesktopHotkey();
-   void SaveSwitchToNextDesktopHotkey(int hotkey);
-   int LoadSwitchToPreviousDesktopHotkey();
-   void SaveSwitchToPreviousDesktopHotkey(int hotkey);
-   int LoadSwitchToBottomDesktopHotkey();
-   void SaveSwitchToBottomDesktopHotkey(int hotkey);
-   int LoadSwitchToTopDesktopHotkey();
-   void SaveSwitchToTopDesktopHotkey(int hotkey);
-   int LoadMoveWindowToNextDesktopHotkey();
-   void SaveMoveWindowToNextDesktopHotkey(int hotkey);
-   int LoadMoveWindowToPreviousDesktopHotkey();
-   void SaveMoveWindowToPreviousDesktopHotkey(int hotkey);
-   int LoadMoveWindowToDesktopHotkey();
-   void SaveMoveWindowToDesktopHotkey(int hotkey);
-   int LoadMaximizeHeightHotkey();
-   void SaveMaximizeHeightHotkey(int hotkey);
-   int LoadMaximizeWidthHotkey();
-   void SaveMaximizeWidthHotkey(int hotkey);
-   int LoadAlwaysOnTopHotkey();
-   void SaveAlwaysOnTopHotkey(int hotkey);
-   int LoadTransparencyHotkey();
-   void SaveTransparencyHotkey(int hotkey);
+   // Generic settings accessors for "small" settings (32bits or less), saved in registry as DWORD
+   template<class T> inline T LoadSetting(const Setting<T> &setting)                      { return LoadSetting(setting, setting); }
+   template<class T> inline void SaveSetting(const Setting<T> &setting, T data)           { SaveSetting(setting, data, setting); }
+   template<class T> static inline T GetDefaultSetting(const Setting<T> &setting)         { return GetDefaultSetting(setting, setting); }
 
-   int LoadDisplayMode();
-   void SaveDisplayMode(int mode);
-   COLORREF LoadBackgroundColor();
-   void SaveBackgroundColor(COLORREF color);
-   LPTSTR LoadBackgroundImage(LPTSTR buffer, unsigned int length);
-   void SaveBackgroundImage(LPTSTR buffer);
-   void LoadPreviewWindowFont(LPLOGFONT lf);
-   void SavePreviewWindowFont(LPLOGFONT lf);
-   COLORREF LoadPreviewWindowFontColor();
-   void SavePreviewWindowFontColor(COLORREF col);
+   // String settings accessors
+   inline unsigned int LoadSetting(const Setting<LPTSTR> setting, LPTSTR buffer, unsigned int length)    { return LoadSetting(setting, buffer, length, setting); }
+   inline void SaveSetting(const Setting<LPTSTR> setting, LPTSTR buffer)                                 { SaveSetting(setting, buffer, setting); }
 
-   bool LoadDesktopNameOSD();
-   void SaveDesktopNameOSD(bool osd);
-   int LoadOSDTimeout();
-   void SaveOSDTimeout(int timeout);
-   void LoadOSDFont(LPLOGFONT lf);
-   void SaveOSDFont(LPLOGFONT lf);
-   COLORREF LoadOSDFgColor();
-   void SaveOSDFgColor(COLORREF col);
-   COLORREF LoadOSDBgColor();
-   void SaveOSDBgColor(COLORREF col);
-   void LoadOSDPosition(LPPOINT pt);
-   void SaveOSDPosition(LPPOINT pt);
-   unsigned char LoadOSDTransparencyLevel();
-   void SaveOSDTransparencyLevel(unsigned char level);
-   bool LoadOSDHasBackground();
-   void SaveOSDHasBackground(bool background);
-   bool LoadOSDIsTransparent();
-   void SaveOSDIsTransparent(bool transp);
-
+   // Other settings
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
-
    bool LoadDisableShellIntegration(const char * windowclass);
    void SaveDisableShellIntegration(const char * windowclass, bool enable);
    int LoadHidingMethod(const char * windowclass);
@@ -244,51 +237,20 @@ protected:
    static const char regKeyWindowsStartup[];
    static const char regSubKeyDisableShellIntegration[];
    static const char regSubKeyHidingMethods[];
-
-   static const char regValPosition[];
-	static const char regValDockedBorders[];
-   static const char regValNbColumns[];
-   static const char regValLockPreviewWindow[];
-   static const char regValShowWindow[];
-   static const char regValHasTrayIcon[];
-   static const char regValAlwaysOnTop[];
-   static const char regValTransparencyLevel[];
-   static const char regValEnableTooltips[];
-   static const char regValHasCaption[];
-	static const char regValSnapSize[];
-	static const char regValAutoHideDelay[];
-   static const char regValConfirmKilling[];
-   static const char regValAutoSaveWindowsSettings[];
-   static const char regValCloseToTray[];
-   static const char regValAutoSwitchDesktop[];
-   static const char regValAllWindowsInTaskList[];
-   static const char regValIntegrateWithShell[];
-   static const char regValSwitchToNextDesktopHotkey[];
-   static const char regValSwitchToPreviousDesktopHotkey[];
-   static const char regValSwitchToBottomDesktopHotkey[];
-   static const char regValSwitchToTopDesktopHotkey[];
-   static const char regValMoveWindowToNextDesktopHotkey[];
-   static const char regValMoveWindowToPreviousDesktopHotkey[];
-   static const char regValMoveWindowToDesktopHotkey[];
-   static const char regValMaximizeHeightHotkey[];
-   static const char regValMaximizeWidthHotkey[];
-   static const char regValAlwaysOnTopHotkey[];
-   static const char regValTransparencyHotkey[];
-   static const char regValDisplayMode[];
-   static const char regValBackgroundColor[];
-   static const char regValBackgroundImage[];
-   static const char regValDesktopNameOSD[];
-   static const char regValPreviewWindowFont[];
-   static const char regValPreviewWindowFontColor[];
-   static const char regValOSDTimeout[];
-   static const char regValOSDFont[];
-   static const char regValOSDFgColor[];
-   static const char regValOSDBgColor[];
-   static const char regValOSDPosition[];
-   static const char regValOSDTransparencyLevel[];
-   static const char regValOSDHasBackground[];
-   static const char regValOSDIsTransparent[];
    static const char regValStartWithWindows[];
+
+   template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data, const BinarySetting& type);
+   template<class T> inline void SaveSetting(const Setting<T> &setting, const T* data, const BinarySetting& type);
+
+   template<class T> inline T LoadSetting(const Setting<T> &setting, const DWordSetting& type);
+   template<class T> inline void SaveSetting(const Setting<T> &setting, T data, const DWordSetting& type);
+   template<class T> static inline T GetDefaultSetting(const Setting<T> &setting, const DWordSetting& type) { return setting.m_default; }
+
+   unsigned int LoadSetting(const Setting<LPTSTR> setting, LPTSTR buffer, unsigned int length, const StringSetting& type);
+   void SaveSetting(const Setting<LPTSTR> setting, LPTSTR buffer, const StringSetting& type);
+
+   bool LoadBinarySetting(const char * name, LPBYTE data, const LPBYTE defval, DWORD size);
+   void SaveBinarySetting(const char * name, const LPBYTE data, DWORD size);
 
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);
    static void SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value);
@@ -301,5 +263,29 @@ protected:
    friend class Settings::Desktop;
    friend class Settings::Window;
 };
+
+template<class T> inline bool Settings::LoadSetting(const Setting<T> &setting, T* data, const BinarySetting& /*type*/)
+{
+   assert(sizeof(T)>sizeof(DWORD));
+   return LoadBinarySetting(setting.m_name, (LPBYTE)data, (LPBYTE)&setting.m_default, sizeof(T));
+}
+
+template<class T> inline void Settings::SaveSetting(const Setting<T> &setting, const T* data, const BinarySetting& /*type*/)
+{
+   assert(sizeof(T)>sizeof(DWORD));
+   return SaveBinarySetting(setting.m_name, (LPBYTE)data, sizeof(T));
+}
+
+template<class T> T Settings::LoadSetting(const Setting<T> &setting, const DWordSetting& /*type*/)
+{
+   assert(sizeof(T)<=sizeof(DWORD));
+   return (T)LoadDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)setting.m_default);
+}
+
+template<class T> void Settings::SaveSetting(const Setting<T> &setting, T data, const DWordSetting& /*type*/)
+{
+   assert(sizeof(T)<=sizeof(DWORD));
+   SaveDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)data);
+}
 
 #endif /*__SETTINGS_H__*/

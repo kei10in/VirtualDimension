@@ -155,15 +155,15 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetMessageHandler(WM_APP+0x101, this, &VirtualDimension::OnHookWindowMessage2);
 
 	// Compate the window's style
-   m_hasCaption = settings.LoadHasCaption();
+   m_hasCaption = settings.LoadSetting(Settings::HasCaption);
    dwStyle = WS_POPUP | WS_SYSMENU | (m_hasCaption ? WS_CAPTION : WS_DLGFRAME);
 
 	// Reload the window's position
-	settings.LoadPosition(&pos);
+   settings.LoadSetting(Settings::WindowPosition, &pos);
    AdjustWindowRectEx(&pos, dwStyle, FALSE, WS_EX_TOOLWINDOW);
 
 	// Dock the window to the screen borders
-	m_dockedBorders = settings.LoadDockedBorders();
+	m_dockedBorders = settings.LoadSetting(Settings::DockedBorders);
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
 	if (m_dockedBorders & DOCK_LEFT)
 	{
@@ -198,8 +198,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    hWnd = *this;
 
 	// Load some settings
-	m_snapSize = settings.LoadSnapSize();
-	m_autoHideDelay = settings.LoadAutoHideDelay();
+	m_snapSize = settings.LoadSetting(Settings::SnapSize);
+	m_autoHideDelay = settings.LoadSetting(Settings::AutoHideDelay);
 	m_shrinked = false;
 
 	m_tracking = false;
@@ -228,7 +228,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    }
 
    // Lock the preview window as appropriate
-   LockPreviewWindow(settings.LoadLockPreviewWindow());
+   LockPreviewWindow(settings.LoadSetting(Settings::LockPreviewWindow));
 
    // Bind to explorer
    explorerWrapper = new ExplorerWrapper(this);
@@ -241,11 +241,11 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // Initialize transparency
    transp = new Transparency(hWnd);
-   transp->SetTransparencyLevel(settings.LoadTransparencyLevel());
+   transp->SetTransparencyLevel(settings.LoadSetting(Settings::TransparencyLevel));
 
    // Initialize always on top state
    ontop = new AlwaysOnTop(hWnd);
-   ontop->SetAlwaysOnTop(settings.LoadAlwaysOnTop());
+   ontop->SetAlwaysOnTop(settings.LoadSetting(Settings::AlwaysOnTop));
 
    // Create the tooltip
    tooltip = new ToolTip(hWnd);
@@ -257,7 +257,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    winMan = new WindowsManager;
 
    // Create the desk manager
-	settings.LoadPosition(&pos);	//use client position
+	settings.LoadSetting(Settings::WindowPosition, &pos);	//use client position
    deskMan = new DesktopManager(pos.right - pos.left, pos.bottom - pos.top);
 
    // Retrieve the initial list of windows
@@ -271,7 +271,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	SetMessageHandler(WM_PAINT, deskMan, &DesktopManager::OnPaint);
 
    // Show window if needed
-   if (settings.LoadShowWindow())
+   if (settings.LoadSetting(Settings::ShowWindow))
    {
       ShowWindow(hWnd, nCmdShow);
       Refresh();
@@ -387,13 +387,13 @@ LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam
    Settings settings;
 
 	//Save the snapsize
-	settings.SaveSnapSize(m_snapSize);
+	settings.SaveSetting(Settings::SnapSize, m_snapSize);
 
 	//Save the auto-hide delay
-	settings.SaveAutoHideDelay(m_autoHideDelay);
+	settings.SaveSetting(Settings::AutoHideDelay, m_autoHideDelay);
 
    //Save the visibility state of the window before it is hidden
-   settings.SaveShowWindow(IsWindowVisible(hWnd) ? true:false);
+   settings.SaveSetting(Settings::ShowWindow, IsWindowVisible(hWnd) ? true:false);
 
 	DestroyWindow(hWnd);
 
@@ -586,24 +586,24 @@ LRESULT VirtualDimension::OnDestroy(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wP
    pos.top = m_location.y;
    pos.right = m_location.x + deskMan->GetWindowWidth();
    pos.bottom = m_location.y + deskMan->GetWindowHeight();
-   settings.SavePosition(&pos);
-	settings.SaveDockedBorders(m_dockedBorders);
+   settings.SaveSetting(Settings::WindowPosition, &pos);
+	settings.SaveSetting(Settings::DockedBorders, m_dockedBorders);
 
    //Save the locking state of the window
-   settings.SaveLockPreviewWindow(IsPreviewWindowLocked());
+   settings.SaveSetting(Settings::LockPreviewWindow, IsPreviewWindowLocked());
 
    //Save the visibility state of the title bar
-   settings.SaveHasCaption(HasCaption());
+   settings.SaveSetting(Settings::HasCaption, HasCaption());
 
    // Remove the tray icon
    delete trayIcon;
 
    // Cleanup transparency
-   settings.SaveTransparencyLevel(transp->GetTransparencyLevel());
+   settings.SaveSetting(Settings::TransparencyLevel, transp->GetTransparencyLevel());
    delete transp;
 
    // Cleanup always on top state
-   settings.SaveAlwaysOnTop(ontop->IsAlwaysOnTop());
+   settings.SaveSetting(Settings::AlwaysOnTop, ontop->IsAlwaysOnTop());
    delete ontop;
 
    // Destroy the tooltip

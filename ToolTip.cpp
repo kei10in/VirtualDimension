@@ -34,7 +34,7 @@ ToolTip::ToolTip(HWND hWnd): m_hOwnerWnd(hWnd)
                            hWnd, NULL, vdWindow, NULL);
 
    //Load from the registry to find out whether to enable tooltips or not
-   EnableTooltips(settings.LoadEnableTooltips());
+   EnableTooltips(settings.LoadSetting(Settings::EnableToolTips));
 }
 
 ToolTip::~ToolTip(void)
@@ -42,7 +42,7 @@ ToolTip::~ToolTip(void)
    Settings settings;
 
    //Save to the registry whether to enable tooltips or not
-   settings.SaveEnableTooltips(m_enabled);
+   settings.SaveSetting(Settings::EnableToolTips, m_enabled);
 
    //Destroy the tooltip window
    DestroyWindow(m_hWnd);

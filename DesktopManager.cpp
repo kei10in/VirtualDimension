@@ -39,7 +39,7 @@ DesktopManager::DesktopManager(int width, int height)
    m_currentDesktop = NULL;
 
    //Load the number of columns
-   m_nbColumn = settings.LoadNbCols();
+   m_nbColumn = settings.LoadSetting(Settings::ColumnNumber);
 
    //Get the size
    m_width = width;
@@ -48,18 +48,18 @@ DesktopManager::DesktopManager(int width, int height)
    //Initialize the display mode
    m_bkDisplayMode = NULL;
    m_displayMode = (DisplayMode)-1;
-   SetDisplayMode((DisplayMode)settings.LoadDisplayMode());
+   SetDisplayMode((DisplayMode)settings.LoadSetting(Settings::DisplayMode));
          
-   settings.LoadPreviewWindowFont(&m_lfPreviewWindowFontInfo);
+   settings.LoadSetting(Settings::PreviewWindowFont, &m_lfPreviewWindowFontInfo);
    m_hPreviewWindowFont = CreateFontIndirect(&m_lfPreviewWindowFontInfo); 
-   m_crPreviewWindowFontColor = settings.LoadPreviewWindowFontColor();
+   m_crPreviewWindowFontColor = settings.LoadSetting(Settings::PreviewWindowFontColor);
 
    //Load the desktops
    LoadDesktops();
 
    //Initialize the OSD
    m_osd.Create();
-   m_useOSD = settings.LoadDesktopNameOSD();
+   m_useOSD = settings.LoadSetting(Settings::DesktopNameOSD);
 }
 
 DesktopManager::~DesktopManager(void)
@@ -90,11 +90,11 @@ DesktopManager::~DesktopManager(void)
    if (m_hPreviewWindowFont)
       DeleteObject(m_hPreviewWindowFont);
 
-   settings.SaveNbCols(m_nbColumn);
-   settings.SaveDesktopNameOSD(m_useOSD);
-   settings.SaveDisplayMode(m_displayMode);
-   settings.SavePreviewWindowFont(&m_lfPreviewWindowFontInfo);
-   settings.SavePreviewWindowFontColor(m_crPreviewWindowFontColor);
+   settings.SaveSetting(Settings::ColumnNumber, (unsigned long)m_nbColumn);
+   settings.SaveSetting(Settings::DesktopNameOSD, m_useOSD);
+   settings.SaveSetting(Settings::DisplayMode, (int)m_displayMode);
+   settings.SaveSetting(Settings::PreviewWindowFont, &m_lfPreviewWindowFontInfo);
+   settings.SaveSetting(Settings::PreviewWindowFontColor, m_crPreviewWindowFontColor);
 }
 
 void DesktopManager::ReSize(int width, int height)
@@ -476,13 +476,13 @@ void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)
 DesktopManager::NextDesktopEventHandler::NextDesktopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadSwitchToNextDesktopHotkey());
+   SetHotkey(s.LoadSetting(Settings::SwitchToNextDesktopHotkey));
 }
 
 DesktopManager::NextDesktopEventHandler::~NextDesktopEventHandler()
 {
    Settings s;
-   s.SaveSwitchToNextDesktopHotkey(GetHotkey());
+   s.SaveSetting(Settings::SwitchToNextDesktopHotkey, GetHotkey());
 }
 
 void DesktopManager::NextDesktopEventHandler::OnHotkey()
@@ -493,13 +493,13 @@ void DesktopManager::NextDesktopEventHandler::OnHotkey()
 DesktopManager::PrevDesktopEventHandler::PrevDesktopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadSwitchToPreviousDesktopHotkey());
+   SetHotkey(s.LoadSetting(Settings::SwitchToPreviousDesktopHotkey));
 }
 
 DesktopManager::PrevDesktopEventHandler::~PrevDesktopEventHandler()
 {
    Settings s;
-   s.SaveSwitchToPreviousDesktopHotkey(GetHotkey());
+   s.SaveSetting(Settings::SwitchToPreviousDesktopHotkey, GetHotkey());
 }
 
 void DesktopManager::PrevDesktopEventHandler::OnHotkey()
@@ -510,13 +510,13 @@ void DesktopManager::PrevDesktopEventHandler::OnHotkey()
 DesktopManager::BottomDesktopEventHandler::BottomDesktopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadSwitchToBottomDesktopHotkey());
+   SetHotkey(s.LoadSetting(Settings::SwitchToBottomDesktopHotkey));
 }
 
 DesktopManager::BottomDesktopEventHandler::~BottomDesktopEventHandler()
 {
    Settings s;
-   s.SaveSwitchToBottomDesktopHotkey(GetHotkey());
+   s.SaveSetting(Settings::SwitchToBottomDesktopHotkey, GetHotkey());
 }
 
 void DesktopManager::BottomDesktopEventHandler::OnHotkey()
@@ -527,13 +527,13 @@ void DesktopManager::BottomDesktopEventHandler::OnHotkey()
 DesktopManager::TopDesktopEventHandler::TopDesktopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadSwitchToTopDesktopHotkey());
+   SetHotkey(s.LoadSetting(Settings::SwitchToTopDesktopHotkey));
 }
 
 DesktopManager::TopDesktopEventHandler::~TopDesktopEventHandler()
 {
    Settings s;
-   s.SaveSwitchToTopDesktopHotkey(GetHotkey());
+   s.SaveSetting(Settings::SwitchToTopDesktopHotkey, GetHotkey());
 }
 
 void DesktopManager::TopDesktopEventHandler::OnHotkey()

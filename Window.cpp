@@ -433,8 +433,9 @@ void Window::SetTransparent(bool transp)
 
 void Window::ToggleTransparent()
 {
+#pragma message("Warning: will need to be updated once all settings have been changed")
    if (GetTransparencyLevel() == TRANSPARENCY_DISABLED && !IsTransparent())
-      SetTransparencyLevel(DEFAULT_WINDOW_TRANSPARENCY_LEVEL);
+      SetTransparencyLevel(0xc0/*Settings::GetDefaultSetting(Settings::Window::TransparencyLevel)*/);
    SetTransparent(!IsTransparent());
 }
 

@@ -46,7 +46,7 @@ PictureBackgroundDisplayMode::PictureBackgroundDisplayMode(): m_width(0), m_heig
 {
    Settings settings;
 
-   settings.LoadBackgroundImage(m_bkgrndPictureFile, MAX_PATH);
+   settings.LoadSetting(Settings::BackgroundPicture, m_bkgrndPictureFile, MAX_PATH);
 }
 
 PictureBackgroundDisplayMode::~PictureBackgroundDisplayMode()
@@ -56,7 +56,7 @@ PictureBackgroundDisplayMode::~PictureBackgroundDisplayMode()
    DeleteObject(m_deskBkPicture);
    DeleteObject(m_selDeskBkPicture);
 
-   settings.SaveBackgroundImage(m_bkgrndPictureFile);
+   settings.SaveSetting(Settings::BackgroundPicture, m_bkgrndPictureFile);
 }
 
 void PictureBackgroundDisplayMode::BeginPainting(HDC hdc)
@@ -172,7 +172,7 @@ PlainColorBackgroundDisplayMode::PlainColorBackgroundDisplayMode()
 {
    Settings settings;
 
-   m_bkgrndColor = settings.LoadBackgroundColor();
+   m_bkgrndColor = settings.LoadSetting(Settings::BackgroundColor);
    UpdateBrushObjects();
 }
 
@@ -183,7 +183,7 @@ PlainColorBackgroundDisplayMode::~PlainColorBackgroundDisplayMode()
    DeleteObject(m_selDeskBkBrush);
    DeleteObject(m_deskBkBrush);
 
-   settings.SaveBackgroundColor(m_bkgrndColor);
+   settings.SaveSetting(Settings::BackgroundColor, m_bkgrndColor);
 }
 
 void PlainColorBackgroundDisplayMode::PaintDesktop(HDC hdc, LPRECT rect, bool active)

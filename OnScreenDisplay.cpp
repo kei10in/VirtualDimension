@@ -30,16 +30,16 @@ OnScreenDisplayWnd::OnScreenDisplayWnd(): m_transp(NULL)
 {
    Settings settings;
 
-   settings.LoadOSDFont(&m_lf);
+   settings.LoadSetting(Settings::OSDFont, &m_lf);
    m_font = CreateFontIndirect(&m_lf);
 
-   SetDefaultTimeout(settings.LoadOSDTimeout());
-   m_fgColor = settings.LoadOSDFgColor();
-   m_bgColor = settings.LoadOSDBgColor();
-   settings.LoadOSDPosition(&m_position);
-   m_transpLevel = settings.LoadOSDTransparencyLevel();
-   m_hasBackground = settings.LoadOSDHasBackground();
-   m_isTransparent = settings.LoadOSDIsTransparent();
+   SetDefaultTimeout(settings.LoadSetting(Settings::OSDTimeout));
+   m_fgColor = settings.LoadSetting(Settings::OSDFgColor);
+   m_bgColor = settings.LoadSetting(Settings::OSDBgColor);
+   settings.LoadSetting(Settings::OSDPosition, &m_position);
+   m_transpLevel = settings.LoadSetting(Settings::OSDTransparencyLevel);
+   m_hasBackground = settings.LoadSetting(Settings::OSDHasBackground);
+   m_isTransparent = settings.LoadSetting(Settings::OSDIsTransparent);
 
    m_bgBrush = m_hasBackground ? CreateSolidBrush(m_bgColor) : (HBRUSH)GetStockObject(HOLLOW_BRUSH);
 }
@@ -48,14 +48,14 @@ OnScreenDisplayWnd::~OnScreenDisplayWnd()
 {
    Settings settings;
 
-   settings.SaveOSDTimeout(m_timeout);
-   settings.SaveOSDFont(&m_lf);
-   settings.SaveOSDFgColor(m_fgColor);
-   settings.SaveOSDBgColor(m_bgColor);
-   settings.SaveOSDPosition(&m_position);
-   settings.SaveOSDHasBackground(m_hasBackground);
-   settings.SaveOSDIsTransparent(m_isTransparent);
-   settings.SaveOSDTransparencyLevel(m_transpLevel);
+   settings.SaveSetting(Settings::OSDTimeout, m_timeout);
+   settings.SaveSetting(Settings::OSDFont, &m_lf);
+   settings.SaveSetting(Settings::OSDFgColor, m_fgColor);
+   settings.SaveSetting(Settings::OSDBgColor, m_bgColor);
+   settings.SaveSetting(Settings::OSDPosition, &m_position);
+   settings.SaveSetting(Settings::OSDHasBackground, m_hasBackground);
+   settings.SaveSetting(Settings::OSDIsTransparent, m_isTransparent);
+   settings.SaveSetting(Settings::OSDTransparencyLevel, m_transpLevel);
 
    DeleteObject(m_bgBrush);
    DeleteObject(m_font);

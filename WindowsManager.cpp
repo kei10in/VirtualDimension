@@ -33,10 +33,10 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstDelayedUpdateWnd
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
    
-   m_confirmKill = settings.LoadConfirmKilling();
-   m_autoSwitch = settings.LoadAutoSwitchDesktop();
-   m_allWindowsInTaskList = settings.LoadAllWindowsInTaskList();
-   m_integrateWithShell = settings.LoadIntegrateWithShell();
+   m_confirmKill = settings.LoadSetting(Settings::ConfirmKilling);
+   m_autoSwitch = settings.LoadSetting(Settings::AutoSwitchDesktop);
+   m_allWindowsInTaskList = settings.LoadSetting(Settings::AllWindowsInTaskList);
+   m_integrateWithShell = settings.LoadSetting(Settings::IntegrateWithShell);
 
    m_nbDisabledAnimations = 0;
    { 
@@ -65,10 +65,10 @@ WindowsManager::~WindowsManager(void)
    m_windows.clear();
    m_HWNDMap.clear();
 
-   settings.SaveConfirmKilling(m_confirmKill);
-   settings.SaveAutoSwitchDesktop(m_autoSwitch);
-   settings.SaveAllWindowsInTaskList(m_allWindowsInTaskList);
-   settings.SaveIntegrateWithShell(m_integrateWithShell);
+   settings.SaveSetting(Settings::ConfirmKilling, m_confirmKill);
+   settings.SaveSetting(Settings::AutoSwitchDesktop, m_autoSwitch);
+   settings.SaveSetting(Settings::AllWindowsInTaskList, m_allWindowsInTaskList);
+   settings.SaveSetting(Settings::IntegrateWithShell, m_integrateWithShell);
 
    //Restore the animations
    {
@@ -445,13 +445,13 @@ void WindowsManager::RemoveDelayedUpdateWnd(unsigned int idx)
 WindowsManager::MoveWindowToNextDesktopEventHandler::MoveWindowToNextDesktopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadMoveWindowToNextDesktopHotkey());
+   SetHotkey(s.LoadSetting(Settings::MoveWindowToNextDesktopHotkey));
 }
 
 WindowsManager::MoveWindowToNextDesktopEventHandler::~MoveWindowToNextDesktopEventHandler()
 {
    Settings s;
-   s.SaveMoveWindowToNextDesktopHotkey(GetHotkey());
+   s.SaveSetting(Settings::MoveWindowToNextDesktopHotkey,GetHotkey());
 }
 
 void WindowsManager::MoveWindowToNextDesktopEventHandler::OnHotkey()
@@ -465,13 +465,13 @@ void WindowsManager::MoveWindowToNextDesktopEventHandler::OnHotkey()
 WindowsManager::MoveWindowToPrevDesktopEventHandler::MoveWindowToPrevDesktopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadMoveWindowToPreviousDesktopHotkey());
+   SetHotkey(s.LoadSetting(Settings::MoveWindowToPreviousDesktopHotkey));
 }
 
 WindowsManager::MoveWindowToPrevDesktopEventHandler::~MoveWindowToPrevDesktopEventHandler()
 {
    Settings s;
-   s.SaveMoveWindowToPreviousDesktopHotkey(GetHotkey());
+   s.SaveSetting(Settings::MoveWindowToPreviousDesktopHotkey,GetHotkey());
 }
 
 void WindowsManager::MoveWindowToPrevDesktopEventHandler::OnHotkey()
@@ -485,13 +485,13 @@ void WindowsManager::MoveWindowToPrevDesktopEventHandler::OnHotkey()
 WindowsManager::MoveWindowToDesktopEventHandler::MoveWindowToDesktopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadMoveWindowToDesktopHotkey());
+   SetHotkey(s.LoadSetting(Settings::MoveWindowToDesktopHotkey));
 }
 
 WindowsManager::MoveWindowToDesktopEventHandler::~MoveWindowToDesktopEventHandler()
 {
    Settings s;
-   s.SaveMoveWindowToDesktopHotkey(GetHotkey());
+   s.SaveSetting(Settings::MoveWindowToDesktopHotkey,GetHotkey());
 }
 
 void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
@@ -509,13 +509,13 @@ void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
 WindowsManager::MaximizeHeightEventHandler::MaximizeHeightEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadMaximizeHeightHotkey());
+   SetHotkey(s.LoadSetting(Settings::MaximizeHeightHotkey));
 }
 
 WindowsManager::MaximizeHeightEventHandler::~MaximizeHeightEventHandler()
 {
    Settings s;
-   s.SaveMaximizeHeightHotkey(GetHotkey());
+   s.SaveSetting(Settings::MaximizeHeightHotkey,GetHotkey());
 }
 
 void WindowsManager::MaximizeHeightEventHandler::OnHotkey()
@@ -528,13 +528,13 @@ void WindowsManager::MaximizeHeightEventHandler::OnHotkey()
 WindowsManager::MaximizeWidthEventHandler::MaximizeWidthEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadMaximizeWidthHotkey());
+   SetHotkey(s.LoadSetting(Settings::MaximizeWidthHotkey));
 }
 
 WindowsManager::MaximizeWidthEventHandler::~MaximizeWidthEventHandler()
 {
    Settings s;
-   s.SaveMaximizeWidthHotkey(GetHotkey());
+   s.SaveSetting(Settings::MaximizeWidthHotkey,GetHotkey());
 }
 
 void WindowsManager::MaximizeWidthEventHandler::OnHotkey()
@@ -547,13 +547,13 @@ void WindowsManager::MaximizeWidthEventHandler::OnHotkey()
 WindowsManager::ToggleAlwaysOnTopEventHandler::ToggleAlwaysOnTopEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadAlwaysOnTopHotkey());
+   SetHotkey(s.LoadSetting(Settings::AlwaysOnTopHotkey));
 }
 
 WindowsManager::ToggleAlwaysOnTopEventHandler::~ToggleAlwaysOnTopEventHandler()
 {
    Settings s;
-   s.SaveAlwaysOnTopHotkey(GetHotkey());
+   s.SaveSetting(Settings::AlwaysOnTopHotkey,GetHotkey());
 }
 
 void WindowsManager::ToggleAlwaysOnTopEventHandler::OnHotkey()
@@ -566,13 +566,13 @@ void WindowsManager::ToggleAlwaysOnTopEventHandler::OnHotkey()
 WindowsManager::ToggleTransparencyEventHandler::ToggleTransparencyEventHandler()
 {
    Settings s;
-   SetHotkey(s.LoadTransparencyHotkey());
+   SetHotkey(s.LoadSetting(Settings::TransparencyHotkey));
 }
 
 WindowsManager::ToggleTransparencyEventHandler::~ToggleTransparencyEventHandler()
 {
    Settings s;
-   s.SaveTransparencyHotkey(GetHotkey());
+   s.SaveSetting(Settings::TransparencyHotkey,GetHotkey());
 }
 
 void WindowsManager::ToggleTransparencyEventHandler::OnHotkey()

@@ -28,10 +28,10 @@ TrayIcon::TrayIcon(HWND hWnd): m_hWnd(hWnd), m_iconLoaded(false)
 {
    Settings settings;
 
-   if (settings.LoadHasTrayIcon())
+   if (settings.LoadSetting(Settings::HasTrayIcon))
       AddIcon();
 
-   m_closeToTray = settings.LoadCloseToTray();
+   m_closeToTray = settings.LoadSetting(Settings::CloseToTray);
    vdWindow.SetSysCommandHandler(SC_CLOSE, this, &TrayIcon::OnCmdClose);
 }
 
@@ -39,8 +39,8 @@ TrayIcon::~TrayIcon(void)
 {
    Settings settings;
 
-   settings.SaveHasTrayIcon(m_iconLoaded);
-   settings.SaveCloseToTray(m_closeToTray);
+   settings.SaveSetting(Settings::HasTrayIcon, m_iconLoaded);
+   settings.SaveSetting(Settings::CloseToTray, m_closeToTray);
 
    DelIcon();
 }
