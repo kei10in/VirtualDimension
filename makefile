@@ -27,6 +27,10 @@ OBJ_FILE = $(SRC_FILE:cpp=o) libtransp.a
 
 CXXFLAGS = -fexpensive-optimizations -O3
 
+
+.PHONY: all clean precomp
+
+
 vpath %.o ${BUILDDIR}
 vpath %.a ${BUILDDIR}
 vpath %.res ${BUILDDIR}
@@ -42,6 +46,7 @@ pre_comp:
 
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	g++ $^ -o $@ -mwindows -lcomctl32 $(CXXFLAGS)
+	strip $@
 
 libtransp.a: transp.def
 	dlltool --def $< --dllname user32.dll  --output-lib ${BUILDDIR}/$@
