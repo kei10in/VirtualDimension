@@ -118,6 +118,14 @@ public:
       void SaveTransparencyLevel(unsigned char level);
       bool LoadEnableTransparency();
       void SaveEnableTransparency(bool enable);
+      bool LoadAutoSaveSettings();
+      void SaveAutoSaveSettings(bool autosave);
+      bool LoadPosition(LPRECT rect);
+      void SavePosition(LPRECT rect);
+      bool LoadAutoSetSize();
+      void SaveAutoSetSize(bool autoset);
+      bool LoadAutoSetPos();
+      void SaveAutoSetPos(bool autoset);
 
    protected:
       void Init(Settings * settings);
@@ -128,6 +136,10 @@ public:
       static const char regValMinimizeToTray[];
       static const char regValTransparencyLevel[];
       static const char regValEnableTransparency[];
+      static const char regValAutoSaveSettings[];
+      static const char regValPosition[];
+      static const char regValAutoSetSize[];
+      static const char regValAutoSetPos[];
       
       char m_name[MAX_NAME_LENGTH];
 

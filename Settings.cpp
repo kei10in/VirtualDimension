@@ -403,6 +403,10 @@ const char Settings::Window::regValOnAllDesktops[] = "OnAllDesktops";
 const char Settings::Window::regValMinimizeToTray[] = "MinimizeToTray";
 const char Settings::Window::regValTransparencyLevel[] = "TransparencyLevel";
 const char Settings::Window::regValEnableTransparency[] = "EnableTransparency";
+const char Settings::Window::regValAutoSaveSettings[] = "AutoSaveSettings";
+const char Settings::Window::regValPosition[] = "WindowPosition";
+const char Settings::Window::regValAutoSetSize[] = "AutoSetSize";
+const char Settings::Window::regValAutoSetPos[] = "AutoSetPos";
 
 Settings::Window::Window(Settings * settings)
 {
@@ -562,4 +566,63 @@ bool Settings::Window::LoadEnableTransparency()
 void Settings::Window::SaveEnableTransparency(bool enable)
 {
    SaveDWord(m_regKey, m_keyOpened, regValEnableTransparency, enable);
+}
+
+bool Settings::Window::LoadAutoSaveSettings()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValAutoSaveSettings, false) ? true : false;
+}
+
+void Settings::Window::SaveAutoSaveSettings(bool autosave)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValAutoSaveSettings, autosave);
+}
+
+bool Settings::Window::LoadPosition(LPRECT rect)
+{
+   DWORD size;
+
+   if ( (!m_keyOpened) || 
+        (RegQueryValueEx(m_regKey, regValPosition, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
+        (size != sizeof(*rect)) || 
+        (RegQueryValueEx(m_regKey, regValPosition, NULL, NULL, (LPBYTE)rect, &size) != ERROR_SUCCESS) )
+   {  
+      // Cannot load the position from registry
+      // --> set default values
+
+      rect->top = 0;
+      rect->bottom = 200;
+      rect->left = 0;
+      rect->right = 300;
+
+      return false;
+   }
+   else
+      return true;
+}
+
+void Settings::Window::SavePosition(LPRECT rect)
+{
+   if (m_keyOpened)
+      RegSetValueEx(m_regKey, regValPosition, 0, REG_BINARY, (LPBYTE)rect, sizeof(*rect));
+}
+
+bool Settings::Window::LoadAutoSetSize()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValAutoSetSize, false) ? true : false;
+}
+
+void Settings::Window::SaveAutoSetSize(bool autoset)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValAutoSetSize, autoset);
+}
+
+bool Settings::Window::LoadAutoSetPos()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValAutoSetPos, false) ? true : false;
+}
+
+void Settings::Window::SaveAutoSetPos(bool autoset)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValAutoSetPos, autoset);
 }
