@@ -180,6 +180,9 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    WindowsList::Node * node = (*it).second;
    WindowsList::Iterator wIt(&m_windows, node);
    Window * win = *node;
+
+   if (win->IsMutexLocked())
+      return;
    
    wIt.MoveToBegin();
 
@@ -268,4 +271,46 @@ void WindowsManager::SetIntegrateWithShell(bool integ)
       else
          (*it).UnHook();
    }
+}
+
+Window* WindowsManager::GetPredecessor(Window* win)
+{
+   HWNDMapIterator it = m_HWNDMap.find(*win);
+   
+   if (it == m_HWNDMap.end())
+      return NULL;
+
+   WindowsList::Node* node = (*it).second;
+   
+   for(node = node->prev(); node != NULL; node = node->prev())
+   {
+      Window * prev = *node;
+
+      if (!prev->IsMutexLocked() &&
+          !prev->IsHidden() &&
+          !prev->IsIconic())
+         return prev;
+   }
+
+   return NULL;
+}
+
+void WindowsManager::SetTopWindow(Window * top)
+{
+   HWND hWnd = *top;
+   HWNDMapIterator it = m_HWNDMap.find(hWnd);
+   
+   if (it == m_HWNDMap.end())
+      return;
+
+   WindowsList::Node * node = (*it).second;
+   WindowsList::Iterator wIt(&m_windows, node);
+   
+   wIt.MoveToBegin();
+
+   if (top->IsOnAllDesktops())
+      deskMan->UpdateLayout();
+   else
+      deskMan->GetCurrentDesktop()->UpdateLayout();
+   vdWindow.Refresh();
 }

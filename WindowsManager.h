@@ -48,6 +48,9 @@ public:
    Iterator FirstWindow()                   { return m_windows.first(); }
    Iterator LastWindow()                    { return m_windows.last(); }
 
+   //Return the predecessor in the Z-order (ie, the windows that is right in front of it)
+   Window* GetPredecessor(Window* win);
+
    HWND GetActiveWindow();
    bool IsAutoSwitchDesktop() const         { return m_autoSwitch; }
    void SetAutoSwitchDesktop(bool autoSw)   { m_autoSwitch = autoSw; }
@@ -55,6 +58,8 @@ public:
    void ShowAllWindowsInTaskList(bool all)  { m_allWindowsInTaskList = all; }
    bool IsIntegrateWithShell() const        { return m_integrateWithShell; }
    void SetIntegrateWithShell(bool integ);
+
+   void SetTopWindow(Window * top);
 
 protected:
    map<HWND, WindowsList::Node*> m_HWNDMap;
