@@ -147,8 +147,8 @@ BEGIN
     EDITTEXT        IDC_WALLPAPER,43,26,117,14,ES_AUTOHSCROLL
     RTEXT           "Wallpaper",IDC_STATIC,7,29,33,8
     PUSHBUTTON      "...",IDC_BROWSE_WALLPAPER,163,26,16,14
-    CONTROL         "",IDC_HOTKEY,"AlternateHotKeyControl",WS_BORDER | WS_TABSTOP,
-                    43,45,136,14
+    CONTROL         "",IDC_HOTKEY,"AlternateHotKeyControl",WS_BORDER | 
+                    WS_TABSTOP,43,45,136,14
     RTEXT           "Hotkey",IDC_STATIC,7,48,33,8
 END
 
@@ -177,6 +177,34 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,43,80,10
     GROUPBOX        "Options",IDC_STATIC,7,7,200,52
     CTEXT           "255",IDC_TRANSP_DISP,9,94,195,8
+END
+
+IDD_OSD_SETTINGS DIALOGEX 0, 0, 214, 114
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+    DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
+CAPTION "OSD settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Options",IDC_STATIC,7,7,200,63
+    CONTROL         "Display desktop name in OSD",IDC_ENABLEOSD_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,18,114,10
+    LTEXT           "Hide Timeout (ms):",IDC_TIMEOUT_STATIC,19,54,62,8
+    EDITTEXT        IDC_TIMEOUT_EDIT,85,51,47,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_TIMEOUT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,117,51,11,
+                    14
+    PUSHBUTTON      "Font...",IDC_FONT_BTN,142,15,60,14
+    PUSHBUTTON      "Background...",IDC_BGCOLOR_BTN,142,33,60,14
+    GROUPBOX        "Transparency level",IDC_TRANSP_STATIC,7,75,200,32
+    RTEXT           "0",IDC_TRANSP_STATIC1,14,88,9,12
+    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | 
+                    WS_TABSTOP,24,86,166,18
+    LTEXT           "255",IDC_TRANSP_STATIC2,189,88,14,8
+    CONTROL         "Disable mouse input",IDC_TRANSPARENT_CHK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,29,79,10
+    CONTROL         "Shade background",IDC_BACKGROUND_CHK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,40,75,10
+    PUSHBUTTON      "Position...",IDC_POSITION_BTN,142,51,60,14
 END
 
 IDD_MOVEWINDOW DIALOGEX 0, 0, 178, 127
