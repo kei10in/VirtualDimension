@@ -39,6 +39,8 @@ public:
    Window* GetWindow(HWND hWnd);
 
    bool ConfirmKillWindow();
+   bool IsConfirmKill() const         { return m_confirmKill; }
+   void SetConfirmKill(bool confirm)  { m_confirmKill = confirm; }
 
    class Iterator
    {
