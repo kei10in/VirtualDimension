@@ -364,7 +364,10 @@ void Desktop::Activate(void)
          SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_wallpaper, 0);
    }
 
-   /* Show the windows */
+   // Activate the Virtual Dimension window (to make the window which has the focus lose it 
+   SetForegroundWindow(vdWindow);
+
+   // Show the windows
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
