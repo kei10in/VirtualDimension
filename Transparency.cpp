@@ -22,16 +22,16 @@
 #include "transparency.h"
 #include "settings.h"
 
-#ifndef LWA_ALPHA
-
-extern "C" {
-__declspec(dllimport) BOOL SetLayeredWindowAttributes(HWND hwnd,COLORREF crKey,BYTE bAlpha,DWORD dwFlags);
-}
-
+#ifdef __GNUC__
 #define LWA_COLORKEY            0x00000001
 #define LWA_ALPHA               0x00000002
-
 #endif
+
+bool Transparency::transparency_supported = false;
+bool Transparency::transparency_supported_valid = false;
+BOOL (__STDCALL__ * Transparency::SetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD) = NULL;
+HINSTANCE Transparency::hinstDLL = NULL;
+int Transparency::nbInstance = 0;
 
 /* m_level gets an initial value of 0xff, so that we do not do anything anyway
  * if the level is not set to some other value in the registry
@@ -39,6 +39,8 @@ __declspec(dllimport) BOOL SetLayeredWindowAttributes(HWND hwnd,COLORREF crKey,B
 Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(0xff)
 {
    Settings settings;
+
+   nbInstance ++;
 
    SetTransparencyLevel(settings.LoadTransparencyLevel());
 }
@@ -79,23 +81,24 @@ Transparency::~Transparency()
 
    if (IsTransparencySupported())
       settings.SaveTransparencyLevel(m_level);
-}
 
-bool Transparency::transparency_supported = false;
-bool Transparency::transparency_supported_valid = false;
+   nbInstance --;
+   if (nbInstance == 0)
+   {
+      transparency_supported_valid = false;  //to ensure the library would be reloaded before any call to setlayeredattributes
+      FreeLibrary(hinstDLL);
+   }
+}
 
 bool Transparency::IsTransparencySupported()
 {
    if (!transparency_supported_valid)
    {
-      OSVERSIONINFOEX osvi;
+      hinstDLL = LoadLibrary((LPCSTR)"user32.dll");
+      if (hinstDLL != NULL)
+         SetLayeredWindowAttributes = (BOOL (__STDCALL__*)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(hinstDLL, "SetLayeredWindowAttributes");
 
-      ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-      osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
-      transparency_supported = (GetVersionEx ((OSVERSIONINFO *) &osvi)) &&
-                               (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT) && 
-                               (osvi.dwMajorVersion >= 5);
+      transparency_supported = (SetLayeredWindowAttributes != NULL);
       transparency_supported_valid = true;
    }
 

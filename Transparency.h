@@ -21,6 +21,14 @@
 #ifndef __TRANSPARENCY_H__
 #define __TRANSPARENCY_H__
 
+#ifndef __STDCALL__ 
+#ifdef __GNUG__
+#define __STDCALL__ 
+#else
+#define __STDCALL__ WINAPI
+#endif
+#endif
+
 class Transparency
 {
 public:
@@ -35,6 +43,9 @@ public:
 protected:
    static bool transparency_supported;
    static bool transparency_supported_valid;
+   static BOOL (__STDCALL__ *SetLayeredWindowAttributes)(HWND hwnd,COLORREF crKey,BYTE bAlpha,DWORD dwFlags);
+   static HINSTANCE hinstDLL;
+   static int nbInstance;
 
    HWND m_hWnd;
    unsigned char m_level;
