@@ -33,6 +33,8 @@ public:
    void SavePosition(LPRECT rect);
    unsigned long LoadNbCols();
    void SaveNbCols(unsigned long cols);
+   bool LoadLockPreviewWindow();
+   void SaveLockPreviewWindow(bool lock);
    bool LoadHasTrayIcon();
    void SaveHasTrayIcon(bool val);
    bool LoadShowWindow();
@@ -158,6 +160,7 @@ protected:
 
    static const char regValPosition[];
    static const char regValNbColumns[];
+   static const char regValLockPreviewWindow[];
    static const char regValShowWindow[];
    static const char regValHasTrayIcon[];
    static const char regValAlwaysOnTop[];

@@ -24,6 +24,7 @@
 const char Settings::regKeyName[] = "Software\\Typz Software\\Virtual Dimension\\";
 const char Settings::regValPosition[] = "WindowPosition";
 const char Settings::regValNbColumns[] = "ColumnNumber";
+const char Settings::regValLockPreviewWindow[] = "LockPreviewWindow";
 const char Settings::regValShowWindow[] = "ShowWindow";
 const char Settings::regValHasTrayIcon[] = "HasTrayIcon";
 const char Settings::regValAlwaysOnTop[] = "AlwaysOnTop";
@@ -95,6 +96,16 @@ void Settings::SavePosition(LPRECT rect)
 {
    if (m_keyOpened)
       RegSetValueEx(m_regKey, regValPosition, 0, REG_BINARY, (LPBYTE)rect, sizeof(*rect));
+}
+
+bool Settings::LoadLockPreviewWindow()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValLockPreviewWindow, false) ? true : false;
+}
+
+void Settings::SaveLockPreviewWindow(bool lock)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValLockPreviewWindow, lock);
 }
 
 unsigned long Settings::LoadNbCols()
