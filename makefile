@@ -80,13 +80,13 @@ pre_comp:
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	g++ $^ -o $@ -mwindows -mthreads -lcomctl32 -lole32 -lolepro32 -luuid $(CXXFLAGS)
 ifndef DEBUG
-	strip $@
+	strip --strip-all $@
 endif
 
 HookDLL.dll: HookDLL.o
 	g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
 ifndef DEBUG
-	strip $@
+	strip --strip-all $@
 endif
 
 libtransp.a: Transp.def
