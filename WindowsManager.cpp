@@ -30,6 +30,7 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow)
    m_confirmKill = settings.LoadConfirmKilling();
    m_autoSwitch = settings.LoadAutoSwitchDesktop();
    m_allWindowsInTaskList = settings.LoadAllWindowsInTaskList();
+   m_integrateWithShell = settings.LoadIntegrateWithShell();
 
    vdWindow.SetMessageHandler(uiShellHookMsg, this, &WindowsManager::OnShellHookMessage);
 }
@@ -49,6 +50,7 @@ WindowsManager::~WindowsManager(void)
    settings.SaveConfirmKilling(m_confirmKill);
    settings.SaveAutoSwitchDesktop(m_autoSwitch);
    settings.SaveAllWindowsInTaskList(m_allWindowsInTaskList);
+   settings.SaveIntegrateWithShell(m_integrateWithShell);
 }
 
 void WindowsManager::PopulateInitialWindowsSet()

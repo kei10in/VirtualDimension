@@ -53,6 +53,8 @@ public:
    void SetAutoSwitchDesktop(bool autoSw)   { m_autoSwitch = autoSw; }
    bool IsShowAllWindowsInTaskList() const  { return m_allWindowsInTaskList; }
    void ShowAllWindowsInTaskList(bool all)  { m_allWindowsInTaskList = all; }
+   bool IsIntegrateWithShell() const        { return m_integrateWithShell; }
+   void SetIntegrateWithShell(bool integ)   { m_integrateWithShell = integ; }
 
 protected:
    map<HWND, WindowsList::Node*> m_HWNDMap;
@@ -64,6 +66,7 @@ protected:
    bool m_confirmKill;
    bool m_autoSwitch;
    bool m_allWindowsInTaskList;
+   bool m_integrateWithShell;
 
    LRESULT OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam);
    void OnWindowCreated(HWND hWnd);       //window has just been created
