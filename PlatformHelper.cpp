@@ -88,7 +88,7 @@ DWORD PlatformHelper::GetWindowFileName9x(HWND, LPTSTR lpFileName, int nBufLen)
    return 0;
 }
 
-IPicture * PlatformHelper::OpenImage(LPTSTR fileName)
+IPicture * PlatformHelper::OpenImage(LPCTSTR fileName)
 {
    IPicture * picture = NULL;
    HGLOBAL hGlobal;

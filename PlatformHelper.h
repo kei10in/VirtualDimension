@@ -129,7 +129,7 @@ public:
                              HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
                              int nWidth, int nHeight, BYTE sourceAlpha);
    
-   static IPicture * OpenImage(LPTSTR fileName);
+   static IPicture * OpenImage(LPCTSTR fileName);
    static bool SaveAsBitmap(IPicture * picture, LPTSTR fileName);
 
    typedef BOOL WINAPI SetMenuInfo_t(HMENU, LPCMENUINFO);

@@ -39,6 +39,8 @@ public:
    void SetImage(LPTSTR fileName);
    void SetColor(COLORREF bkColor);
 
+   static LPCTSTR GetDefaultWallpaper()   { return m_defaultWallpaper; }
+
 protected:
    LPTSTR m_fileName;
    LPTSTR m_bmpFileName;

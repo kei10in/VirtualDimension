@@ -89,7 +89,10 @@ void Desktop::DesktopProperties::OnWallpaperChanged(HWND hDlg, HWND ctrl)
    SendMessage(ctrl, WM_GETTEXT, MAX_PATH, (LPARAM)m_wallpaper);
    if (m_picture)
       m_picture->Release();
-   m_picture = PlatformHelper::OpenImage(m_wallpaper);
+   if (stricmp(m_wallpaper, DESKTOP_WALLPAPER_DEFAULT) == 0)
+      m_picture = PlatformHelper::OpenImage(WallPaper::GetDefaultWallpaper());
+   else
+      m_picture = PlatformHelper::OpenImage(m_wallpaper);
    InvalidateRect(GetDlgItem(hDlg, IDC_PREVIEW), NULL, TRUE);
 
    //Enable the APPLY button
