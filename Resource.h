@@ -111,6 +111,8 @@
 #define IDC_AUTODESK_CHECK              1077
 #define IDC_SNAPSIZE_EDIT               1078
 #define IDC_SNAPSIZE_SPIN               1079
+#define IDC_AUTOHIDEDELAY_SPIN          1082
+#define IDC_AUTOHIDEDELAY_EDIT          1083
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -120,7 +122,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        143
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1080
+#define _APS_NEXT_CONTROL_VALUE         1084
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif
