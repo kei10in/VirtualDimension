@@ -43,7 +43,7 @@ public:
    void PopulateInitialWindowsSet();
 
    void MoveWindow(HWND hWnd, Desktop* desk);
-   /*inline*/ Window* GetWindow(HWND hWnd);
+   Window* GetWindow(HWND hWnd);
 
    bool ConfirmKillWindow();
    bool IsConfirmKill() const         { return m_confirmKill; }

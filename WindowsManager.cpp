@@ -56,6 +56,10 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstDelayedUpdateWnd
 WindowsManager::~WindowsManager(void)
 {
    Settings settings;
+   UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
+
+   vdWindow.UnSetMessageHandler(WM_SETTINGCHANGE);
+   vdWindow.UnSetMessageHandler(uiShellHookMsg);
 
    for(Iterator it = GetIterator(); it; it++)
    {
@@ -64,6 +68,7 @@ WindowsManager::~WindowsManager(void)
    }
    m_windows.clear();
    m_HWNDMap.clear();
+   m_zorder.clear();
 
    settings.SaveSetting(Settings::ConfirmKilling, m_confirmKill);
    settings.SaveSetting(Settings::AutoSwitchDesktop, m_autoSwitch);
@@ -356,7 +361,7 @@ Window * WindowsManager::GetForegroundWindow()
    HWND hwnd = ::GetForegroundWindow();
    HWND hwnd2 = ::GetWindow(hwnd, GW_OWNER);
    hwnd = (hwnd2 == NULL ? hwnd : hwnd2);
-   return winMan->GetWindow(hwnd);
+   return GetWindow(hwnd);
 }
 
 HWND WindowsManager::GetPrevWindow(Window * wnd)

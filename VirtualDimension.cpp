@@ -610,14 +610,14 @@ LRESULT VirtualDimension::OnDestroy(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wP
    // Destroy the tooltip
    delete tooltip;
 
+   // Destroy the mouse warp
+   delete mousewarp;
+
    // Destroy the desktop manager
    delete deskMan;
 
    // Destroy the windows manager
    delete winMan;
-
-   // Destroy the mouse warp
-   delete mousewarp;
 
    // Destroy the tray icons manager
    delete trayManager;
