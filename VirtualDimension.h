@@ -49,7 +49,7 @@ public:
    VirtualDimension();
    ~VirtualDimension();
 
-   void Start(HINSTANCE hInstance, int nCmdShow);
+   bool Start(HINSTANCE hInstance, int nCmdShow);
    HWND GetHWND() const { return *((FastWindow*)this); }
    operator HINSTANCE() { return m_hInstance; }
 
