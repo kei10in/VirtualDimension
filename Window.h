@@ -23,6 +23,7 @@
 
 #include "desktop.h"
 #include "shlobj.h"
+#include "TrayIconsManager.h"
 
 #ifdef __GNUC__
 
@@ -46,7 +47,7 @@ DECLARE_INTERFACE_(ITaskbarList, IUnknown)
 
 #endif /*__GNUC__*/
 
-class Window: public ToolTip::Tool
+class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler
 {
 public:
    Window(HWND hWnd);
@@ -82,9 +83,13 @@ public:
    void HideWindow();
    bool IsHidden() const         { return m_hidden; }
 
-   operator HWND()               { return m_hWnd; }
-   HICON GetIcon(void);
+   void MinimizeToTray();
+   bool IsInTray() const         { return m_intray; }
+   void Restore();
 
+   operator HWND()               { return m_hWnd; }
+   
+   HICON GetIcon(void);
    char * GetText()
    { 
       GetWindowText(m_hWnd, m_name, sizeof(m_name)/sizeof(char));
@@ -107,9 +112,13 @@ public:
    };
 
 protected:
+   LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   void OnContextMenu();
+
    HWND m_hWnd;
    Desktop * m_desk;
    bool m_hidden;
+   bool m_intray;
    int m_hidingMethod;
    bool m_iconic;
    char m_name[255];

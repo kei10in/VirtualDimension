@@ -25,7 +25,7 @@
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false)
+Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_intray(false)
 {
    //Find out on which desktop the window is
    m_desk = deskMan->GetCurrentDesktop();
@@ -189,11 +189,14 @@ void Window::BuildMenu(HMENU menu)
 
    AppendMenu(menu, MF_STRING | (m_desk==NULL ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEALLDESKTOPS, "All desktops");
    AppendMenu(menu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
+
+   AppendMenu(menu, MF_STRING, VDM_MINIMIZETOTRAY, "Minimize to tray");
 }
 
 void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
 {
    bool ontop;
+
    switch(cmdId)
    {
    case VDM_ACTIVATEWINDOW:
@@ -201,7 +204,10 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
          deskMan->SwitchToDesktop(m_desk);
       if (IsIconic(m_hWnd))
          OpenIcon(m_hWnd);
+      if (IsInTray())
+         Restore();
       SetForegroundWindow(m_hWnd);
+      InvalidateRect(vdWindow, NULL, FALSE);
       break;
 
    case VDM_TOGGLEONTOP:
@@ -221,5 +227,47 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       SelectDesktopForWindow(this);
       break;
 
+   case VDM_MINIMIZETOTRAY:
+      MinimizeToTray();
+      break;
    }
+}
+
+LRESULT Window::OnTrayIconMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   switch(lParam)
+   {
+   case WM_RBUTTONDOWN:
+   case WM_CONTEXTMENU:
+      OnContextMenu();
+      break;
+
+   case WM_LBUTTONDOWN:
+      OnMenuItemSelected(NULL, VDM_ACTIVATEWINDOW);
+      break;
+   }
+
+   return 0;
+}
+
+void Window::OnContextMenu()
+{
+   return;
+}
+
+void Window::MinimizeToTray()
+{
+   m_intray = true;
+
+   trayManager->AddIcon(this);
+   HideWindow();
+}
+
+void Window::Restore()
+{
+   m_intray = false;
+
+   trayManager->DelIcon(this);
+   if (IsOnDesk(deskMan->GetCurrentDesktop()))
+      ShowWindow();
 }
