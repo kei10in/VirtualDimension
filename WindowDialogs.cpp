@@ -31,10 +31,7 @@ void FormatTransparencyLevel(HWND hWnd, int level);
 
 void Window::OpenSettings(Settings::Window &settings, bool create)
 {
-   TCHAR classname[50];
-
-   GetClassName(m_hWnd, classname, sizeof(classname)/sizeof(TCHAR));
-   settings.Open(classname, create);
+   settings.Open(m_className, create);
 }
 
 LRESULT CALLBACK Window::PropertiesProc(HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM lParam)
@@ -146,8 +143,9 @@ void Window::SaveSettings()
    if (m_autopos || m_autosize)
    {
       RECT rect;
-      GetWindowRect(m_hWnd, &rect);
-      settings.SavePosition(&rect);
+
+      if (GetWindowRect(m_hWnd, &rect))
+         settings.SavePosition(&rect);
    }
 }
 
