@@ -27,6 +27,7 @@
 #include "Windowsx.h"
 #include "hotkeymanager.h"
 #include "shellhook.h"
+#include "movewindow.h"
 #include <objbase.h>
 
 #define MAX_LOADSTRING 100
@@ -186,6 +187,9 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    static UINT s_uTaskbarRestart;
+   static bool dragging = false;
+   static Window* draggedWindow = NULL;
+   static HCURSOR dragCursor;
 
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
@@ -238,77 +242,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       {
       case WM_RBUTTONDOWN:
       case WM_CONTEXTMENU:
-         {
-            HMENU hMenu, hmenuTrackPopup;
-            POINT pt;
-            HRESULT res;
-            int i;
-            Desktop * desk;
-
-            //Get the "base" menu
-            hMenu = LoadMenu(hInst, (LPCTSTR)IDC_VIRTUALDIMENSION);
-            if (hMenu == NULL)
-               break;
-            hmenuTrackPopup = GetSubMenu(hMenu, 0);
-
-            //Append the list of desktops
-            InsertMenu(hmenuTrackPopup, 0, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
-
-            i = 0;
-            for(desk = deskMan->GetFirstDesktop();
-                desk != NULL;
-                desk = deskMan->GetNextDesktop())
-            {
-               MENUITEMINFO mii;
-
-               mii.cbSize = sizeof(mii);
-               mii.fMask = MIIM_STATE | MIIM_STRING | MIIM_ID | MIIM_DATA;
-               if (desk->m_active)
-                  mii.fState = MFS_CHECKED;
-               else
-                  mii.fState = MFS_UNCHECKED;
-               mii.dwItemData = (DWORD)desk;
-               mii.dwTypeData = desk->m_name;
-               mii.cch = strlen(desk->m_name);
-               mii.wID = WM_USER + i++;
-               InsertMenuItem(hmenuTrackPopup, 0, TRUE, &mii);
-            }
-
-            //And show the menu
-            GetCursorPos(&pt);
-            SetForegroundWindow(hWnd);
-            res = TrackPopupMenu(hmenuTrackPopup, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, mainWnd, NULL);
-
-            //Process the resulting message
-            if (res >= WM_USER)
-            {
-               Desktop * desk;
-               MENUITEMINFO mii;
-
-               mii.cbSize = sizeof(mii);
-               mii.fMask = MIIM_DATA;
-               GetMenuItemInfo(hmenuTrackPopup, res, FALSE, &mii);
-               desk = (Desktop*)mii.dwItemData;
-
-               deskMan->SwitchToDesktop(desk);
-               InvalidateRect(hWnd, NULL, TRUE);
-            }
-            else
-               PostMessage(hWnd, WM_COMMAND, res, 0);
-
-            //Do not forget to destroy the menu
-            DestroyMenu(hMenu);
-         }
+         trayIcon->OnContextMenu();
          break;
 
       case WM_LBUTTONDOWN:
-         if (IsWindowVisible(hWnd))
-            ShowWindow(hWnd, SW_HIDE);
-         else
-         {
-            SetForegroundWindow(hWnd);
-            ShowWindow(hWnd, SW_SHOW);
-         }
+         trayIcon->OnLeftButtonDown();
          break;
       }
       break;
@@ -327,15 +265,60 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
    case WM_LBUTTONDOWN:
       {
          POINT pt;
+
          pt.x = GET_X_LPARAM(lParam);
          pt.y = GET_Y_LPARAM(lParam);
 
          Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
-         if (desk != NULL)
+         if ( (desk) &&
+              ((draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
+              (ClientToScreen(hWnd, &pt)) &&
+              (DragDetect(hWnd, pt)) )
          {
+            //Dragging a window
+            dragging = true;
+            SetCapture(hWnd);
+
+            ICONINFO icon;
+            GetIconInfo(draggedWindow->GetIcon(), &icon);
+            icon.fIcon = FALSE;
+            dragCursor = (HCURSOR)CreateIconIndirect(&icon);
+            SetCursor(dragCursor);
+         }
+         else
+         {
+            //dragging = false;  //no needed
             deskMan->SwitchToDesktop(desk);
             InvalidateRect(hWnd, NULL, TRUE);
          }
+      }
+      break;
+
+   case WM_LBUTTONUP:
+      if (dragging)
+      {
+         POINT pt;
+
+         //Release capture
+         dragging = false;
+         ReleaseCapture();
+
+         //Free the cursor
+         DestroyCursor(dragCursor);
+
+         pt.x = GET_X_LPARAM(lParam);
+         pt.y = GET_Y_LPARAM(lParam);
+
+         //Find out the target desktop
+         Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+         if (draggedWindow->IsOnDesk(desk))
+            break;   //window already on the target desk
+
+         //Move the window to this desktop
+         draggedWindow->MoveToDesktop(desk);
+
+         //Refresh the window
+         InvalidateRect(hWnd, NULL, TRUE);
       }
       break;
 
@@ -343,6 +326,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
       {
          HMENU hMenu, hmenuTrackPopup;
          POINT pt;
+         HRESULT res;
          pt.x = GET_X_LPARAM(lParam);
          pt.y = GET_Y_LPARAM(lParam);
 
@@ -354,12 +338,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
          //Add desktop specific information
          Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+         Window * window = NULL;
          if (desk != NULL)
-            desk->BuildMenu(hmenuTrackPopup);
+         {
+            window = desk->GetWindowFromPoint(pt.x, pt.y);
+            if (window)
+               window->BuildMenu(hmenuTrackPopup);
+            else
+               desk->BuildMenu(hmenuTrackPopup);
+         }
 
          //And show the menu
          ClientToScreen(hWnd, &pt);
-         TrackPopupMenu(hmenuTrackPopup, TPM_RIGHTBUTTON, pt.x, pt.y, 0, mainWnd, NULL);
+         res = TrackPopupMenu(hmenuTrackPopup, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, mainWnd, NULL);
+
+         //Process the resulting message
+         if (res >= WM_USER)
+         {
+            if (window != NULL)
+               window->OnMenuItemSelected(hmenuTrackPopup, res);
+            else
+               desk->OnMenuItemSelected(hmenuTrackPopup, res);
+         }
+         else
+            PostMessage(hWnd, WM_COMMAND, res, 0);
 
          DestroyMenu(hMenu);
       }
@@ -423,6 +425,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
          // Retrieve the initial list of windows
          winMan->PopulateInitialWindowsSet();
+      }
+      break;
+
+   case WM_VIRTUALDIMENSION:
+      switch(wParam)
+      {
+      case VD_MOVEWINDOW:
+         SelectDesktopForWindow((Window*)lParam);
+         break;
       }
       break;
 
