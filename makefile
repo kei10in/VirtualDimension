@@ -19,9 +19,9 @@
 
 TARGET = VirtualDimension.exe
 BUILDDIR = mingw
-SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp
+SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp TrayIcon.cpp
 RES_FILE = VirtualDimension.res
-OBJ_FILE = ConfigBox.o Desktop.o DesktopManager.o HotKeyManager.o Settings.o VirtualDimension.o deskPropsDlg.o stdafx.o Transparency.o libtransp.a
+OBJ_FILE = ConfigBox.o Desktop.o DesktopManager.o HotKeyManager.o Settings.o VirtualDimension.o deskPropsDlg.o stdafx.o Transparency.o AlwaysOnTop.o TrayIcon.o libtransp.a
 
 CXXFLAGS = -fexpensive-optimizations -O3
 
