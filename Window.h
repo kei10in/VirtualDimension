@@ -72,7 +72,8 @@ public:
     * @retval true if the window is visible on the specified desktop
     * @retval false if the window is not visible on the specified desktop
     */
-   bool IsOnDesk(Desktop * desk);
+   bool IsOnDesk(Desktop * desk) const;
+   bool IsOnCurrentDesk() const;
 
    Desktop * GetDesk() const { return m_desk; }
 
@@ -83,8 +84,10 @@ public:
    void HideWindow();
    bool IsHidden() const         { return m_hidden; }
 
-   void MinimizeToTray();
-   bool IsInTray() const         { return m_intray; }
+   void ToggleMinimizeToTray();
+   bool IsMinimizeToTray() const { return m_MinToTray; }
+   bool IsIconic() const         { return IsHidden() ? m_iconic : (::IsIconic(m_hWnd) ? true:false); }
+   bool IsInTray() const         { return IsMinimizeToTray() && IsIconic(); }
    void Restore();
 
    void ToggleOnTop();
@@ -120,13 +123,14 @@ protected:
 
    enum MenuItems {
       VDM_TOGGLEONTOP = WM_USER+1,
-      
+      VDM_TOGGLEMINIMIZETOTRAY,
+
       VDM_TOGGLEALLDESKTOPS,
       VDM_MOVEWINDOW,
 
       VDM_ACTIVATEWINDOW,
+      VDM_RESTORE,
       VDM_MINIMIZE,
-      VDM_MINIMIZETOTRAY,
       VDM_MAXIMIZE,
       VDM_MAXIMIZEHEIGHT,
       VDM_MAXIMIZEWIDTH,
@@ -137,7 +141,7 @@ protected:
    HWND m_hWnd;
    Desktop * m_desk;
    bool m_hidden;
-   bool m_intray;
+   bool m_MinToTray;
    int m_hidingMethod;
    bool m_iconic;
    char m_name[255];
