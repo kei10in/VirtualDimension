@@ -31,6 +31,9 @@ public:
    void SetIcon(bool res);
    bool HasIcon() const { return m_iconLoaded; }
 
+   void OnLeftButtonDown();
+   void OnContextMenu();
+
 protected:
    void AddIcon();
    void DelIcon();
