@@ -30,6 +30,7 @@
 #include "tooltip.h"
 #include <objbase.h>
 #include "fastwindow.h"
+#include "HotKeyControl.h"
 
 
 // Global Variables:
@@ -108,6 +109,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    }
 
    m_hInstance = hInstance;
+
+   InitHotkeyControl();
 
    // Register the window class
    RegisterClass();
