@@ -40,6 +40,7 @@ Transparency * transp;
 TrayIcon * trayIcon;
 AlwaysOnTop * ontop;
 ToolTip * tooltip;
+TrayIconsManager * trayManager;
 
 VirtualDimension vdWindow;;
 
@@ -168,6 +169,9 @@ void VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
       AppendMenu(pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
 		AppendMenu(pSysMenu, MF_STRING, IDM_ABOUT, "&About");
    }
+
+   // Initialize the tray icon manager
+   trayManager = new TrayIconsManager();
 
    // Initialize tray icon
    trayIcon = new TrayIcon(hWnd);
@@ -400,6 +404,9 @@ LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam
 
    // Destroy the windows manager
    delete winMan;
+
+   // Destroy the tray icons manager
+   delete trayManager;
 
    PostQuitMessage(0);
 
