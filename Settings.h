@@ -74,15 +74,57 @@ public:
 
    protected:
       void Init(Settings * settings);
-      static const char regKeyDesktops[];
 
+      static const char regKeyDesktops[];
       static const char regValIndex[];
       static const char regValWallpaper[];
       static const char regValHotkey[];
-      
+
+      char m_name[MAX_NAME_LENGTH];
+
       HKEY m_regKey;
       bool m_keyOpened;
+      
+      HKEY m_topKey;
+      bool m_topKeyOpened;
+   };
+
+   class Window 
+   {
+   public:
+      Window(Settings * settings);
+      Window(Settings * settings, int index);
+      Window(Settings * settings, char * name, bool create=false);
+      ~Window();
+
+      bool OpenDefault();
+      bool Open(int index);
+      bool Open(char * name, bool create=false);
+      void Close();
+
+      bool IsValid();
+      void Destroy();
+
+      char * GetName(char * buffer, unsigned int length);
+      bool GetOnAllDesktops();
+      void SetOnAllDesktops(bool all);
+      bool GetAlwaysOnTop();
+      void SetAlwaysOnTop(bool ontop);
+      bool GetMinimizeToTray();
+      void SetMinimizeToTray(bool totray);
+
+   protected:
+      void Init(Settings * settings);
+
+      static const char regKeyWindows[];
+      static const char regValOnAllDesktops[];
+      static const char regValAlwaysOnTop[];
+      static const char regValMinimizeToTray[];
+      
       char m_name[MAX_NAME_LENGTH];
+
+      HKEY m_regKey;
+      bool m_keyOpened;
       
       HKEY m_topKey;
       bool m_topKeyOpened;
@@ -101,13 +143,14 @@ protected:
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
 
-   DWORD LoadDWord(const char * entry, DWORD defVal);
-   void SaveDWord(const char * entry, DWORD value);
+   static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);
+   static void SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value);
 
    HKEY m_regKey;
    bool m_keyOpened;
 
    friend class Settings::Desktop;
+   friend class Settings::Window;
 };
 
 #endif /*__SETTINGS_H__*/
