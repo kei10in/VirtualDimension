@@ -55,7 +55,13 @@ WindowsManager::~WindowsManager(void)
 
 void WindowsManager::PopulateInitialWindowsSet()
 {
+   Desktop * desk;
+
    EnumWindows(ListWindowsProc, (LPARAM)this);
+
+   desk = deskMan->GetCurrentDesktop();
+   if (desk)
+      desk->UpdateLayout();
 }
 
 void WindowsManager::MoveWindow(HWND hWnd, Desktop* desk)
