@@ -31,6 +31,7 @@ bool deskOrder(Desktop * first, Desktop * second)
 DesktopManager::DesktopManager(void)
 {
    Settings settings;
+   HotKeyManager * keyMan;
 
    m_currentDesktop = NULL;
 
@@ -49,12 +50,22 @@ DesktopManager::DesktopManager(void)
 
    //Load the desktops
    LoadDesktops();
+
+   //Register the hotkeys to go to the next/previous desktop
+   keyMan = HotKeyManager::GetInstance();
+   m_nextDeskEventHandler = new DeskChangeEventHandler(this, 1);
+   keyMan->RegisterHotkey( (MOD_ALT|MOD_CONTROL)<<8 | VK_TAB, m_nextDeskEventHandler);
+   m_prevDeskEventHandler = new DeskChangeEventHandler(this, -1);
+   keyMan->RegisterHotkey( (MOD_ALT|MOD_CONTROL|MOD_SHIFT)<<8 | VK_TAB, m_prevDeskEventHandler);
 }
 
 DesktopManager::~DesktopManager(void)
 {
    Settings settings;
    int index;
+
+   delete m_nextDeskEventHandler;
+   delete m_prevDeskEventHandler;
 
    index = 0;
 
@@ -73,7 +84,6 @@ DesktopManager::~DesktopManager(void)
       index ++;
    }
    m_desks.clear();
-
 
    settings.SaveNbCols(m_nbColumn);
 }
@@ -290,4 +300,19 @@ void DesktopManager::SetNbColumns(int cols)
 {
    m_nbColumn = cols; 
    UpdateLayout();
+}
+
+void DesktopManager::SelectOtherDesk(int change)
+{
+   vector<Desktop*>::const_iterator it;
+
+   it = find(m_desks.begin(), m_desks.end(), m_currentDesktop);
+   if (it == m_desks.end())
+      return;
+
+   it += change;
+   if (it == m_desks.end())
+      return;
+
+   SwitchToDesktop(*it);
 }

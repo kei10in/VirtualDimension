@@ -49,17 +49,30 @@ public:
    Desktop * GetCurrentDesktop() const { return m_currentDesktop; }
    Desktop* GetDesktopFromPoint(int x, int y);
    void SwitchToDesktop(Desktop * desk);
+   void SelectOtherDesk(int change);
 
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+   class DeskChangeEventHandler: public HotKeyManager::EventHandler {
+   public:
+      DeskChangeEventHandler(DesktopManager* self, int change): m_self(self), m_change(change) { return; }
+      void OnHotkey() { m_self->SelectOtherDesk(m_change); }
+   protected:
+      DesktopManager* m_self;
+      int m_change;
+   };
+
    int m_nbColumn;
 
    vector<Desktop*> m_desks;
    vector<Desktop*>::const_iterator m_deskIterator;
    Desktop * m_currentDesktop;
+
+   DeskChangeEventHandler * m_nextDeskEventHandler;
+   DeskChangeEventHandler * m_prevDeskEventHandler;
 
    int m_width, m_height;
 };
