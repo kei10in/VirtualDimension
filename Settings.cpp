@@ -23,6 +23,7 @@
 
 const char Settings::regKeyName[] = "Software\\Typz Software\\Virtual Dimension\\";
 const char Settings::regValPosition[] = "WindowPosition";
+const char Settings::regValDockedBorders[] = "DockedBorders";
 const char Settings::regValNbColumns[] = "ColumnNumber";
 const char Settings::regValLockPreviewWindow[] = "LockPreviewWindow";
 const char Settings::regValShowWindow[] = "ShowWindow";
@@ -135,6 +136,16 @@ void Settings::LoadPosition(LPRECT rect)
 void Settings::SavePosition(LPRECT rect)
 {
    SaveBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect));
+}
+
+int Settings::LoadDockedBorders()
+{
+	return LoadDWord(m_regKey, m_keyOpened, regValDockedBorders, 5 /*LEFT+TOP*/);
+}
+
+void Settings::SaveDockedBorders(int pos)
+{
+	SaveDWord(m_regKey, m_keyOpened, regValDockedBorders, pos);
 }
 
 bool Settings::LoadLockPreviewWindow()

@@ -31,6 +31,8 @@ public:
 
    void LoadPosition(LPRECT rect);
    void SavePosition(LPRECT rect);
+	int LoadDockedBorders();
+	void SaveDockedBorders(int pos);
    unsigned long LoadNbCols();
    void SaveNbCols(unsigned long cols);
    bool LoadLockPreviewWindow();
@@ -231,6 +233,7 @@ protected:
    static const char regKeyWindowsStartup[];
 
    static const char regValPosition[];
+	static const char regValDockedBorders[];
    static const char regValNbColumns[];
    static const char regValLockPreviewWindow[];
    static const char regValShowWindow[];
