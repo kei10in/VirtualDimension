@@ -22,6 +22,8 @@
 #include "window.h"
 #include "VirtualDimension.h"
 #include "movewindow.h"
+#include <Shellapi.h>
+#include <psapi.h>
 
 #ifdef __GNUC__
 #define MIM_STYLE 0x10
@@ -33,7 +35,7 @@ ITaskbarList* Window::m_tasklist = NULL;
 Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(hWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
-                           m_hIcon(NULL)
+                           m_hIcon(NULL), m_ownIcon(false)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -81,6 +83,9 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false),
 Window::~Window(void)
 {
    ULONG count;
+
+   if (m_ownIcon)
+      DestroyIcon(m_hIcon);
 
    if (m_autoSaveSettings)
       SaveSettings();
@@ -189,13 +194,36 @@ HICON Window::GetIcon(void)
 {
    if (!GetObjectType(m_hIcon))
    {
+      m_ownIcon = false;
+
      	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
 	   if ( !m_hIcon )
 		   m_hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
 	   if ( !m_hIcon )
 		   SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
       if ( !m_hIcon )
+      {
+         TCHAR lpFileName[256];
+         DWORD pId;
+         HINSTANCE hInstance;
+         HANDLE hProcess;
+
+         //Get the file name of the module
+         hInstance = (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE);
+         GetWindowThreadProcessId(m_hWnd, &pId);
+         hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pId);
+         GetModuleFileNameEx(hProcess, hInstance, lpFileName, 256);
+         CloseHandle(hProcess);
+
+         //Get default small icon
+         ExtractIconEx(lpFileName, 0, NULL, &m_hIcon, 1);
+         m_ownIcon = true;
+      }
+      if ( !m_hIcon )
+      {
+         m_ownIcon = false;
          m_hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
+      }
    }
 
    return m_hIcon;
