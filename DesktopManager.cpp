@@ -48,8 +48,17 @@ DesktopManager::DesktopManager(void)
    m_displayMode = (DisplayMode)settings.LoadDisplayMode();
    m_bkgrndColor = settings.LoadBackgroundColor();
    settings.LoadBackgroundImage(m_bkgrndPictureFile, MAX_PATH);
-   UpdateBackgroundPictureObjects();
-   UpdateBackgroundPlainColorObjects();
+   switch(GetDisplayMode())
+   {
+   case DM_PICTURE:
+      UpdateBackgroundPictureObjects();
+      break;
+
+   default:
+   case DM_PLAINCOLOR:
+      UpdateBackgroundPlainColorObjects();
+      break;
+   }
 
    //Bind the message handlers
    vdWindow.SetMessageHandler(WM_SIZE, this, &DesktopManager::OnSize);
@@ -117,9 +126,12 @@ LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, L
 
       UpdateLayout();
 
-      DeleteObject(m_deskBkPicture);
-      DeleteObject(m_selDeskBkPicture);
-      UpdateBackgroundPictureObjects();
+      if (GetDisplayMode() == DM_PICTURE)
+      {
+         DeleteObject(m_deskBkPicture);
+         DeleteObject(m_selDeskBkPicture);
+         UpdateBackgroundPictureObjects();
+      }
    }
 
    return 0;
@@ -197,7 +209,6 @@ LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, 
       {
          RECT activeRect;
          deskMan->GetCurrentDesktop()->GetRect(&activeRect);
-
       }
       break;
 
@@ -398,9 +409,12 @@ void DesktopManager::SetNbColumns(int cols)
    m_nbColumn = cols; 
    UpdateLayout();
 
-   DeleteObject(m_deskBkPicture);
-   DeleteObject(m_selDeskBkPicture);
-   UpdateBackgroundPictureObjects();
+   if (GetDisplayMode() == DM_PICTURE)
+   {
+      DeleteObject(m_deskBkPicture);
+      DeleteObject(m_selDeskBkPicture);
+      UpdateBackgroundPictureObjects();
+   }
 }
 
 void DesktopManager::SelectOtherDesk(int change)
@@ -427,10 +441,35 @@ void DesktopManager::SetDisplayMode(DisplayMode dm)
    if (dm == m_displayMode)
       return;
 
-   m_displayMode = dm;
-   vdWindow.Refresh();
+   switch(m_displayMode)
+   {
+   default:
+   case DM_PLAINCOLOR:
+      DeleteObject(m_selDeskBkBrush);
+      DeleteObject(m_deskBkBrush);
+      break;
 
-   return;
+   case DM_PICTURE:
+      DeleteObject(m_selDeskBkPicture);
+      DeleteObject(m_deskBkPicture);
+      break;
+   }
+
+   m_displayMode = dm;
+
+   switch(m_displayMode)
+   {
+   default:
+   case DM_PLAINCOLOR:
+      UpdateBackgroundPlainColorObjects();      
+      break;
+
+   case DM_PICTURE:
+      UpdateBackgroundPictureObjects();
+      break;
+   }
+
+   vdWindow.Refresh();
 }
 
 bool DesktopManager::ChooseBackgroundColor(HWND hWnd)
@@ -522,13 +561,14 @@ void DesktopManager::UpdateBackgroundPictureObjects()
       //Deselected picture
       image->get_Handle((OLE_HANDLE *)&bmp);
       m_deskBkPicture = (HBITMAP)CopyImage(bmp, IMAGE_BITMAP, Width, Height, 0);
+//DeleteObject(bmp);
 
       //Selected picture
       winDC = GetWindowDC(vdWindow);
       memDC = CreateCompatibleDC(winDC);
       m_selDeskBkPicture = CreateCompatibleBitmap(winDC, Width, Height);
       SelectObject(memDC, m_selDeskBkPicture);
-      //ReleaseDC(vdWindow, winDC);
+//ReleaseDC(vdWindow, winDC);
 
       picDC = CreateCompatibleDC(memDC);
       SelectObject(picDC, m_deskBkPicture);
