@@ -158,12 +158,12 @@ void Window::ShowWindow()
    if (m_style)
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
 
-   //Restore the application if needed
-   if (!m_iconic)
-      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
-
    //Show the icon
    m_tasklist->AddTab(m_hWnd);
+
+   //Restore the application if needed
+   if (!m_iconic)
+      ::ShowWindowAsync(m_hWnd, SW_SHOWNOACTIVATE);
 
    m_hidden = false;
 }
@@ -181,7 +181,7 @@ void Window::HideWindow()
    //Minimize the application
    m_iconic = IsIconic();
    if (!m_iconic)
-      ::ShowWindow(m_hWnd, SW_SHOWMINNOACTIVE);
+      ::ShowWindowAsync(m_hWnd, SW_SHOWMINNOACTIVE);
 
    //Hide the icon
    m_tasklist->DeleteTab(m_hWnd);
@@ -194,14 +194,6 @@ void Window::HideWindow()
    }
    
    m_hidden = true;
-}
-
-bool Window::IsOnDesk(Desktop * desk) const
-{
-   if (m_desk == NULL)
-      return true;
-
-   return desk == m_desk;
 }
 
 bool Window::IsOnCurrentDesk() const
@@ -447,10 +439,10 @@ void Window::SetTransparencyLevel(unsigned char level)
 
 void Window::Activate()
 {
-   if (!IsOnCurrentDesk())
-      deskMan->SwitchToDesktop(m_desk);
    if (IsIconic())
       Restore();
+   if (!IsOnCurrentDesk())
+      deskMan->SwitchToDesktop(m_desk);
    SetForegroundWindow(m_hOwnedWnd);
 }
 

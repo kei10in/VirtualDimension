@@ -87,7 +87,7 @@ public:
     * @retval false if the window is not visible on the specified desktop
     * @see IsOnCurrentDesk, GetDesk
     */
-   bool IsOnDesk(Desktop * desk) const;
+   bool IsOnDesk(Desktop * desk) const        { return (m_desk == NULL) || (m_desk == desk); }
 
    /** Tell if the window is visible on the current desktop.
     * This function work eaxctly as IsOnDesk(), except that it checks only for the current
@@ -106,7 +106,7 @@ public:
     * visible on all desktops.
     * @see IsOnDesk, IsOnCurrentDesk
     */
-   Desktop * GetDesk() const { return m_desk; }
+   Desktop * GetDesk() const                  { return m_desk; }
 
    /** Builds the context menu associated with the window.
     * This function creates and initializes a popup menu that can used to perform a variety of actions
