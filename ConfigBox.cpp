@@ -712,7 +712,8 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
             {
                "Hide",
                "Minimize",
-               "Move"
+               "Move",
+               NULL
             };
             Settings settings;
             Config::Group * group = settings.GetHidingMethodExceptions();
@@ -810,11 +811,11 @@ HWND CreateConfigBox()
    pages[4].pszTemplate = MAKEINTRESOURCE(IDD_SHORTCUT_SETTINGS);
 
    pages[5].dwSize = sizeof(PROPSHEETPAGE);
-   pages[4].hInstance = vdWindow;
-   pages[4].dwFlags = PSP_USETITLE ;
-   pages[4].pfnDlgProc = (DLGPROC)TroubleShootingConfiguration;
-   pages[4].pszTitle = "Advanced";
-   pages[4].pszTemplate = MAKEINTRESOURCE(IDD_TROUBLESHOOTING_SETTINGS);
+   pages[5].hInstance = vdWindow;
+   pages[5].dwFlags = PSP_USETITLE ;
+   pages[5].pfnDlgProc = (DLGPROC)TroubleShootingConfiguration;
+   pages[5].pszTitle = "Advanced";
+   pages[5].pszTemplate = MAKEINTRESOURCE(IDD_TROUBLESHOOTING_SETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);

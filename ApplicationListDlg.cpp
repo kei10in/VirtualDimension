@@ -32,10 +32,12 @@ ApplicationListDlg::ApplicationListDlg(Config::Group * group, LPCTSTR title, int
    m_defaultValue = defaultValue;
    m_values = values;
    m_valTitle = title;
+   m_hParamEditCtrl = NULL;
 }
 
 ApplicationListDlg::~ApplicationListDlg(void)
 {
+   DestroyWindow(m_hParamEditCtrl);
 }
 
 int ApplicationListDlg::ShowDialog(HINSTANCE hinstance, HWND hWndParent)
@@ -56,6 +58,7 @@ void ApplicationListDlg::InitDialog()
    //Setup the program list
    m_hAppListWnd = GetDlgItem(m_hDlg, IDC_APPL_LIST);
 
+   ListView_SetExtendedListViewStyleEx(m_hAppListWnd, LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT);
    ListView_SetImageList(m_hAppListWnd, m_hImgList, LVSIL_SMALL);
 
    column.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
@@ -72,6 +75,19 @@ void ApplicationListDlg::InitDialog()
       column.pszText = (LPTSTR)m_valTitle;
       column.iSubItem = 0;
       ListView_InsertColumn(m_hAppListWnd, 1, &column);
+
+      if (m_values)
+      {
+         m_hParamEditCtrl = CreateWindow("COMBOBOX", "", WS_BORDER|WS_CHILD|CBS_DROPDOWNLIST, 0, 0, 10, 10, m_hAppListWnd, NULL, GetModuleHandle(NULL), 0);
+
+         const LPCTSTR * val = m_values;
+         while(*val)
+            ComboBox_AddString(m_hParamEditCtrl, *val++);
+      }
+      else
+         m_hParamEditCtrl = CreateWindow("EDIT", "", WS_BORDER|WS_CHILD|ES_NUMBER|ES_AUTOHSCROLL, 0, 0, 0, 0, m_hAppListWnd, NULL, GetModuleHandle(NULL), 0);
+
+      SetWindowFont(m_hParamEditCtrl, GetWindowFont(m_hDlg), FALSE);
    }
 
    //Populate program list
@@ -85,7 +101,11 @@ void ApplicationListDlg::InitDialog()
 void ApplicationListDlg::OnInsertApplBtn()
 {
    TCHAR path[MAX_PATH];
-   
+
+   //Stop editing item
+   if (IsEditing())
+      EndEdit();
+
    //No file at the moment
    *path = 0;
 
@@ -99,6 +119,10 @@ void ApplicationListDlg::OnEditApplBtn()
 {
    TCHAR path[MAX_PATH];
    int idx;
+
+   //Stop editing item
+   if (IsEditing())
+      EndEdit();
 
    //Get selected item index
    idx = ListView_GetNextItem(m_hAppListWnd, (WPARAM)-1, LVNI_SELECTED);
@@ -116,12 +140,103 @@ void ApplicationListDlg::OnEditApplBtn()
 
 void ApplicationListDlg::OnRemoveApplBtn()
 {
+   //Stop editing item
+   if (IsEditing())
+      EndEdit();
+
    //Get selected item index
    int idx = ListView_GetNextItem(m_hAppListWnd, (WPARAM)-1, LVNI_SELECTED);
 
    //Remove it from the list
    if (idx != -1)
       ListView_DeleteItem(m_hAppListWnd, idx);
+}
+
+void ApplicationListDlg::BeginEdit(int item)
+{
+   char buf[6];
+   DWORD param = GetProgramParam(item);
+
+   m_editedItemIndex = item;
+
+   //Set the param value
+   if (m_values)
+      ComboBox_SetCurSel(m_hParamEditCtrl, param);
+   else
+      SetWindowText(m_hParamEditCtrl, itoa(param, buf, 10));
+
+   //Display the window at the correct location
+   RECT rect;
+   ListView_GetSubItemRect(m_hAppListWnd, item, 1, LVIR_BOUNDS, &rect);
+   MoveWindow(m_hParamEditCtrl, rect.left, rect.top-1, rect.right-rect.left+1, rect.bottom-rect.top+1, TRUE);
+   ShowWindow(m_hParamEditCtrl, SW_SHOW);
+
+   //Give the focus to the edit control
+   SetFocus(m_hParamEditCtrl);
+}
+
+void ApplicationListDlg::EndEdit()
+{
+   DWORD param;
+   char buf[6];
+
+   if (m_values)
+   {
+      param = ComboBox_GetCurSel(m_hParamEditCtrl);
+   }
+   else
+   {
+      GetWindowText(m_hParamEditCtrl, buf, 6);
+      param = atoi(buf);
+   }
+
+   //Update the list
+   SetProgramParam(m_editedItemIndex, param);
+
+   //Hide the edit control
+   ShowWindow(m_hParamEditCtrl, SW_HIDE);
+}
+
+void ApplicationListDlg::OnProgramClick(LPNMITEMACTIVATE lpnmitem)
+{
+   if (IsEditing())
+      EndEdit();
+
+   if (lpnmitem->iItem != -1 && lpnmitem->iSubItem == 1)
+      BeginEdit(lpnmitem->iItem);
+}
+
+void ApplicationListDlg::OnProgramSetFocus()
+{
+   if (IsEditing())
+      EndEdit();
+}
+
+void ApplicationListDlg::OnApply()
+{
+   int i = 0;
+   TCHAR filename[MAX_PATH];
+   DWORD length = MAX_PATH;
+
+   //Validate current parameter, if any
+   if (IsEditing())
+      EndEdit();
+
+   //Remove entries which have been removed (ie are not in the list box)
+   while(length=MAX_PATH, m_appgroup->EnumEntry(i, filename, &length))
+   {
+      if (FindProgram(filename) != -1)
+         i++;
+      else
+         m_appgroup->RemoveEntry(filename);
+   }
+
+   //Add/set value for all entries in the list box
+   for(i=0; i<ListView_GetItemCount(m_hAppListWnd); i++)
+   {
+      ListView_GetItemText(m_hAppListWnd, i, 0, filename, length);
+      m_appgroup->SaveDWord(filename, GetProgramParam(i));
+   }
 }
 
 BOOL ApplicationListDlg::GetProgramName(LPTSTR filename, DWORD maxlen)
@@ -178,17 +293,44 @@ void ApplicationListDlg::InsertProgram(LPTSTR filename, int value, int idx)
    else
       ListView_SetItem(m_hAppListWnd, &item);
 
-   //Setup sub-items
+   //Set the value
+   SetProgramParam(idx, value);
+}
+
+void ApplicationListDlg::SetProgramParam(int item, DWORD param)
+{
+   LVITEM lvitem;
+
+   //Store the value
+   lvitem.mask = LVIF_PARAM;
+   lvitem.iItem = item;
+   lvitem.iSubItem = 0;
+   lvitem.lParam = param;
+   ListView_SetItem(m_hAppListWnd, &lvitem);
+
+   //Setup sub-item in the list
    if (m_values)
    {
-      ListView_SetItemText(m_hAppListWnd, idx, 1, (LPTSTR)m_values[value]);
+      ListView_SetItemText(m_hAppListWnd, item, 1, (LPTSTR)m_values[param]);
    }
    else if (m_valTitle) //else, this is not needed, as the data will not be shown/changed anyway
    {
       char buf[6];
-      itoa(value, buf, 10);
-      ListView_SetItemText(m_hAppListWnd, idx, 1, buf);
+      itoa(param, buf, 10);
+      ListView_SetItemText(m_hAppListWnd, item, 1, buf);
    }
+}
+
+DWORD ApplicationListDlg::GetProgramParam(int item)
+{
+   LVITEM lvitem;
+
+   lvitem.mask = LVIF_PARAM;
+   lvitem.iItem = item;
+   lvitem.iSubItem = 0;
+   ListView_GetItem(m_hAppListWnd, &lvitem);
+
+   return lvitem.lParam;
 }
 
 INT_PTR CALLBACK ApplicationListDlg::DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -209,6 +351,7 @@ INT_PTR CALLBACK ApplicationListDlg::DlgProc(HWND hDlg, UINT message, WPARAM wPa
       switch(LOWORD(wParam))
       {
       case IDOK:
+         self->OnApply();
       case IDCANCEL:
          EndDialog(hDlg, LOWORD(wParam));
          break;
@@ -223,6 +366,23 @@ INT_PTR CALLBACK ApplicationListDlg::DlgProc(HWND hDlg, UINT message, WPARAM wPa
 
       case IDC_REMOVEAPPL_BTN:
          self->OnRemoveApplBtn();
+         break;
+      }
+      break;
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      self = (ApplicationListDlg *)GetWindowLongPtr(hDlg, DWLP_USER);
+      switch (pnmh->code)
+      {
+      case NM_CLICK:
+         if (GetDlgCtrlID(pnmh->hwndFrom) == IDC_APPL_LIST)
+            self->OnProgramClick((LPNMITEMACTIVATE) lParam);
+         break;
+
+      case NM_SETFOCUS:
+         if (GetDlgCtrlID(pnmh->hwndFrom) == IDC_APPL_LIST)
+            self->OnProgramSetFocus();
          break;
       }
       break;

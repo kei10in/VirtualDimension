@@ -36,10 +36,19 @@ protected:
    void OnInsertApplBtn();
    void OnEditApplBtn();
    void OnRemoveApplBtn();
+   void OnProgramClick(LPNMITEMACTIVATE lpnmitem);
+   void OnProgramSetFocus();
+   void OnApply();
+
+   void BeginEdit(int item);
+   void EndEdit();
+   bool IsEditing()           { return IsWindowVisible(m_hParamEditCtrl) ? true : false; }
 
    BOOL GetProgramName(LPTSTR filename, DWORD maxlen);
    int FindProgram(LPTSTR filename);
    void InsertProgram(LPTSTR filename, int value, int idx=-1);
+   void SetProgramParam(int item, DWORD param);
+   DWORD GetProgramParam(int item);
 
    Config::Group * m_appgroup;
    int m_defaultValue;
@@ -48,6 +57,9 @@ protected:
 
    HWND m_hDlg;
    HWND m_hAppListWnd;
+   HWND m_hParamEditCtrl;
+
+   int m_editedItemIndex;
 
    HIMAGELIST m_hImgList;
    int m_defaultIconIdx;
