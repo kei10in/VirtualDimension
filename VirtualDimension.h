@@ -61,6 +61,9 @@ public:
 	inline int GetSnapSize() const		{ return m_snapSize; }
 	inline void SetSnapSize(int size)	{ m_snapSize = size; }
 
+	int GetAutoHideDelay() const			{ return m_autoHideDelay; }
+	void SetAutoHideDelay(int delay)		{ m_autoHideDelay = delay; }
+
 	void Shrink(void);
 	void UnShrink(void);
 
