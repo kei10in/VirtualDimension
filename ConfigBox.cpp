@@ -263,6 +263,7 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
          break;
 
       case IDC_FONT_BTN:
+         deskMan->ChoosePreviewWindowFont(hDlg);
          break;
       }
       break;
