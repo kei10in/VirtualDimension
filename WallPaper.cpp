@@ -74,13 +74,7 @@ void WallPaper::Reload()
       SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_bmpFileName, 0);
    else if (m_fileName)
    {
-      if (strnicmp(m_fileName + strlen(m_fileName)-4, ".bmp", 4) == 0)
-      {
-         m_bmpFileName = m_fileName;
-         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_bmpFileName, 0);
-      }
-      else
-         m_wallPaperLoader.LoadImageAsync(this);
+		m_wallPaperLoader.LoadImageAsync(this);
    }
 }
 
@@ -120,26 +114,36 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
       WallPaper * wallpaper = self->m_WallPapersQueue.front();
       self->m_WallPapersQueue.pop_front();
       ReleaseMutex(self->m_hQueueMutex);
-      
-      IPicture * picture = PlatformHelper::OpenImage(wallpaper->m_fileName);
-      if (!picture)
+
+      if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
       {
-         wallpaper->m_fileName = NULL;
-         continue;
-      }
+         wallpaper->m_bmpFileName = wallpaper->m_fileName;
 
-      wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
-      if (GetTempFileName("C:\\", "VDIMG", 0, wallpaper->m_bmpFileName) == 0)
+			if (wallpaper == m_activeWallPaper)
+				SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+      }
+      else
       {
-         picture->Release();
-         continue;
-      }
+			IPicture * picture = PlatformHelper::OpenImage(wallpaper->m_fileName);
+			if (!picture)
+			{
+				wallpaper->m_fileName = NULL;
+				continue;
+			}
 
-      if (PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName) && 
-          (wallpaper == m_activeWallPaper))
-         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+			wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
+			if (GetTempFileName("C:\\", "VDIMG", 0, wallpaper->m_bmpFileName) == 0)
+			{
+				picture->Release();
+				continue;
+			}
 
-      picture->Release();
+			if (PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName) && 
+				 (wallpaper == m_activeWallPaper))
+				SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+			
+			picture->Release();
+		}
    }
 
    ExitThread(0);
