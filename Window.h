@@ -52,7 +52,17 @@ DECLARE_INTERFACE_(ITaskbarList, IUnknown)
 class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler, public AlwaysOnTop
 {
 public:
+   /** Constructor.
+    * Builds a Window object from the handle of a window. Settings specific to this window are loaded
+    * from registry, if any, and applied. Else, default settings are used.
+    * If shell integration is enabled, the window gets hooked at this time.
+    */
    Window(HWND hWnd);
+
+   /** Destructor.
+    * Performs cleanup: settings are saved to the registry if needed, the window is unhooked and 
+    * memory/handles are released.
+    */
    ~Window();
 
    /** Move the window to the specified desktop.
@@ -68,17 +78,56 @@ public:
     * This function returns a boolean, indicating if the window is displayed on the 
     * specified desktop. By specifying the NULL desktop, the caller can easily find out
     * if the window can be seen on all desktops.
+    * This does not give any information concerning the window state or whatsoever. It
+    * simply tells if the windows is "present" on the specified desktop.
     *
     * @param desk Pointer to the desktop on which one wants to know if the window is
     * displayed, or NULL to find out if the window is displayed on all desktops.
     * @retval true if the window is visible on the specified desktop
     * @retval false if the window is not visible on the specified desktop
+    * @see IsOnCurrentDesk, GetDesk
     */
    bool IsOnDesk(Desktop * desk) const;
+
+   /** Tell if the window is visible on the current desktop.
+    * This function work eaxctly as IsOnDesk(), except that it checks only for the current
+    * desktop.
+    *
+    * @retval true if the window is visible on the specified desktop
+    * @retval false if the window is not visible on the specified desktop
+    * @see IsOnDesk, GetDesk
+    */
    bool IsOnCurrentDesk() const;
 
+   /** Get the desktop on which the window is present.
+    * If the window is present on all desktops, the return value is NULL.
+    *
+    * @return Pointer to the Desktop which the window belongs to, or NULL if the window is
+    * visible on all desktops.
+    * @see IsOnDesk, IsOnCurrentDesk
+    */
    Desktop * GetDesk() const { return m_desk; }
 
+   /** Builds the context menu associated with the window.
+    * This function creates and initializes a popup menu that can used to perform a variety of actions
+    * on the window:
+    *   - all regular system menu actions (move, size, close...)
+    *   - maximize height/width
+    *   - kill
+    *   - enable minimize to tray, transparency, present on all desktops
+    *   - change the desktop
+    *   - display the properties dialog
+    *
+    * After the menu is displayed, the action can be performed by calling the OnMenuItemSelected method
+    * with both the handle of the menu and the id of the selected command. After all this is done, the
+    * menu should be destroyed.
+    *
+    * Notice that it is the responsability of the caller to do so: the method does not display the menu
+    * nor enable the user to select anything. It simply creates the menu in memory.
+    *
+    * @return Handle to the newly created menu
+    * @see OnMenuItemSelected
+    */
    HMENU BuildMenu();
    void OnMenuItemSelected(HMENU menu, int cmdId);
 
@@ -196,8 +245,7 @@ protected:
    DWORD m_dwProcessId;
 
    /** Pointer to the COM taskbar interface.
-    * This interface is used for the WHM_MINIMIZE hiding method, to add/remove the icons
-    * from the taskbar
+    * This interface is used to add/remove the icons from the taskbar, when showing/hiding
     */
    static ITaskbarList* m_tasklist;
 };
