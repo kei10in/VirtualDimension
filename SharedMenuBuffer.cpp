@@ -102,3 +102,4 @@ bool SharedMenuBuffer::InsertMenu(UINT_PTR id, LPCSTR text, BOOL check)
 
    return true;
 }
+
