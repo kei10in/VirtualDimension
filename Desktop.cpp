@@ -23,9 +23,10 @@
 #include <string>
 #include <Shellapi.h>
 #include <assert.h>
-#include "hotkeymanager.h"
-#include "windowsmanager.h"
-#include "virtualdimension.h"
+#include "HotkeyManager.h"
+#include "WindowsManager.h"
+#include "VirtualDimension.h"
+#include "BackgroundColor.h"
 
 #ifdef USE_IACTIVEDESKTOP
 IActiveDesktop * Desktop::m_ActiveDesktop = NULL;
@@ -42,6 +43,7 @@ Desktop::Desktop(int i)
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
    *m_wallpaperFile = 0;
+   m_bkColor = GetSysColor(COLOR_DESKTOP);
 
    sprintf(m_name, "Desk%i", i);
 }
@@ -52,6 +54,7 @@ Desktop::Desktop(Settings::Desktop * desktop)
    desktop->GetWallpaper(m_wallpaperFile, sizeof(m_wallpaperFile));
    desktop->GetIndex(&m_index);
    desktop->GetHotkey(&m_hotkey);
+   m_bkColor = desktop->GetColor();
 
    m_wallpaper.SetImage(m_wallpaperFile);
 
@@ -297,6 +300,7 @@ void Desktop::Save()
    desktop.SetWallpaper(m_wallpaperFile);
    desktop.SetIndex(m_index);
    desktop.SetHotkey(m_hotkey);
+   desktop.SetColor(m_bkColor);
 }
 
 void Desktop::Activate(void)
@@ -310,6 +314,9 @@ void Desktop::Activate(void)
 
    /* Set the wallpaper */
    m_wallpaper.Activate();
+
+   /* Set the background color */
+   BackgroundColor::GetInstance().SetColor(m_bkColor);
 
    // Show the windows
    hWinPosInfo = BeginDeferWindowPos(0);
@@ -374,6 +381,17 @@ void Desktop::SetWallpaper(LPTSTR fileName)
 {
    strncpy(m_wallpaperFile, fileName, sizeof(m_wallpaperFile)/sizeof(TCHAR));
    m_wallpaper.SetImage(m_wallpaperFile);
+}
+
+void Desktop::SetBackgroundColor(COLORREF col)
+{
+   if (col == m_bkColor)
+      return;
+
+   m_bkColor = col;
+
+   if (m_active)
+      BackgroundColor::GetInstance().SetColor(m_bkColor);
 }
 
 bool Desktop::deskOrder(Desktop * first, Desktop * second)

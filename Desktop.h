@@ -65,6 +65,9 @@ public:
    LPTSTR GetWallpaper()      { return m_wallpaperFile; }
    void SetWallpaper(LPTSTR fileName);
 
+   COLORREF GetBackgroundColor() const   { return m_bkColor; }
+   void SetBackgroundColor(COLORREF col);
+
    char * GetText()           { return m_name; }
    void GetRect(LPRECT rect)  { *rect = m_rect; }
 
@@ -83,8 +86,10 @@ protected:
    char m_name[80];
    int m_hotkey;
    RECT m_rect;
+   
    WallPaper m_wallpaper;
    TCHAR m_wallpaperFile[MAX_PATH];
+   COLORREF m_bkColor;
 
    class DesktopProperties
    {
@@ -95,12 +100,15 @@ protected:
       bool Apply(HWND hDlg);
       void OnWallpaperChanged(HWND hDlg, HWND ctrl);
       void OnBrowseWallpaper(HWND hDlg);
-      void OnDrawItem(LPDRAWITEMSTRUCT lpDrawItem);
+      void OnPreviewDrawItem(LPDRAWITEMSTRUCT lpDrawItem);
+      void OnBgColorDrawItem(LPDRAWITEMSTRUCT lpDrawItem);
+      void SelectColor(HWND hDlg);
 
    protected:
       Desktop * m_desk;
       IPicture * m_picture;
       TCHAR m_wallpaper[MAX_PATH];
+      COLORREF m_bgColor;
    };
 };
 
