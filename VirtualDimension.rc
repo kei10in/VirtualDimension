@@ -155,7 +155,9 @@ BEGIN
     CONTROL         "Enable tray icon",IDC_TRAYICON_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,30,67,10
     CONTROL         "Always on top",IDC_ONTOP_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,17,61,10
+                    WS_TABSTOP,18,17,67,10
+    CONTROL         "Enable tooltips",IDC_TOOLTIPS_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,43,67,10
     GROUPBOX        "Options",IDC_STATIC,7,7,200,52
     CTEXT           "255",IDC_TRANSP_DISP,9,94,195,8
 END
