@@ -42,6 +42,9 @@ void HotKeyManager::RegisterHotkey(int hotkey, int data)
    if (m_map->size() >= 0xBFFF)
       return;  //No more hotkey id can be defined
 
+   if (m_map->empty())
+      vdWindow.SetMessageHandler(WM_HOTKEY, this, &HotKeyManager::OnHotkey);
+
    //Find an id for this new hotkey
    id = data & 0x7FFF;  //ensure this is less than 0xBFFF
    if (!m_map->empty())
@@ -67,7 +70,7 @@ void HotKeyManager::RegisterHotkey(int hotkey, int data)
       mod |= MOD_WIN;
 
    int vk = hotkey & 0xFF;
-   if (RegisterHotKey(mainWnd, id, mod, vk))
+   if (RegisterHotKey(vdWindow, id, mod, vk))
    {
       //Put the data in the map, indexed by the id, as the hotkey was
       //succesfully registered
@@ -94,7 +97,7 @@ void HotKeyManager::UnregisterHotkey(int data)
    m_map->erase(finder);
 
    //And unregister the hotkey
-   UnregisterHotKey(mainWnd, id);
+   UnregisterHotKey(vdWindow, id);
 };
 
 int HotKeyManager::GetHotkeyData(int id)
@@ -106,4 +109,17 @@ int HotKeyManager::GetHotkeyData(int id)
       return 0;
    else
       return finder->second;
+}
+
+LRESULT HotKeyManager::OnHotkey(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
+{
+   Desktop * desk = (Desktop*)HotKeyManager::GetInstance()->GetHotkeyData((int)wParam);
+
+   if (desk != NULL)
+   {
+      deskMan->SwitchToDesktop(desk);
+      InvalidateRect(hWnd, NULL, TRUE);
+   }
+
+   return 0;
 }
