@@ -25,6 +25,7 @@
 #include "VirtualDimension.h"
 #include "OnScreenDisplay.h"
 #include <algorithm>
+#include <Commdlg.h>
 
 DesktopManager::DesktopManager(void)
 {
@@ -41,6 +42,11 @@ DesktopManager::DesktopManager(void)
    GetClientRect(vdWindow, &rect);
    m_width = rect.right - rect.left;
    m_height = rect.bottom - rect.top;
+   
+   //Initialize the display mode
+   m_displayMode = (DisplayMode)settings.LoadDisplayMode();
+   m_bkgrndColor = settings.LoadBackgroundColor();
+   settings.LoadBackgroundImage(m_bkgrndPictureFile, MAX_PATH);
 
    //Bind the message handlers
    vdWindow.SetMessageHandler(WM_SIZE, this, &DesktopManager::OnSize);
@@ -89,6 +95,9 @@ DesktopManager::~DesktopManager(void)
 
    settings.SaveNbCols(m_nbColumn);
    settings.SaveDesktopNameOSD(m_useOSD);
+   settings.SaveDisplayMode(m_displayMode);
+   settings.SaveBackgroundColor(m_bkgrndColor);
+   settings.SaveBackgroundImage(m_bkgrndPictureFile);
 }
 
 LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
@@ -318,4 +327,62 @@ void DesktopManager::SelectOtherDesk(int change)
       return;
 
    SwitchToDesktop(*it);
+}
+
+void DesktopManager::SetDisplayMode(DisplayMode dm)
+{
+   if (dm == m_displayMode)
+      return;
+
+   m_displayMode = dm;
+
+   return;
+}
+
+bool DesktopManager::ChooseBackgroundColor(HWND hWnd)
+{
+   CHOOSECOLOR cc;
+   BOOL res;
+   static COLORREF acrCustClr[16];
+
+   ZeroMemory(&cc, sizeof(CHOOSECOLOR));
+   cc.lStructSize = sizeof(CHOOSECOLOR);
+   cc.hwndOwner = hWnd;
+   cc.rgbResult = m_bkgrndColor;
+   cc.lpCustColors = acrCustClr;
+   cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
+
+   res = ChooseColor(&cc);
+   m_bkgrndColor = cc.rgbResult;
+   
+   if (res && (GetDisplayMode() == DM_PLAINCOLOR))
+      vdWindow.Refresh();
+
+   return res ? true : false;
+}
+
+bool DesktopManager::ChooseBackgroundPicture(HWND hWnd)
+{
+   OPENFILENAME ofn;
+   BOOL res;
+
+   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.hwndOwner = hWnd;
+   ofn.lpstrFile = m_bkgrndPictureFile;
+   ofn.nMaxFile = MAX_PATH;
+   ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
+   ofn.nFilterIndex = 1;
+   ofn.lpstrFileTitle = NULL;
+   ofn.nMaxFileTitle = 0;
+   ofn.lpstrInitialDir = NULL;
+   ofn.lpstrTitle = "Select background image";
+   ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
+
+   res = GetOpenFileName(&ofn);
+   
+   if (res && (GetDisplayMode() == DM_PICTURE))
+      vdWindow.Refresh();
+
+   return res ? true : false;
 }

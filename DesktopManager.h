@@ -56,6 +56,18 @@ public:
    void EnableOSD(bool enable)                { m_useOSD = enable; }
    OnScreenDisplayWnd* GetOSDWindow()         { return &m_osd; }
 
+   enum DisplayMode 
+   {
+      DM_PLAINCOLOR,
+      DM_PICTURE,
+      DM_SCREENSHOT
+   };
+
+   DisplayMode GetDisplayMode() const         { return m_displayMode; }
+   void SetDisplayMode(DisplayMode dm);
+   bool ChooseBackgroundColor(HWND hWnd);
+   bool ChooseBackgroundPicture(HWND hWnd);
+
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -83,6 +95,10 @@ protected:
 
    OnScreenDisplayWnd m_osd;
    bool m_useOSD;
+
+   DisplayMode m_displayMode;
+   COLORREF m_bkgrndColor;
+   TCHAR m_bkgrndPictureFile[MAX_PATH];
 };
 
 inline Desktop * DesktopManager::AddDesktop()
