@@ -188,7 +188,7 @@ bool Window::IsOnCurrentDesk() const
 
 HICON Window::GetIcon(void)
 {
-   HICON hIcon;
+   HICON hIcon = NULL;
 
   	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 50, (LPDWORD) &hIcon );
 	if ( !hIcon )
