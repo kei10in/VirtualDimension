@@ -31,6 +31,11 @@
 #define TBM_SETBUDDY (WM_USER+32)
 #endif
 
+extern char desk_name[80];
+extern char desk_wallpaper[256];
+extern int desk_hotkey;
+LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
 void FormatTransparencyLevel(HWND hWnd, int level)
 {
    char buffer[15];
@@ -202,7 +207,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             bool result = (SendMessage(listBox, LB_SETCURSEL, index, 0) != LB_ERR);
             EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), result);
             EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), result);
-            InvalidateRect(mainWnd, NULL, TRUE);
+            InvalidateRect(vdWindow, NULL, TRUE);
          }
          break;
 
@@ -221,7 +226,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                   EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), FALSE);
                   EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), FALSE);
                }
-               InvalidateRect(mainWnd, NULL, TRUE);
+               InvalidateRect(vdWindow, NULL, TRUE);
             }
             else
                MessageBeep(MB_ICONEXCLAMATION);
@@ -239,7 +244,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                strncpy(desk_name, desk->m_name, sizeof(desk_name));
                strncpy(desk_wallpaper, desk->m_wallpaper, sizeof(desk_wallpaper));
                desk_hotkey = desk->m_hotkey;
-               if (DialogBox(hInst, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties) == IDOK)
+               if (DialogBox(vdWindow, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties) == IDOK)
                {
                   /* Update the desk informations */
                   desk->Rename(desk_name);
@@ -253,7 +258,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                   SendMessage(listBox, LB_SETCURSEL, index, 0);
 
                   /* Refresh the main window */
-                  InvalidateRect(mainWnd, NULL, TRUE);
+                  InvalidateRect(vdWindow, NULL, TRUE);
                }
             }
          }
@@ -318,7 +323,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                deskMan->SetNbColumns(nbCols);
 
                /* Update the window */
-               InvalidateRect(mainWnd, NULL, TRUE);
+               InvalidateRect(vdWindow, NULL, TRUE);
             }
             break;
          }
@@ -362,7 +367,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                deskMan->Sort();
 
                //Refresh the main window
-               InvalidateRect(mainWnd, NULL, TRUE);
+               InvalidateRect(vdWindow, NULL, TRUE);
             }
             else
                MessageBeep(MB_ICONEXCLAMATION);            
@@ -395,14 +400,14 @@ HWND CreateConfigBox()
    memset(&pages, 0, sizeof(pages));
 
    pages[0].dwSize = sizeof(PROPSHEETPAGE);
-   pages[0].hInstance = hInst;
+   pages[0].hInstance = vdWindow;
    pages[0].dwFlags = PSP_USETITLE ;
    pages[0].pfnDlgProc = (DLGPROC)SettingsConfiguration;
    pages[0].pszTitle = "Settings";
    pages[0].pszTemplate = MAKEINTRESOURCE(IDD_GLOBAL_SETTINGS);
 
    pages[1].dwSize = sizeof(PROPSHEETPAGE);
-   pages[1].hInstance = hInst;
+   pages[1].hInstance = vdWindow;
    pages[1].dwFlags = PSP_USETITLE ;
    pages[1].pfnDlgProc = (DLGPROC)DeskConfiguration;
    pages[1].pszTitle = "Desktops";
@@ -411,8 +416,8 @@ HWND CreateConfigBox()
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
    propsheet.dwFlags = PSH_MODELESS | PSH_NOAPPLYNOW | PSH_PROPSHEETPAGE;
-   propsheet.hwndParent = mainWnd;
-   propsheet.hInstance = hInst;
+   propsheet.hwndParent = vdWindow;
+   propsheet.hInstance = vdWindow;
    propsheet.pszCaption = "Settings";
    propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
    propsheet.ppsp = pages;
