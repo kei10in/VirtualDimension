@@ -103,6 +103,8 @@
 #define IDC_IMAGE_RATIO                 1064
 #define IDC_SCREENSHOT_RATIO            1065
 #define IDC_EXTRAPARAM_BTN              1068
+#define IDC_GPL_LINK                    1072
+#define IDC_HOMEPAGE_LINK               1075
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -112,7 +114,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1071
+#define _APS_NEXT_CONTROL_VALUE         1076
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

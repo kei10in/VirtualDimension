@@ -95,20 +95,26 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 22, 17, 246, 74
+IDD_ABOUTBOX DIALOGEX 22, 17, 246, 94
 STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
     WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    ICON            IDI_VIRTUALDIMENSION,IDC_MYICON,14,9,21,20
-    LTEXT           "Virtual Dimension Version 1.0",IDC_STATIC,49,10,133,8,
+    ICON            IDI_VIRTUALDIMENSION,IDC_MYICON,14,9,20,20
+    LTEXT           "Virtual Dimension Version 1.0",IDC_STATIC,48,10,133,8,
                     SS_NOPREFIX
-    LTEXT           "Copyright (C) 2003 Francois Ferrand",IDC_STATIC,49,20,
+    LTEXT           "Copyright (C) 2003 Francois Ferrand",IDC_STATIC,48,20,
                     119,8
-    DEFPUSHBUTTON   "OK",IDOK,195,6,30,11,WS_GROUP
+    CONTROL         "http://virt-dimension.sourceforge.net",
+                    IDC_HOMEPAGE_LINK,"HyperLinkControl",WS_GROUP | 
+                    WS_TABSTOP,48,33,122,8
     LTEXT           "Virtual Dimension comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. See the GNU General Public License for details.",
-                    IDC_STATIC,47,33,195,32,SS_NOPREFIX
+                    IDC_STATIC,47,47,195,32,SS_NOPREFIX
+    CONTROL         "Click here to display the GNU General Public License",
+                    IDC_GPL_LINK,"HyperLinkControl",WS_GROUP | WS_TABSTOP,48,
+                    81,179,8
+    DEFPUSHBUTTON   "OK",IDOK,192,8,47,13,WS_GROUP
 END
 
 IDD_DESKS_SETTINGS DIALOGEX 22, 17, 212, 114
@@ -333,7 +339,7 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
-        BOTTOMMARGIN, 73
+        BOTTOMMARGIN, 93
     END
 
     IDD_DESKS_SETTINGS, DIALOG
