@@ -153,7 +153,7 @@ void OnScreenDisplayWnd::SetBgColor(COLORREF color)
 {
    m_bgColor = color;
 
-   if (!m_hasBackground)
+   if (m_hasBackground)
    {
       DeleteObject(m_bgBrush);
       m_bgBrush = CreateSolidBrush(m_bgColor);
@@ -171,7 +171,7 @@ void OnScreenDisplayWnd::EnableBackground(bool background)
    m_bgBrush = m_hasBackground ? CreateSolidBrush(m_bgColor) : (HBRUSH)GetStockObject(HOLLOW_BRUSH);
 
    //Make sure the window is not translucent if it is displayed without background
-   m_transp->SetTransparencyLevel(m_hasBackground ? (unsigned char)255 : m_transpLevel);
+   m_transp->SetTransparencyLevel(m_hasBackground ? m_transpLevel : (unsigned char)255);
 }
 
 void OnScreenDisplayWnd::MakeTransparent(bool transp)
@@ -200,7 +200,7 @@ void OnScreenDisplayWnd::SetTransparencyLevel(unsigned char level)
    m_transpLevel = level;
 
    //Update the display only if the windows displays a background
-   if (!m_hasBackground)
+   if (m_hasBackground)
       m_transp->SetTransparencyLevel(m_transpLevel);
 }
 
@@ -222,7 +222,7 @@ void OnScreenDisplayWnd::eraseBackground(HDC hdc)
 {
    RECT rect;
    GetClientRect(m_hWnd, &rect);
-   FillRect(hdc, &rect, m_bgBrush);  
+   FillRect(hdc, &rect, m_bgBrush);
 }
 
 void OnScreenDisplayWnd::OnLeftButtonDown(LPARAM lParam)
