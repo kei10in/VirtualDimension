@@ -24,6 +24,8 @@
 #include <list>
 #include "settings.h"
 #include "tooltip.h"
+#include <wininet.h>
+#include <shlobj.h>
 
 using namespace std;
 class Window;
@@ -63,6 +65,8 @@ public:
    char m_wallpaper[256];
    int m_hotkey;
    RECT m_rect;
+
+   static IActiveDesktop * m_ActiveDesktop;
 };
 
 #endif /*__DESKTOP_H__*/
