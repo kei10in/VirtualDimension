@@ -52,6 +52,10 @@ public:
    void SwitchToDesktop(Desktop * desk);
    void SelectOtherDesk(int change);
 
+   bool IsOSDEnabled() const                  { return m_useOSD; }
+   void EnableOSD(bool enable)                { m_useOSD = enable; }
+   OnScreenDisplayWnd* GetOSDWindow()         { return &m_osd; }
+
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
