@@ -53,7 +53,9 @@
 #define IDI_MAXIMIZE_HORIZ              145
 #define IDI_MINIMIZE_TRAY               146
 #define IDC_DESK_LIST                   1001
+#define IDC_PRODUCT                     1001
 #define IDC_INSERT_DESK                 1002
+#define IDC_COPYRIGHT                   1002
 #define IDC_REMOVE_DESK                 1003
 #define IDC_SETUP_DESKS                 1006
 #define IDC_SETUP_DESK                  1006

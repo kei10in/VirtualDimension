@@ -997,6 +997,35 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
       SetDlgItemText(hDlg, IDC_GPL_LINK, "Click here to display the GNU General Public License");
       SetFocus(GetDlgItem(hDlg, IDOK));
       picture = PlatformHelper::OpenImage(MAKEINTRESOURCE(IDI_VIRTUALDIMENSION));
+
+      TCHAR text[MAX_PATH];
+      DWORD dwHandle;
+      DWORD vinfSize;
+      LPVOID lpVersionInfo;
+      TCHAR * lpVal;
+      UINT dwValSize;
+
+      GetModuleFileName(NULL, text, MAX_PATH);
+      vinfSize = GetFileVersionInfoSize(text, &dwHandle);
+      lpVersionInfo = malloc(vinfSize);
+      GetFileVersionInfo(text, dwHandle, vinfSize, lpVersionInfo);
+
+      VerQueryValue(lpVersionInfo, "\\StringFileInfo\\040904b0\\ProductName", (LPVOID*)&lpVal, &dwValSize);
+      strncpy(text, lpVal, dwValSize);
+      strcat(text, " v");
+      VerQueryValue(lpVersionInfo, "\\StringFileInfo\\040904b0\\ProductVersion", (LPVOID*)&lpVal, &dwValSize);
+      lpVal = strtok(lpVal, ", \t");
+      strcat(text, lpVal);
+      strcat(text, ".");
+      lpVal = strtok(NULL, ", \t");
+      strcat(text, lpVal);
+      SetDlgItemText(hDlg, IDC_PRODUCT, text);
+
+      VerQueryValue(lpVersionInfo, "\\StringFileInfo\\040904b0\\LegalCopyright", (LPVOID*)&lpVal, &dwValSize);
+      strncpy(text, lpVal, dwValSize);
+      SetDlgItemText(hDlg, IDC_COPYRIGHT, text);
+
+      free(lpVersionInfo);
       return FALSE;
 
 	case WM_COMMAND:
@@ -1017,7 +1046,6 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
          {
             ShellExecute(hDlg, "open", "http://virt-dimension.sourceforge.net", 
                          NULL, NULL, SW_SHOWNORMAL);
-
          }
          break;
 
@@ -1026,12 +1054,10 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
          {
             ShellExecute(hDlg, "open", "LICENSE.html",
                          NULL, NULL, SW_SHOWNORMAL);
-
          }
          break;
 		}
 		break;
-
    
    case WM_DRAWITEM:
       if (picture)

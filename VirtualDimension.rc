@@ -110,10 +110,10 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     CONTROL         "",IDC_MYICON,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
                     SS_REALSIZEIMAGE,5,6,112,80
-    LTEXT           "Virtual Dimension Version 1.0",IDC_STATIC,123,7,133,8,
+    LTEXT           "Virtual Dimension Version 1.0",IDC_PRODUCT,123,7,142,8,
                     SS_NOPREFIX
-    LTEXT           "Copyright (C) 2003 Francois Ferrand",IDC_STATIC,123,17,
-                    119,8
+    LTEXT           "Copyright (C) 2003 Francois Ferrand",IDC_COPYRIGHT,123,
+                    17,142,8
     CONTROL         "http://virt-dimension.sourceforge.net",
                     IDC_HOMEPAGE_LINK,"HyperLinkControl",WS_GROUP | 
                     WS_TABSTOP,123,30,122,8
@@ -378,7 +378,7 @@ END
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,0
- PRODUCTVERSION 1,0,0,0
+ PRODUCTVERSION 0,94,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -400,8 +400,8 @@ BEGIN
             VALUE "InternalName", "Virtual Dimension"
             VALUE "LegalCopyright", "Copyright (C) 2003-2004 François Ferrand"
             VALUE "OriginalFilename", "VirtualDimension.exe"
-            VALUE "ProductName", " Virtual Dimension"
-            VALUE "ProductVersion", "1, 0, 0, 0"
+            VALUE "ProductName", "Virtual Dimension"
+            VALUE "ProductVersion", "0, 94, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
