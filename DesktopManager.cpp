@@ -60,14 +60,6 @@ DesktopManager::DesktopManager(void)
    //Load the desktops
    LoadDesktops();
 
-   //Register the hotkeys to go to the next/previous desktop
-   m_nextDesktopHotkey = 0;
-   m_nextDeskEventHandler = NULL;
-   SetSwitchToNextDesktopHotkey(settings.LoadSwitchToNextDesktopHotkey());
-   m_prevDeskEventHandler = NULL;
-   m_previousDesktopHotkey = 0;
-   SetSwitchToPreviousDesktopHotkey(settings.LoadSwitchToPreviousDesktopHotkey());
-
    //Initialize the OSD
    m_osd.Create();
    m_useOSD = settings.LoadDesktopNameOSD();
@@ -78,8 +70,6 @@ DesktopManager::~DesktopManager(void)
    Settings settings;
    int index;
 
-   delete m_nextDeskEventHandler;
-   delete m_prevDeskEventHandler;
    delete m_bkDisplayMode;
 
    index = 0;
@@ -103,8 +93,6 @@ DesktopManager::~DesktopManager(void)
    if (m_hPreviewWindowFont)
       DeleteObject(m_hPreviewWindowFont);
 
-   settings.SaveSwitchToNextDesktopHotkey(GetSwitchToNextDesktopHotkey());
-   settings.SaveSwitchToPreviousDesktopHotkey(GetSwitchToPreviousDesktopHotkey());
    settings.SaveNbCols(m_nbColumn);
    settings.SaveDesktopNameOSD(m_useOSD);
    settings.SaveDisplayMode(m_displayMode);
@@ -389,14 +377,14 @@ void DesktopManager::SetNbColumns(int cols)
    UpdateLayout();
 }
 
-void DesktopManager::SelectOtherDesk(int change)
+Desktop* DesktopManager::GetOtherDesk(int change)
 {
    vector<Desktop*>::iterator it;
    Desktop * desk;
 
    it = find(m_desks.begin(), m_desks.end(), m_currentDesktop);
    if (it == m_desks.end())
-      return;
+      return m_currentDesktop;
    
    if (it == m_desks.begin() && (change < 0))
       desk = m_desks.back();
@@ -405,7 +393,7 @@ void DesktopManager::SelectOtherDesk(int change)
    else
       desk = *it;
 
-   SwitchToDesktop(desk);
+   return desk;
 }
 
 void DesktopManager::SetDisplayMode(DisplayMode dm)
@@ -453,64 +441,27 @@ bool DesktopManager::ChooseBackgroundDisplayModeOptions(HWND hWnd)
    return res;
 }
 
-void DesktopManager::SetSwitchToNextDesktopHotkey(int key)
+template<int change>
+void DesktopManager::DeskChangeEventHandler<change>::SetHotkey(int key)
 {
    HotKeyManager * keyMan = HotKeyManager::GetInstance();
 
    //If we are not changing the hotkey, nothing to do
-   if (key == m_nextDesktopHotkey)
+   if (key == m_hotkey)
       return;
+
+   //Unregister the previous hotkey
+   if (m_hotkey != 0)
+      keyMan->UnregisterHotkey(this);
    
-   m_nextDesktopHotkey = key;
+   m_hotkey = key;
 
    //Setting the hotkey to 0 removes the shortcut
-   if (m_nextDesktopHotkey == 0)
-   {
-      if (m_nextDeskEventHandler)
-         keyMan->UnregisterHotkey(m_nextDeskEventHandler);
-      delete m_nextDeskEventHandler;
-      m_nextDeskEventHandler = NULL;
+   if (m_hotkey == 0)
       return;
-   }
-
-   //Unregister the previous hotkey, or create a new handler
-   if (m_nextDeskEventHandler)
-      keyMan->UnregisterHotkey(m_nextDeskEventHandler);
-   else
-      m_nextDeskEventHandler = new DeskChangeEventHandler(this, 1);
 
    //Register the new hotkey
-   keyMan->RegisterHotkey(m_nextDesktopHotkey, m_nextDeskEventHandler);
-}
-
-void DesktopManager::SetSwitchToPreviousDesktopHotkey(int key)
-{
-   HotKeyManager * keyMan = HotKeyManager::GetInstance();
-
-   //If we are not changing the hotkey, nothing to do
-   if (key == m_previousDesktopHotkey)
-      return;
-   
-   m_previousDesktopHotkey = key;
-
-   //Setting the hotkey to 0 removes the shortcut
-   if (m_previousDesktopHotkey == 0)
-   {
-      if (m_prevDeskEventHandler)
-         keyMan->UnregisterHotkey(m_prevDeskEventHandler);
-      delete m_prevDeskEventHandler;
-      m_prevDeskEventHandler = NULL;
-      return;
-   }
-
-   //Unregister the previous hotkey, or create a new handler
-   if (m_prevDeskEventHandler)
-      keyMan->UnregisterHotkey(m_prevDeskEventHandler);
-   else
-      m_prevDeskEventHandler = new DeskChangeEventHandler(this, -1);
-
-   //Register the new hotkey
-   keyMan->RegisterHotkey(m_previousDesktopHotkey, m_prevDeskEventHandler);
+   keyMan->RegisterHotkey(m_hotkey, this);
 }
 
 void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)

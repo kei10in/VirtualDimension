@@ -24,6 +24,7 @@
 #include <vector>
 #include "desktop.h"
 #include "OnScreenDisplay.h"
+#include "HotkeyConfig.h"
 
 using namespace std;
 
@@ -53,7 +54,7 @@ public:
    Desktop * GetCurrentDesktop() const { return m_currentDesktop; }
    Desktop* GetDesktopFromPoint(int x, int y);
    void SwitchToDesktop(Desktop * desk);
-   void SelectOtherDesk(int change);
+   Desktop* GetOtherDesk(int change);
 
    bool IsOSDEnabled() const                  { return m_useOSD; }
    void EnableOSD(bool enable)                { m_useOSD = enable; }
@@ -70,27 +71,64 @@ public:
    void SetDisplayMode(DisplayMode dm);
    bool ChooseBackgroundDisplayModeOptions(HWND hWnd);
 
-   int GetSwitchToNextDesktopHotkey()         { return m_nextDesktopHotkey; }
-   void SetSwitchToNextDesktopHotkey(int key);
-   int GetSwitchToPreviousDesktopHotkey()     { return m_previousDesktopHotkey; }
-   void SetSwitchToPreviousDesktopHotkey(int key);
-
    void ChoosePreviewWindowFont(HWND hDlg);
    HFONT GetPreviewWindowFont()               { return m_hPreviewWindowFont; }
    COLORREF GetPreviewWindowFontColor()       { return m_crPreviewWindowFontColor; }
+
+   ConfigurableHotkey* GetSwitchToNextDesktopHotkey()       { return &m_nextDeskEventHandler; }
+   ConfigurableHotkey* GetSwitchToPreviousDesktopHotkey()   { return &m_prevDeskEventHandler; }
 
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-   class DeskChangeEventHandler: public HotKeyManager::EventHandler {
+   template<int change>
+   class DeskChangeEventHandler: public HotKeyManager::EventHandler, public ConfigurableHotkey
+   {
    public:
-      DeskChangeEventHandler(DesktopManager* self, int change): m_self(self), m_change(change) { return; }
-      void OnHotkey() { m_self->SelectOtherDesk(m_change); }
+      DeskChangeEventHandler(): m_hotkey(0)  { return; }
+      virtual void OnHotkey()                { deskMan->SwitchToDesktop(deskMan->GetOtherDesk(change)); }
+      virtual int GetHotkey() const          { return m_hotkey; }
+      virtual void SetHotkey(int hotkey);
    protected:
-      DesktopManager* m_self;
-      int m_change;
+      int m_hotkey;
+   };
+
+   class NextDesktopEventHandler: public DeskChangeEventHandler<1>
+   {
+   public:
+      NextDesktopEventHandler()
+      {
+         Settings s;
+         SetHotkey(s.LoadSwitchToNextDesktopHotkey());
+      }
+
+      virtual ~NextDesktopEventHandler()
+      {
+         Settings s;
+         s.SaveSwitchToNextDesktopHotkey(GetHotkey());
+      }
+
+      virtual LPCSTR GetName() const   { return "Skip to next desktop"; }
+   };
+
+   class PrevDesktopEventHandler: public DeskChangeEventHandler<-1>
+   {
+   public:
+      PrevDesktopEventHandler()
+      {
+         Settings s;
+         SetHotkey(s.LoadSwitchToPreviousDesktopHotkey());
+      }
+
+      virtual ~PrevDesktopEventHandler()
+      {
+         Settings s;
+         s.SaveSwitchToPreviousDesktopHotkey(GetHotkey());
+      }
+
+      virtual LPCSTR GetName() const   { return "Skip to previous desktop"; }
    };
 
    int m_nbColumn;
@@ -99,10 +137,8 @@ protected:
    vector<Desktop*>::const_iterator m_deskIterator;
    Desktop * m_currentDesktop;
 
-   DeskChangeEventHandler * m_nextDeskEventHandler;
-   int m_nextDesktopHotkey;
-   DeskChangeEventHandler * m_prevDeskEventHandler;
-   int m_previousDesktopHotkey;
+   NextDesktopEventHandler m_nextDeskEventHandler;
+   PrevDesktopEventHandler m_prevDeskEventHandler;
 
    int m_width, m_height;
 
