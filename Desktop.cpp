@@ -205,7 +205,8 @@ void Desktop::UpdateLayout()
       }
    }
 
-   InvalidateRect(vdWindow, &m_rect, TRUE);
+   //InvalidateRect(vdWindow, &m_rect, FALSE);
+   vdWindow.Refresh();
 }
 
 void Desktop::Draw(HDC hDc)

@@ -271,7 +271,7 @@ void DesktopManager::SwitchToDesktop(Desktop * desk)
    if (m_useOSD)
       m_osd.Display(desk->GetText());
 
-   InvalidateRect(vdWindow, NULL, FALSE);
+   vdWindow.Refresh();
 }
 
 void DesktopManager::LoadDesktops()

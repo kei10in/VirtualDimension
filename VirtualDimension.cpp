@@ -146,7 +146,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    if (settings.LoadShowWindow())
    {
       ShowWindow(hWnd, nCmdShow);
-      InvalidateRect(hWnd, NULL, TRUE);
+      Refresh();
    }
 
    // Setup the system menu
@@ -186,7 +186,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    tooltip = new ToolTip(hWnd);
 
    // Create the windows manager
-   winMan = new WindowsManager(hWnd);
+   winMan = new WindowsManager;
 
    // Create the desk manager
    deskMan = new DesktopManager;
@@ -341,7 +341,7 @@ LRESULT VirtualDimension::OnLeftButtonUp(HWND hWnd, UINT /*message*/, WPARAM /*w
    m_draggedWindow->MoveToDesktop(desk);
 
    //Refresh the window
-   InvalidateRect(hWnd, NULL, TRUE);
+   Refresh();
 
    return 0;
 }

@@ -51,7 +51,7 @@ void ApplySettings(HWND hDlg)
 
    //Move the window to the appropriate desktop
    movedWindow->MoveToDesktop(desk);
-   InvalidateRect(vdWindow, NULL, TRUE);
+   vdWindow.Refresh();
 }
 
 LRESULT CALLBACK MoveWindowProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)

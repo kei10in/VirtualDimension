@@ -246,7 +246,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), result);
             EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), result);
             EnableWindow(GetDlgItem(hDlg, IDC_DESK_SPIN), result);
-            InvalidateRect(vdWindow, NULL, TRUE);
+            vdWindow.Refresh();
          }
          break;
 
@@ -265,7 +265,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                   EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), FALSE);
                   EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), FALSE);
                }
-               InvalidateRect(vdWindow, NULL, TRUE);
+               vdWindow.Refresh();
             }
             else
                MessageBeep(MB_ICONEXCLAMATION);
@@ -297,7 +297,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                   SendMessage(listBox, LB_SETCURSEL, index, 0);
 
                   /* Refresh the main window */
-                  InvalidateRect(vdWindow, NULL, TRUE);
+                  vdWindow.Refresh();
                }
             }
          }
@@ -362,7 +362,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                deskMan->SetNbColumns(nbCols);
 
                /* Update the window */
-               InvalidateRect(vdWindow, NULL, TRUE);
+               vdWindow.Refresh();
             }
             break;
          }
@@ -406,7 +406,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                deskMan->Sort();
 
                //Refresh the main window
-               InvalidateRect(vdWindow, NULL, TRUE);
+               vdWindow.Refresh();
             }
             else
                MessageBeep(MB_ICONEXCLAMATION);            
