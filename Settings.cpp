@@ -44,6 +44,8 @@ const char Settings::regValMoveWindowToPreviousDesktopHotkey[] = "MoveWindowToPr
 const char Settings::regValMoveWindowToDesktopHotkey[] = "MoveWindowToDesktopHotkey";
 const char Settings::regValMaximizeHeightHotkey[] = "MaximizeHeightHotkey";
 const char Settings::regValMaximizeWidthHotkey[] = "MaximizeWidthHotkey";
+const char Settings::regValAlwaysOnTopHotkey[] = "AlwaysOnTopHotkey";
+const char Settings::regValTransparencyHotkey[] = "TransparencyHotkey";
 const char Settings::regValDisplayMode[] = "DisplayMode";
 const char Settings::regValBackgroundColor[] = "BackgroundColor";
 const char Settings::regValBackgroundImage[] = "BackgroundPicture";
@@ -341,6 +343,26 @@ int Settings::LoadMaximizeWidthHotkey()
 void Settings::SaveMaximizeWidthHotkey(int hotkey)
 {
    SaveDWord(m_regKey, m_keyOpened, regValMaximizeWidthHotkey, hotkey);
+}
+
+int Settings::LoadAlwaysOnTopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTopHotkey, 0);
+}
+
+void Settings::SaveAlwaysOnTopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTopHotkey, hotkey);
+}
+
+int Settings::LoadTransparencyHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValTransparencyHotkey, 0);
+}
+
+void Settings::SaveTransparencyHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValTransparencyHotkey, hotkey);
 }
 
 int Settings::LoadDisplayMode()

@@ -75,6 +75,10 @@ public:
    void SaveMaximizeHeightHotkey(int hotkey);
    int LoadMaximizeWidthHotkey();
    void SaveMaximizeWidthHotkey(int hotkey);
+   int LoadAlwaysOnTopHotkey();
+   void SaveAlwaysOnTopHotkey(int hotkey);
+   int LoadTransparencyHotkey();
+   void SaveTransparencyHotkey(int hotkey);
 
    int LoadDisplayMode();
    void SaveDisplayMode(int mode);
@@ -244,6 +248,8 @@ protected:
    static const char regValMoveWindowToDesktopHotkey[];
    static const char regValMaximizeHeightHotkey[];
    static const char regValMaximizeWidthHotkey[];
+   static const char regValAlwaysOnTopHotkey[];
+   static const char regValTransparencyHotkey[];
    static const char regValDisplayMode[];
    static const char regValBackgroundColor[];
    static const char regValBackgroundImage[];
