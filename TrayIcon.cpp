@@ -22,7 +22,6 @@
 #include "trayicon.h"
 #include "settings.h"
 #include "VirtualDimension.h"
-#include <Shellapi.h>
 
 TrayIcon::TrayIcon(HWND hWnd): m_hWnd(hWnd), m_iconLoaded(false)
 {
@@ -30,11 +29,6 @@ TrayIcon::TrayIcon(HWND hWnd): m_hWnd(hWnd), m_iconLoaded(false)
 
    if (settings.LoadHasTrayIcon())
       AddIcon();
-
-   UINT s_uTaskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
-   vdWindow.SetMessageHandler(s_uTaskbarRestart, this, &TrayIcon::RefreshIcon);
-
-   vdWindow.SetMessageHandler(IDC_TRAYICON, this, &TrayIcon::OnTrayIconMessage);
 }
 
 TrayIcon::~TrayIcon(void)
@@ -48,49 +42,23 @@ TrayIcon::~TrayIcon(void)
 
 void TrayIcon::AddIcon()
 {
-   NOTIFYICONDATA data;
-
    if (m_iconLoaded)
-      DelIcon();
+      return;
 
-   data.cbSize = sizeof(data);
-   data.hWnd = m_hWnd;
-   data.uID = 1;
-   data.uFlags = NIF_ICON | NIF_MESSAGE;
-   data.uCallbackMessage = IDC_TRAYICON;
-   data.hIcon = LoadIcon(vdWindow, (LPCTSTR)IDI_VIRTUALDIMENSION);
-
-   m_iconLoaded = Shell_NotifyIcon(NIM_ADD, &data) == TRUE ? true : false;
+   m_iconLoaded = true;
+   trayManager->AddIcon(this);
 }
 
 void TrayIcon::DelIcon()
 {
-   NOTIFYICONDATA data;
-
    if (!m_iconLoaded)
       return;
 
    m_iconLoaded = false;
-
-   data.cbSize = sizeof(data);
-   data.hWnd = m_hWnd;
-   data.uID = 1;
-   data.uFlags = NIF_ICON | NIF_MESSAGE;
-   data.uCallbackMessage = IDC_TRAYICON;
-   data.hIcon = LoadIcon(vdWindow, (LPCTSTR)IDI_VIRTUALDIMENSION);
-
-   Shell_NotifyIcon(NIM_DELETE, &data);
+   trayManager->DelIcon(this);
 
    /* make sure the window can be seen if we remove the tray icon */
    ShowWindow(m_hWnd, SW_SHOW);
-}
-
-LRESULT TrayIcon::RefreshIcon(HWND, UINT, WPARAM, LPARAM)
-{
-   if (m_iconLoaded)
-      AddIcon();
-
-   return TRUE;
 }
 
 void TrayIcon::SetIcon(bool res)
@@ -190,4 +158,14 @@ void TrayIcon::OnLeftButtonDown()
       SetForegroundWindow(m_hWnd);
       ShowWindow(m_hWnd, SW_SHOW);
    }
+}
+
+HICON TrayIcon::GetIcon()
+{
+   return LoadIcon(vdWindow, (LPCSTR)IDI_VIRTUALDIMENSION); 
+}
+
+char* TrayIcon::GetText()
+{
+   return "";
 }

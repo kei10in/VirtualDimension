@@ -21,7 +21,9 @@
 #ifndef __TRAYICON_H__
 #define __TRAYICON_H__
 
-class TrayIcon
+#include "TrayIconsManager.h"
+
+class TrayIcon: public TrayIconsManager::TrayIconHandler
 {
 public:
    TrayIcon(HWND hWnd);
@@ -34,8 +36,10 @@ protected:
    void AddIcon();
    void DelIcon();
 
-   LRESULT RefreshIcon(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   HICON GetIcon();
+   char* GetText(); 
+
    void OnLeftButtonDown();
    void OnContextMenu();
 
