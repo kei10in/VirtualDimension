@@ -22,7 +22,7 @@
 #include "windowsmanager.h"
 #include "VirtualDimension.h"
 
-WindowsManager::WindowsManager(HWND hWnd): m_hWnd(hWnd), m_shellhook(hWnd)
+WindowsManager::WindowsManager(): m_shellhook(vdWindow)
 {
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
@@ -104,7 +104,7 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
       else
          window->GetDesk()->UpdateLayout();
 
-      InvalidateRect(m_hWnd, NULL, FALSE);
+      vdWindow.Refresh();
    }
    else
    {
@@ -140,7 +140,7 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
       trayManager->DelIcon(win);
    delete win;
 
-   InvalidateRect(m_hWnd, NULL, FALSE);
+   vdWindow.Refresh();
 }
 
 void WindowsManager::OnWindowActivated(HWND /*hWnd*/)
@@ -155,7 +155,7 @@ void WindowsManager::OnGetMinRect(HWND /*hWnd*/)
 
 void WindowsManager::OnRedraw(HWND /*hWnd*/)
 {
-   InvalidateRect(m_hWnd, NULL, FALSE);
+   vdWindow.Refresh();
 }
 
 void WindowsManager::OnWindowFlash(HWND /*hWnd*/)
