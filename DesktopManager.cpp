@@ -292,7 +292,7 @@ Desktop* DesktopManager::GetDesktopFromPoint(int X, int Y)
    unsigned int index;
    int deltaX, deltaY;  //Width and height of a desktop
 
-   if (m_desks.size() == 0)
+   if (m_desks.size() == 0 || m_width == 0 || m_height == 0)
       return NULL;
 
    deltaX = m_width / min(m_nbColumn, (int)m_desks.size());
