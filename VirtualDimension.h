@@ -70,14 +70,19 @@ protected:
    POINT m_location;
 
    bool m_lockPreviewWindow;
+   bool m_hasCaption;
 
    bool IsPreviewWindowLocked() const     { return m_lockPreviewWindow; }
    void LockPreviewWindow(bool lock);
+
+   bool HasCaption() const                { return m_hasCaption; }
+   void ShowCaption(bool caption);
 
    ATOM RegisterClass();
 
    LRESULT OnCmdAbout(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdLockPreviewWindow(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnCmdShowCaption(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdConfigure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdExit(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
