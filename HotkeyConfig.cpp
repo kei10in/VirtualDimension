@@ -212,7 +212,8 @@ void ShortcutsConfigurationDlg::OnClick(LPNMITEMACTIVATE lpnmitem)
 void ShortcutsConfigurationDlg::OnRightClick(LPNMITEMACTIVATE lpnmitem)
 {
    HMENU menu = CreatePopupMenu();
-   AppendMenu(menu, 0, 1000, "Reset");
+   AppendMenu(menu, 0, 1, "&Clear");
+   AppendMenu(menu, 0, 2, "&Reset");
 
    if (lpnmitem->iItem == -1)
       return;
@@ -220,10 +221,21 @@ void ShortcutsConfigurationDlg::OnRightClick(LPNMITEMACTIVATE lpnmitem)
    POINT pt = { lpnmitem->ptAction.x, lpnmitem->ptAction.y };
    ClientToScreen(m_listViewWnd, &pt);
 
-   if (TrackPopupMenu(menu, TPM_NONOTIFY | TPM_RETURNCMD | TPM_RIGHTBUTTON, 
-                      pt.x, pt.y, 0, 
-                      m_hDlg, NULL))
+   switch(TrackPopupMenu(menu, TPM_NONOTIFY | TPM_RETURNCMD | TPM_RIGHTBUTTON, 
+                         pt.x, pt.y, 0, 
+                         m_hDlg, NULL))
+   {
+   case 1:
+      SetItemShortcut(lpnmitem->iItem, 0);
+      break;
+
+   case 2:
       SetItemShortcut(lpnmitem->iItem, GetItemHotkey(lpnmitem->iItem)->GetHotkey());
+      break;
+
+   default:
+      break;
+   }
 
    DestroyMenu(menu);
 }
