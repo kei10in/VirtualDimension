@@ -77,9 +77,13 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
          SendMessage(hWnd, BM_SETCHECK, ontop->IsAlwaysOnTop() ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         //Setup always on top
+         //Setup enable tray icon
          hWnd = GetDlgItem(hDlg, IDC_TRAYICON_CHECK);
          SendMessage(hWnd, BM_SETCHECK, trayIcon->HasIcon() ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         //Setup enable tooltips
+         hWnd = GetDlgItem(hDlg, IDC_TOOLTIPS_CHECK);
+         SendMessage(hWnd, BM_SETCHECK, tooltip->IsEnabled() ? BST_CHECKED : BST_UNCHECKED, 0);
       }
 		return TRUE;
 
@@ -130,10 +134,15 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
             ontop->SetAlwaysOnTop(res);
 
-            //Apply tray icon
+            //Apply enable tray icon
             hWnd = GetDlgItem(hDlg, IDC_TRAYICON_CHECK);
             res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
             trayIcon->SetIcon(res);
+
+            //Apply enable tooltips
+            hWnd = GetDlgItem(hDlg, IDC_TOOLTIPS_CHECK);
+            res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+            tooltip->EnableTooltips(res);
 
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
