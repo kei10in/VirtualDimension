@@ -146,7 +146,6 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    m_autoHideTimerId = CreateTimer(this, &VirtualDimension::OnTimer);
 	SetMessageHandler(WM_ACTIVATEAPP, this, &VirtualDimension::OnActivateApp);
 
-	SetMessageHandler(WM_MOUSEMOVE, this, &VirtualDimension::OnMouseMove);
 	SetMessageHandler(WM_MOUSEHOVER, this, &VirtualDimension::OnMouseHover);
 	SetMessageHandler(WM_MOUSELEAVE, this, &VirtualDimension::OnMouseLeave);
 	SetMessageHandler(WM_NCHITTEST, this, &VirtualDimension::OnNCHitTest);
@@ -789,9 +788,9 @@ LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPar
    //Do not shrink and let the timer run if the mouse is over the window -> it will be hidden later, when
    //mouse is not on window anymore.
    GetCursorPos(&pt);
-   if (!IsPointInWindow(pt))
+   if (!IsPointInWindow(pt) && GetForegroundWindow() != *this)
    {
-      KillTimer(m_autoHideTimerId);
+      KillTimer(m_autoHideTimerId); //already auto-hidden -> do not need to 
 	   Shrink();
    }
 
@@ -801,9 +800,9 @@ LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPar
 LRESULT VirtualDimension::OnActivateApp(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
 	if (wParam == TRUE)
-      KillTimer(m_autoHideTimerId);
+      KillTimer(m_autoHideTimerId);                   //Kill auto-hide timer if activated
 	else if (m_autoHideDelay > 0 && ((DWORD)lParam != GetCurrentThreadId()))
-		SetTimer(m_autoHideTimerId, m_autoHideDelay);
+		SetTimer(m_autoHideTimerId, m_autoHideDelay);   //Re-start auto-hide timer if de-activated
 	return 0;
 }
 
@@ -831,26 +830,11 @@ LRESULT VirtualDimension::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam,
 	return 0;
 }
 
-LRESULT VirtualDimension::OnMouseMove(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
-{
-   //Reset auto-hide timer
-   if (!m_shrinked && m_autoHideDelay > 0)
-      SetTimer(m_autoHideTimerId, m_autoHideDelay);
-
-	return 0;
-}
-
 LRESULT VirtualDimension::OnMouseHover(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	if (!m_shrinked || !m_tracking)
-		return 0;
-
-	//Un-shring the window
-	UnShrink();
-
-	//Prepare to auto-hide
-	if (m_autoHideDelay > 0)
-		SetTimer(m_autoHideTimerId, m_autoHideDelay);
+	//Un-shrink the window
+	if (m_shrinked)
+		UnShrink();
 
 	m_tracking = false;
 	return 0;
@@ -858,13 +842,21 @@ LRESULT VirtualDimension::OnMouseHover(HWND /*hWnd*/, UINT /*message*/, WPARAM /
 
 LRESULT VirtualDimension::OnMouseLeave(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
+   //Set timer to auto-hide
+	if (!m_shrinked && m_autoHideDelay > 0)
+		SetTimer(m_autoHideTimerId, m_autoHideDelay);
+
 	m_tracking = false;
 	return 0;
 }
 
 LRESULT VirtualDimension::OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (m_shrinked && !m_tracking)
+	//Stop auto-hide timer (re-entry in the window)
+	KillTimer(m_autoHideTimerId);
+
+	//Track mouse hover/leave, if not already doing so
+	if (!m_tracking)
 	{
 		//Setup mouse tracking
 		TRACKMOUSEEVENT tme;
@@ -878,6 +870,8 @@ LRESULT VirtualDimension::OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LP
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
+
+#define SHRUNK_THICKNESS 10
 
 void VirtualDimension::Shrink(void)
 {
@@ -896,13 +890,13 @@ void VirtualDimension::Shrink(void)
 	switch(m_dockedBorders & (DOCK_LEFT|DOCK_RIGHT))
 	{
 	case DOCK_LEFT:
-		pos.right = deskRect.left + 10;
-		pos.left = pos.right - 10;
+		pos.right = deskRect.left + SHRUNK_THICKNESS;
+		pos.left = pos.right - SHRUNK_THICKNESS;
 		break;
 
 	case DOCK_RIGHT:
-		pos.left = deskRect.right - 10;
-		pos.right = pos.left + 10;
+		pos.left = deskRect.right - SHRUNK_THICKNESS;
+		pos.right = pos.left + SHRUNK_THICKNESS;
 		break;
 
 	case DOCK_LEFT|DOCK_RIGHT:
@@ -917,13 +911,13 @@ void VirtualDimension::Shrink(void)
 	switch(m_dockedBorders & (DOCK_TOP|DOCK_BOTTOM))
 	{
 	case DOCK_TOP:
-		pos.bottom = deskRect.top + 10;
-		pos.top = pos.bottom - 10;
+		pos.bottom = deskRect.top + SHRUNK_THICKNESS;
+		pos.top = pos.bottom - SHRUNK_THICKNESS;
 		break;
 
 	case DOCK_BOTTOM:
-		pos.top = deskRect.bottom - 10;
-		pos.bottom = pos.top + 10;
+		pos.top = deskRect.bottom - SHRUNK_THICKNESS;
+		pos.bottom = pos.top + SHRUNK_THICKNESS;
 		break;
 
 	case DOCK_TOP|DOCK_BOTTOM:
