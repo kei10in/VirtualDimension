@@ -37,6 +37,7 @@ extern WindowsManager * winMan;
 extern Transparency * transp;
 extern TrayIcon * trayIcon;
 extern AlwaysOnTop * ontop;
+extern ToolTip * tooltip;
 
 extern char desk_name[80];
 extern char desk_wallpaper[256];
