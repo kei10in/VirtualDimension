@@ -22,13 +22,45 @@
 #include "window.h"
 #include "VirtualDimension.h"
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hiding(false), m_showing(false)
+ITaskbarList* Window::m_tasklist = NULL;
+
+Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false)
 {
+   //Find out on which desktop the window is
    m_desk = deskMan->GetCurrentDesktop();
+
+   //Find hiding method to use for this window
+   m_hidingMethod = WHM_MINIMIZE;
+
+   //mode specific initialization
+   switch(m_hidingMethod)
+   {
+   case WHM_MINIMIZE:
+      if (m_tasklist == NULL)
+         CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist);
+      else
+         m_tasklist->AddRef();
+      break;
+
+   default:
+      break;
+   }
 }
 
 Window::~Window(void)
 {
+   ULONG count;
+   switch(m_hidingMethod)
+   {
+   case WHM_MINIMIZE:
+      count = m_tasklist->Release();
+      if (count == 0)
+         m_tasklist = NULL;
+      break;
+
+   default:
+      break;
+   }
 }
 
 void Window::MoveToDesktop(Desktop * desk)
@@ -48,14 +80,74 @@ void Window::MoveToDesktop(Desktop * desk)
 
 void Window::ShowWindow()
 {
-   ::ShowWindow(m_hWnd, SW_SHOW); 
-   ::ShowOwnedPopups(m_hWnd, TRUE);
-   m_showing = true;
+   if (!m_hidden)
+      return;
+
+   switch(m_hidingMethod)
+   {
+   default:
+   case WHM_HIDE:
+      //Show the window
+      ::ShowWindow(m_hWnd, SW_SHOW); 
+
+      //Show it's popups
+      ::ShowOwnedPopups(m_hWnd, TRUE);
+      break;
+
+   case WHM_MINIMIZE:
+      //Restore the application if needed
+      if (!m_iconic)
+         ::ShowWindow(m_hWnd, SW_RESTORE);
+
+      //Show the icon
+      m_tasklist->HrInit();
+      m_tasklist->AddTab(m_hWnd);
+      break;
+   }
+
+   m_hidden = false;
 }
 
 void Window::HideWindow()
-{ 
-   ::ShowOwnedPopups(m_hWnd, FALSE);
-   ::ShowWindow(m_hWnd, SW_HIDE); 
-   m_hiding = true;
+{
+   if (m_hidden)
+      return;
+
+   switch(m_hidingMethod)
+   {
+   default:
+   case WHM_HIDE:
+      //Hide it's popups
+      ::ShowOwnedPopups(m_hWnd, FALSE);
+
+      //Hide the window
+      ::ShowWindow(m_hWnd, SW_HIDE); 
+      break;
+
+   case WHM_MINIMIZE:
+      //Minimize the application
+      m_iconic = IsIconic(m_hWnd) ? true : false;
+      if (!m_iconic)
+         ::ShowWindow(m_hWnd, SW_MINIMIZE);
+
+      //Hide the icon
+      m_tasklist->HrInit();
+      m_tasklist->DeleteTab(m_hWnd);
+      break;
+   }
+
+   m_hidden = true;
+}
+
+HICON Window::GetIcon(void)
+{
+   HICON hIcon;
+
+  	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 50, (LPDWORD) &hIcon );
+	if ( !hIcon )
+		hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
+	if ( !hIcon )
+		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 50, (LPDWORD) &hIcon );
+
+   return hIcon;
 }
