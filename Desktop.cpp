@@ -116,7 +116,40 @@ void Desktop::resize(LPRECT rect)
 {
    m_rect = *rect;
 
+   UpdateLayout();
+}
+
+void Desktop::UpdateLayout()
+{
    tooltip->SetTool(this);
+
+   WindowsManager::Iterator it;
+   int x, y;
+
+   x = m_rect.left;
+   y = m_rect.top;
+   for(it = winMan->GetIterator(); it; it++)
+   {
+      Window * win = it;
+      RECT rect;
+      
+      if (!win->IsOnDesk(this))
+         continue;
+
+      rect.left = x;
+      rect.top = y;
+      rect.right = x + 15;
+      rect.bottom = y + 15;
+
+      tooltip->SetTool(win, &rect);
+
+      x += 16;
+      if (x > m_rect.right-15)
+      {
+         x = m_rect.left;
+         y += 16;
+      }
+   }
 }
 
 void Desktop::Draw(HDC hDc)
