@@ -68,7 +68,7 @@ void OnScreenDisplayWnd::Create()
    RegisterClass();
 
    m_hWnd = CreateWindowEx( WS_EX_TOPMOST | (m_isTransparent ? WS_EX_TRANSPARENT : 0) | WS_EX_TOOLWINDOW, 
-                            (LPSTR)s_classAtom, "OSD", WS_POPUP, 
+                            (LPTSTR)MAKEINTRESOURCE(s_classAtom), "OSD", WS_POPUP, 
                             m_position.x, m_position.y, 0, 0, 
                             NULL, NULL, vdWindow, this);
    ShowWindow(m_hWnd, SW_HIDE);
