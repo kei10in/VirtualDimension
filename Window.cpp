@@ -126,6 +126,9 @@ void Window::ShowWindow()
    if (!m_hidden)
       return;
 
+   //Restore the window's style
+   SetWindowLong(m_hWnd, GWL_EXSTYLE, m_style);
+
    //Restore the application if needed
    if (!m_iconic)
       ::ShowWindow(m_hWnd, SW_RESTORE);
@@ -133,16 +136,18 @@ void Window::ShowWindow()
    //Show the icon
    m_tasklist->AddTab(m_hWnd);
 
-   //Restore the window's style
-   SetWindowLong(m_hWnd, GWL_EXSTYLE, m_style);
-
    m_hidden = false;
 }
 
 void Window::HideWindow()
 {
+   LONG style;
+
    if (m_hidden)
       return;
+
+   //Save the window's style, 
+   m_style = GetWindowLong(m_hWnd, GWL_EXSTYLE);
 
    //Minimize the application
    m_iconic = IsIconic();
@@ -152,11 +157,9 @@ void Window::HideWindow()
    //Hide the icon
    m_tasklist->DeleteTab(m_hWnd);
 
-   //Save the window's style, and make the window a palette so that it does not
-   //appear in task list
-   m_style = GetWindowLong(m_hWnd, GWL_EXSTYLE);
-   SetWindowLong(m_hWnd, GWL_EXSTYLE, WS_EX_PALETTEWINDOW);
-   
+   //make the window a tool window so that it does not appear in task list
+   style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
+   SetWindowLong(m_hWnd, GWL_EXSTYLE, style);
 
    m_hidden = true;
 }
