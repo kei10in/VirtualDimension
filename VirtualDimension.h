@@ -43,4 +43,7 @@ extern char desk_wallpaper[256];
 extern int  desk_hotkey;
 LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
+#define WM_VIRTUALDIMENSION (WM_APP + 1)
+#define VD_MOVEWINDOW 1
+
 #endif /* __VIRTUAL_DIMENSION_H__ */
