@@ -48,7 +48,7 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 	wcex.style			= CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc	= (WNDPROC)HotKeyWndProc;
 	wcex.cbClsExtra   = 0;
-   wcex.cbWndExtra	= 0;
+   wcex.cbWndExtra	= sizeof(HKControl*);
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= NULL;
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
@@ -83,15 +83,33 @@ static void BuildDisplayString(char mods, char vk, char* str, int bufLen)
    strncat(str, keyName, bufLen);
 }
 
+static HFONT GetFont(HWND hWnd)
+{
+   HFONT font = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
+   if (font == NULL)
+   {
+      font = (HFONT)SendMessage(GetParent(hWnd), WM_GETFONT, 0, 0);
+      if (font == NULL)
+         font = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+      SendMessage(hWnd, WM_SETFONT, (WPARAM)font, FALSE);
+      return font;
+   }
+   else
+      return font;
+}
+
 static void RepositionCaret(HWND hWnd, char * str)
 {
    SIZE size;
    HDC hdc = GetDC(hWnd);
-   SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+   SelectObject(hdc, GetFont(hWnd));
    GetTextExtentPoint32(hdc, str, strlen(str), &size);
    ReleaseDC(hWnd, hdc);
    
-   SetCaretPos(size.cx+1, 2); 
+   RECT rect;
+   GetClientRect(hWnd, &rect);
+
+   SetCaretPos(size.cx+1, (rect.bottom-rect.top-size.cy)/2); 
 }
 
 static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -103,21 +121,26 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
    case WM_CREATE:
       hkCtrl = (HKControl *)malloc(sizeof(HKControl));
       memset(hkCtrl, 0, sizeof(HKControl));
-      SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)hkCtrl);
+      SetWindowLongPtr(hWnd, 0, (LONG_PTR)hkCtrl);
+      break;
 
+   case WM_SETFONT:
       {
          TEXTMETRIC tm;
          HDC hdc = GetDC(hWnd);
-         SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+         SelectObject(hdc, (HFONT)wParam);
          GetTextMetrics(hdc, &tm);
          ReleaseDC(hWnd, hdc);
 
+         hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
          hkCtrl->dwCharY = tm.tmHeight;
+
+         return DefWindowProc(hWnd, message, wParam, lParam);
       }
       break;
 
    case WM_DESTROY:
-      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
       free(hkCtrl);
       break;
 
@@ -126,7 +149,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
       break;
 
    case HKM_SETHOTKEY:
-      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
       hkCtrl->key = (short)(wParam & 0xffff);
       BuildDisplayString((char)(hkCtrl->key>>8), (char)(hkCtrl->key&0xff), 
                          hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
@@ -136,12 +159,12 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
       break;
 
    case HKM_GETHOTKEY:
-      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
       return (LRESULT)hkCtrl->key;
       break;
 
    case WM_SETFOCUS:
-      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
       CreateCaret(hWnd, NULL, 0, hkCtrl->dwCharY); 
       RepositionCaret(hWnd, hkCtrl->text);
       ShowCaret(hWnd); 
@@ -161,11 +184,11 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
          PAINTSTRUCT ps;
 	      HDC hdc;
          RECT rect;
-         hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+         hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
 
          GetClientRect(hWnd, &rect);
 		   hdc = BeginPaint(hWnd, &ps);
-         SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
+         SelectObject(hdc, GetFont(hWnd));
          DrawTextEx(hdc, hkCtrl->text, -1, &rect, DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_NOPREFIX, NULL);
 		   EndPaint(hWnd, &ps);
       }
@@ -174,7 +197,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
    case WM_KEYDOWN:
    case WM_SYSKEYDOWN:
       {
-         hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+         hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
 
          switch(wParam)
          {
@@ -214,7 +237,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
    case WM_KEYUP:
    case WM_SYSKEYUP:
       {
-         hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+         hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
 
          switch(wParam)
          {
