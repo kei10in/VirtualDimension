@@ -180,7 +180,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    	AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
       AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
       AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, "&Lock the window");
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, "&Show the caption");
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, "S&how the caption");
 		AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, "&About");
 
       CheckMenuItem(m_pSysMenu, IDM_SHOWCAPTION, m_hasCaption ? MF_CHECKED : MF_UNCHECKED );
