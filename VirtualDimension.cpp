@@ -213,7 +213,7 @@ ATOM VirtualDimension::RegisterClass()
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= 0;
 	wcex.lpszClassName	= m_szWindowClass;
-	wcex.hIconSm		= LoadIcon((HINSTANCE)wcex.hInstance, (LPCTSTR)IDI_SMALL);
+	wcex.hIconSm		= LoadIcon((HINSTANCE)wcex.hInstance, (LPCTSTR)IDI_VIRTUALDIMENSION);
 
    return FastWindow::RegisterClassEx(&wcex);
 }
