@@ -31,6 +31,8 @@
 #include <objbase.h>
 #include "fastwindow.h"
 #include "HotKeyControl.h"
+#include "LinkControl.h"
+#include <shellapi.h>
 
 
 // Global Variables:
@@ -111,6 +113,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    m_hInstance = hInstance;
 
    InitHotkeyControl();
+   InitHyperLinkControl();
 
    // Register the window class
    RegisterClass();
@@ -502,13 +505,35 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
 	switch (message)
 	{
 	case WM_INITDIALOG:
-		return TRUE;
+      SetDlgItemText(hDlg, IDC_HOMEPAGE_LINK, "http://virt-dimension.sourceforge.net");
+      SetDlgItemText(hDlg, IDC_GPL_LINK, "Click here to display the GNU General Public License");
+      return TRUE;
 
 	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) 
+		switch(LOWORD(wParam))
 		{
+      case IDOK:
+      case IDCANCEL:
 			EndDialog(hDlg, LOWORD(wParam));
 			return TRUE;
+
+      case IDC_HOMEPAGE_LINK:
+         if (HIWORD(wParam) == STN_CLICKED)
+         {
+            ShellExecute(hDlg, "open", "http://virt-dimension.sourceforge.net", 
+                         NULL, NULL, SW_SHOWNORMAL);
+
+         }
+         break;
+
+      case IDC_GPL_LINK:
+         if (HIWORD(wParam) == STN_CLICKED)
+         {
+            ShellExecute(hDlg, "open", "LICENSE.html",
+                         NULL, NULL, SW_SHOWNORMAL);
+
+         }
+         break;
 		}
 		break;
 	}
