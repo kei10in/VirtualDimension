@@ -29,6 +29,7 @@ public:
    WNDPROC m_fnPrevWndProc;
    int m_iData;
    HANDLE m_hMutex;
+   bool m_fnHookWndProcCalled;
 };
 
 enum MenuItems {
@@ -63,6 +64,9 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
    //Gain access to the data
    WaitForSingleObject(pData->m_hMutex, INFINITE);
+
+   //Mark that the hook procedure has been called
+   pData->m_fnHookWndProcCalled = true;
 
    //Process some messages
    if (message == WM_SYSCOMMAND)
@@ -123,6 +127,9 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    //Gain access to the data
    WaitForSingleObject(pData->m_hMutex, INFINITE);
 
+   //Mark that the hook procedure has been called
+   pData->m_fnHookWndProcCalled = true;
+
    //Process the message
    if (message == WM_SYSCOMMAND)
    {
@@ -182,6 +189,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
    }
 
    pHookData->m_iData = data;
+   pHookData->m_fnHookWndProcCalled = false;
 
    if (IsWindowUnicode(hWnd))
    {
@@ -227,13 +235,20 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
    else
       SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
 
-   //Release the semaphore
-   ReleaseMutex(pData->m_hMutex);
-   Sleep(0); //Let the window proc call terminate
+   do
+   {
+      pData->m_fnHookWndProcCalled = false;
 
-   //Wait till all calls to the "subclassed" window proc are finished
-   WaitForSingleObject(pData->m_hMutex, INFINITE);
-   Sleep(0); //Let the window proc call terminate
+      //Release the semaphore
+      ReleaseMutex(pData->m_hMutex);
+      
+      //Let other thread run
+      Sleep(1);
+
+      //Wait till all calls to the "subclassed" window proc are finished
+      WaitForSingleObject(pData->m_hMutex, INFINITE);
+   }
+   while(pData->m_fnHookWndProcCalled);
 
    //Cleanup the hook inforations related to this window
    CloseHandle(pData->m_hMutex);
