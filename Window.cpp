@@ -32,8 +32,9 @@ ITaskbarList* Window::m_tasklist = NULL;
 
 Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false)
 {
-   //Find out on which desktop the window is
-   m_desk = deskMan->GetCurrentDesktop();
+   Settings s;
+   Settings::Window settings(&s);
+   TCHAR className[50];
 
    if (m_tasklist == NULL)
    {
@@ -43,6 +44,29 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false)
    }
    else
       m_tasklist->AddRef();
+
+   //Try to see if there are some special settings for this window
+   if (GetClassName(hWnd, className, sizeof(className)/sizeof(TCHAR)) != 0)
+      settings.Open(className);
+
+   if (settings.IsValid())
+   {
+      //Load settings for this window
+      m_desk = settings.GetOnAllDesktops() ? NULL : deskMan->GetCurrentDesktop();
+
+      m_MinToTray = settings.GetMinimizeToTray();
+      if (IsIconic() && IsOnCurrentDesk() && m_MinToTray)
+      {
+         trayManager->AddIcon(this);
+         HideWindow();
+      }
+      
+      SetWindowPos( m_hWnd, settings.GetAlwaysOnTop() ? HWND_TOPMOST : HWND_NOTOPMOST, 
+                    0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+   }
+   else
+      //Find out on which desktop the window is
+      m_desk = deskMan->GetCurrentDesktop();
 }
 
 Window::~Window(void)
@@ -394,8 +418,7 @@ void Window::Kill()
    if (hProcess == NULL)
       return;
 
-   if (MessageBox(vdWindow, "If you kill the window, you may lose some date. Continue ?",
-                  "Warning! Killing is bad", MB_OKCANCEL|MB_ICONWARNING) == IDOK)
+   if (winMan->ConfirmKillWindow())
       TerminateProcess( hProcess, 9);
    CloseHandle (hProcess);
 }
