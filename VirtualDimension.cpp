@@ -159,6 +159,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    hWnd = *this;
 
+	// Load some settings
+	m_snapSize = settings.LoadSnapSize();
+
    // Show window if needed
    if (settings.LoadShowWindow())
    {
@@ -326,6 +329,9 @@ LRESULT VirtualDimension::OnCmdConfigure(HWND /*hWnd*/, UINT /*message*/, WPARAM
 LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
    Settings settings;
+
+	//Save the snapsize
+	settings.SaveSnapSize(m_snapSize);
 
    //Save the visibility state of the window before it is hidden
    settings.SaveShowWindow(IsWindowVisible(hWnd) ? true:false);
@@ -586,31 +592,37 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
    RECT	deskRect;
    WINDOWPOS * lpwndpos = (WINDOWPOS*)lParam;
 
-   int snapSize = 15;
-
-	// Get dimensions
+	// Get work area dimensions
 	SystemParametersInfo(SPI_GETWORKAREA, NULL, &deskRect, 0);
 
    // Snap to screen border
 	m_dockedBorders = 0;
-	if(lpwndpos->x >= -snapSize + deskRect.left && lpwndpos->x <= deskRect.left + snapSize)
+	if( (lpwndpos->x >= -m_snapSize + deskRect.left) && 
+		 (lpwndpos->x <= deskRect.left + m_snapSize) )
 	{
-      lpwndpos->x = deskRect.left;                               //Left border
+		//Left border
+      lpwndpos->x = deskRect.left;
 		m_dockedBorders |= DOCK_LEFT;
 	}
-   if(lpwndpos->y >= -snapSize + deskRect.top && lpwndpos->y <= deskRect.top + snapSize)
+   if( (lpwndpos->y >= -m_snapSize + deskRect.top) && 
+		 (lpwndpos->y <= deskRect.top + m_snapSize) )
 	{
-      lpwndpos->y = deskRect.top;                                // Top border
+		// Top border
+      lpwndpos->y = deskRect.top;
 		m_dockedBorders |= DOCK_TOP;
 	}
-	if(lpwndpos->x + lpwndpos->cx <= deskRect.right + snapSize && lpwndpos->x + lpwndpos->cx >= deskRect.right - snapSize)
+	if( (lpwndpos->x + lpwndpos->cx <= deskRect.right + m_snapSize) && 
+		 (lpwndpos->x + lpwndpos->cx >= deskRect.right - m_snapSize) )
 	{
-      lpwndpos->x = deskRect.right - lpwndpos->cx;     // Right border
+		// Right border
+      lpwndpos->x = deskRect.right - lpwndpos->cx;
 		m_dockedBorders |= DOCK_RIGHT;
 	}
-   if( lpwndpos->y + lpwndpos->cy <= deskRect.bottom + snapSize && lpwndpos->y + lpwndpos->cy >= deskRect.bottom - snapSize)
+   if( (lpwndpos->y + lpwndpos->cy <= deskRect.bottom + m_snapSize) && 
+		 (lpwndpos->y + lpwndpos->cy >= deskRect.bottom - m_snapSize) )
 	{
-      lpwndpos->y = deskRect.bottom - lpwndpos->cy;  // Bottom border
+		// Bottom border
+      lpwndpos->y = deskRect.bottom - lpwndpos->cy;
 		m_dockedBorders |= DOCK_BOTTOM;
 	}
 

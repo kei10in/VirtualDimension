@@ -77,6 +77,8 @@ protected:
 	};
 	int m_dockedBorders;
 
+	int m_snapSize;
+
    bool m_lockPreviewWindow;
    bool m_hasCaption;
 
