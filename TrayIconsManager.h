@@ -48,11 +48,13 @@ public:
 	bool AddIcon(TrayIconHandler* handler);
 	bool DelIcon(TrayIconHandler* handler);
 
-protected:
-	LRESULT RefreshIcons(HWND, UINT, WPARAM, LPARAM);
+   void RefreshIcons();
 
+protected:
 	set<TrayIconHandler *> m_registered_handlers;
    static UINT s_nextCallbackMessage;
 };
+
+extern TrayIconsManager * trayManager;
 
 #endif /*__TRAYICONSMANAGER_H__*/

@@ -23,12 +23,12 @@
 #include "VirtualDimension.h"
 #include <Shellapi.h>
 
+TrayIconsManager * trayManager;
+
 UINT TrayIconsManager::s_nextCallbackMessage = WM_USER + 0x400;
 
 TrayIconsManager::TrayIconsManager()
 {
-   UINT uTaskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
-   vdWindow.SetMessageHandler(uTaskbarRestart, this, &TrayIconsManager::RefreshIcons);
 }
 
 TrayIconsManager::~TrayIconsManager()
@@ -105,7 +105,7 @@ bool TrayIconsManager::DelIcon(TrayIconHandler* handler)
    return (res ? true : false);
 }
 
-LRESULT TrayIconsManager::RefreshIcons(HWND, UINT, WPARAM, LPARAM)
+void TrayIconsManager::RefreshIcons()
 {
 	set<TrayIconHandler*>::iterator it;
 
@@ -116,8 +116,6 @@ LRESULT TrayIconsManager::RefreshIcons(HWND, UINT, WPARAM, LPARAM)
 	{
 		AddIcon(*it);
 	}
-
-   return 0;
 }
 
 void TrayIconsManager::TrayIconHandler::Update()
