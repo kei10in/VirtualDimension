@@ -21,6 +21,7 @@
 #include "StdAfx.h"
 #include "ZOrderKeeper.h"
 #include "Window.h"
+#include "VirtualDimension.h"
 
 ZOrderKeeper ZOrderKeeper::m_instance;
 
@@ -72,6 +73,33 @@ void ZOrderKeeper::ZPositionWindow(Window * win)
    ReleaseSemaphore(m_hQueueSem, 1, NULL);
 }
 
+//From virtualWin 2.8//
+void forceForeground(HWND theWin)
+{
+   DWORD ThreadID1;
+   DWORD ThreadID2;
+
+   /* Nothing to do if already in foreground */
+   if(theWin == GetForegroundWindow()) {
+      return;
+   } else {
+      /* Get the thread responsible for VirtuaWin,
+         and the thread for the foreground window */
+      ThreadID1 = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
+      ThreadID2 = GetWindowThreadProcessId(vdWindow, NULL);
+      /* By sharing input state, threads share their concept of
+         the active window */
+      if(ThreadID1 != ThreadID2) {
+         AttachThreadInput(ThreadID1, ThreadID2, TRUE);
+         SetForegroundWindow(vdWindow); // Set VirtuaWin active. Don't no why, but it seems to work
+         AttachThreadInput(ThreadID1, ThreadID2, FALSE);
+         SetForegroundWindow(theWin);
+      } else {
+         SetForegroundWindow(theWin);
+      }
+   }
+}
+
 DWORD WINAPI ZOrderKeeper::ThreadProc(LPVOID lpParameter)
 {
    ZOrderKeeper * self = (ZOrderKeeper*)lpParameter;
@@ -121,11 +149,11 @@ DWORD WINAPI ZOrderKeeper::ThreadProc(LPVOID lpParameter)
       ReleaseMutex(self->m_hOrderMutex);
 
       //Position the window after its visible predecessor in the ZOrder
-      SetWindowPos(*window, prev, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+      SetWindowPos(*window, prev, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_FRAMECHANGED);
       
       //If the window is a the top of the ZOrder, set it as foreground window
       if (active)
-         SetForegroundWindow(window->GetOwnedWindow());
+         forceForeground(window->GetOwnedWindow());
    }
 
    return 0;
