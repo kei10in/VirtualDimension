@@ -784,6 +784,8 @@ const char Settings::Window::regValAutoSaveSettings[] = "AutoSaveSettings";
 const char Settings::Window::regValPosition[] = "WindowPosition";
 const char Settings::Window::regValAutoSetSize[] = "AutoSetSize";
 const char Settings::Window::regValAutoSetPos[] = "AutoSetPos";
+const char Settings::Window::regValAutoSetDesk[] = "AutoSetDesk";
+const char Settings::Window::regValDesktopIndex[] = "DesktopIndex";
 
 Settings::Window::Window(Settings * settings)
 {
@@ -996,4 +998,24 @@ bool Settings::Window::LoadAutoSetPos()
 void Settings::Window::SaveAutoSetPos(bool autoset)
 {
    SaveDWord(m_regKey, m_keyOpened, regValAutoSetPos, autoset);
+}
+
+bool Settings::Window::LoadAutoSetDesk()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValAutoSetDesk, false) ? true : false;
+}
+
+void Settings::Window::SaveAutoSetDesk(bool autodesk)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValAutoSetDesk, autodesk);
+}
+
+int Settings::Window::LoadDesktopIndex()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValDesktopIndex, (DWORD)-1);
+}
+
+void Settings::Window::SaveDesktopIndex(int desktop)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValDesktopIndex, desktop);
 }

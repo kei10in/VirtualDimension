@@ -184,6 +184,10 @@ public:
       void SaveAutoSetSize(bool autoset);
       bool LoadAutoSetPos();
       void SaveAutoSetPos(bool autoset);
+      bool LoadAutoSetDesk();
+      void SaveAutoSetDesk(bool autodesk);
+      int LoadDesktopIndex();
+      void SaveDesktopIndex(int desktop);
 
    protected:
       void Init(Settings * settings);
@@ -198,6 +202,8 @@ public:
       static const char regValPosition[];
       static const char regValAutoSetSize[];
       static const char regValAutoSetPos[];
+      static const char regValAutoSetDesk[];
+      static const char regValDesktopIndex[];
       
       char m_name[MAX_NAME_LENGTH];
 
