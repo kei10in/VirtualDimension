@@ -202,6 +202,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
 	m_tracking = false;
 
+	//Ensure the window gets docked if it is close enough to the borders
+	SetWindowPos(hWnd, NULL, pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, SWP_NOACTIVATE|SWP_NOZORDER|SWP_NOOWNERZORDER);
+
    // Setup the system menu
    m_pSysMenu = GetSystemMenu(hWnd, FALSE);
 	if (m_pSysMenu != NULL)
