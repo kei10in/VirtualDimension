@@ -619,6 +619,75 @@ void Settings::SaveStartWithWindows(bool start)
    }
 }
 
+const char Settings::regSubKeyDisableShellIntegration[] = "DisableShellIntegration";
+const char Settings::regSubKeyHidingMethods[] = "HidingMethodsTweaks";
+
+bool Settings::LoadDisableShellIntegration(const char * windowclass)
+{
+   HKEY regKey=NULL;
+   bool res;
+
+   res = m_keyOpened &&
+         RegOpenKeyEx(m_regKey, regSubKeyDisableShellIntegration, 0, KEY_READ, &regKey) == ERROR_SUCCESS &&
+         RegQueryValueEx(regKey, windowclass, NULL, NULL, NULL, NULL) == ERROR_SUCCESS;
+
+   if (regKey!=NULL)
+      RegCloseKey(regKey);
+
+   return res;
+}
+
+void Settings::SaveDisableShellIntegration(const char * windowclass, bool enable)
+{
+   HKEY regKey=NULL;
+
+   if (m_keyOpened &&
+       RegOpenKeyEx(m_regKey, regSubKeyDisableShellIntegration, 0, KEY_READ, &regKey) == ERROR_SUCCESS)
+   {
+      DWORD value = 0;
+
+      if (enable)
+         RegDeleteValue(regKey, windowclass);
+      else
+         RegSetValueEx(regKey, windowclass, 0, REG_DWORD, (BYTE*)&value, sizeof(value));
+
+      RegCloseKey(regKey);
+   }
+}
+
+int Settings::LoadHidingMethod(const char * windowclass)
+{
+   HKEY regKey=NULL;
+   DWORD val;
+   DWORD size = sizeof(val);
+   int res;
+
+   res = (m_keyOpened &&
+          RegOpenKeyEx(m_regKey, regSubKeyHidingMethods, 0, KEY_READ, &regKey) == ERROR_SUCCESS &&
+          RegQueryValueEx(regKey, windowclass, NULL, NULL, (BYTE*)&val, &size) == ERROR_SUCCESS) ? val : 0;
+
+   if (regKey!=NULL)
+      RegCloseKey(regKey);
+
+   return res;
+}
+
+void Settings::SaveHidingMethod(const char * windowclass, int method)
+{
+   HKEY regKey=NULL;
+
+   if (m_keyOpened &&
+       RegOpenKeyEx(m_regKey, regSubKeyHidingMethods, 0, KEY_READ, &regKey) == ERROR_SUCCESS)
+   {
+      if (method == 0)
+         RegDeleteValue(regKey, windowclass);
+      else
+         RegSetValueEx(regKey, windowclass, 0, REG_DWORD, (BYTE*)&method, sizeof(method));
+
+      RegCloseKey(regKey);
+   }
+}
+
 const char Settings::Desktop::regKeyDesktops[] = "Desktops";
 const char Settings::Desktop::regValIndex[] = "DeskIndex";
 const char Settings::Desktop::regValWallpaper[] = "DeskWallpaper";

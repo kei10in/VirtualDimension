@@ -119,6 +119,11 @@ public:
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
 
+   bool LoadDisableShellIntegration(const char * windowclass);
+   void SaveDisableShellIntegration(const char * windowclass, bool enable);
+   int LoadHidingMethod(const char * windowclass);
+   void SaveHidingMethod(const char * windowclass, int method);
+
    class Desktop 
    {
    public:
@@ -231,6 +236,8 @@ public:
 protected:
    static const char regKeyName[];
    static const char regKeyWindowsStartup[];
+   static const char regSubKeyDisableShellIntegration[];
+   static const char regSubKeyHidingMethods[];
 
    static const char regValPosition[];
 	static const char regValDockedBorders[];
