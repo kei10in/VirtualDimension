@@ -52,6 +52,9 @@ Desktop::~Desktop(void)
    //Unregister the hotkey
    if (m_hotkey != 0)
       HotKeyManager::GetInstance()->UnregisterHotkey((int)this);
+
+   //Remove the tooltip tool
+   tooltip->UnsetTool(this);
 }
 
 Desktop::Desktop(Settings::Desktop * desktop)
@@ -112,6 +115,8 @@ void Desktop::OnMenuItemSelected(HMENU menu, int cmdId)
 void Desktop::resize(LPRECT rect)
 {
    m_rect = *rect;
+
+   tooltip->SetTool(this);
 }
 
 void Desktop::Draw(HDC hDc)
