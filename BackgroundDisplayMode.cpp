@@ -134,7 +134,6 @@ void PictureBackgroundDisplayMode::UpdatePictureObjects()
       HDC memDC;
       HDC picDC;
       RECT rect;
-      BLENDFUNCTION bf;
       HDC winDC;
 
       //Deselected picture
@@ -158,13 +157,7 @@ void PictureBackgroundDisplayMode::UpdatePictureObjects()
       rect.bottom = m_height;
       FillRect(memDC, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
-      bf.AlphaFormat = 0;
-      bf.BlendFlags = 0;
-      bf.BlendOp = AC_SRC_OVER;
-      bf.SourceConstantAlpha = 128;
-      AlphaBlend(memDC, 0, 0, m_width, m_height,
-                 picDC, 0, 0, m_width, m_height,
-                 bf);
+      PlatformHelper::AlphaBlend(memDC, 0, 0, picDC, 0, 0, m_width, m_height, 128);
 
       DeleteDC(picDC);
       DeleteDC(memDC);
