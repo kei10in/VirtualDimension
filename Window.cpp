@@ -40,7 +40,7 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(m_hOwnedWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
-                           m_hIcon(NULL), m_ownIcon(false), m_style(0)
+                           m_hIcon(NULL), m_ownIcon(false), m_style(0), m_HookDllHandle(NULL)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -88,8 +88,6 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
    m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
    if (winMan->IsIntegrateWithShell())
       Hook();
-   else
-      m_HookDllHandle = NULL;
 }
 
 Window::~Window(void)
@@ -577,6 +575,9 @@ void Window::OnContextMenu()
 
 void Window::Hook()
 {
+   if (m_HookDllHandle)
+      return;
+
    HWND hWnd = GetOwnedWindow();
    GetWindowThreadProcessId(hWnd, &m_dwProcessId);
    m_HookDllHandle = HookWindow(hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
