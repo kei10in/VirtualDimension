@@ -253,20 +253,28 @@ void DesktopManager::RemoveDesktop(Desktop * desk)
    /* remove from the registry */
    desk->Remove();
 
-   /* Update the desktop layout */
-   UpdateLayout();
-
    /* Change the current desktop, if needed */
    if (m_currentDesktop == desk)
    {
+      //Ensure there is still at least one desktop
       if (m_desks.empty())
-         m_currentDesktop = NULL;
-      else
-      {
-         m_currentDesktop = m_desks.front();
-         m_currentDesktop->Activate();
-      }
+         AddDesktop();
+
+      m_currentDesktop = m_desks.front();
+      m_currentDesktop->Activate();
    }
+
+   /* Move all windows from this desktop to the currently active one */
+   for(WindowsManager::Iterator it = winMan->GetIterator(); it; it++)
+   {
+      Window * win = it;
+      
+      if (win->GetDesk() == desk)
+         win->MoveToDesktop(m_currentDesktop);
+   }
+
+   /* Update the desktops layout */
+   UpdateLayout();
 
    /* and remove the object from memory */
    delete desk;
@@ -335,14 +343,13 @@ void DesktopManager::LoadDesktops()
    //Sort the desktops according to their index
    Sort();
 
-   //Activate the first desktop
+   //Ensure there is at least one desktop
    if (m_desks.empty())
-      m_currentDesktop = NULL;
-   else
-   {
-      m_currentDesktop = m_desks.front();
-      m_currentDesktop->Activate();
-   }
+      AddDesktop();
+
+   //Activate the first desktop
+   m_currentDesktop = m_desks.front();
+   m_currentDesktop->Activate();
 }
 
 void DesktopManager::SetNbColumns(int cols)
@@ -365,7 +372,7 @@ void DesktopManager::SelectOtherDesk(int change)
    else if ( (it += change) == m_desks.end())
       desk = m_desks.front();
    else
-         desk = *it;
+      desk = *it;
 
    SwitchToDesktop(desk);
 }
