@@ -23,7 +23,6 @@
 
 int ShellHook::nbInstance = 0;
 HINSTANCE ShellHook::hinstDLL = NULL;
-UINT ShellHook::WM_SHELLHOOK = 0;
 
 BOOL (__STDCALL__ * ShellHook::RegisterShellHook)(HWND,DWORD);
 
@@ -31,8 +30,6 @@ ShellHook::ShellHook(HWND hWnd)
 {
    if (nbInstance == 0)
    {
-      WM_SHELLHOOK = RegisterWindowMessage(TEXT("SHELLHOOK"));
-
       hinstDLL = LoadLibrary((LPCTSTR) "shell32.dll");
 
       RegisterShellHook = (BOOL (__STDCALL__*)(HWND,DWORD) )GetProcAddress(hinstDLL, (LPCSTR)181);
