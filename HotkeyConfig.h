@@ -21,18 +21,80 @@
 #ifndef __HOTKEYCONFIG_H__
 #define __HOTKEYCONFIG_H__
 
-class ConfigurableHotkey
+#ifdef __GNUC__
+
+typedef struct tagNMITEMACTIVATE {
+    NMHDR hdr;
+    int iItem;
+    int iSubItem;
+    UINT uNewState;
+    UINT uOldState;
+    UINT uChanged;
+    POINT ptAction;
+    LPARAM lParam;
+    UINT uKeyFlags;
+} NMITEMACTIVATE,*LPNMITEMACTIVATE;
+
+#endif
+
+#include <list>
+#include "HotkeyManager.h"
+
+using namespace std;
+
+class ConfigurableHotkey: public HotKeyManager::EventHandler
 {
-public:
-   virtual LPCSTR GetName() const = 0;
-   virtual int GetHotkey() const = 0;
-   virtual void SetHotkey(int hotkey) = 0;
+   friend class ShortcutsConfigurationDlg;
 
 public:
+   ConfigurableHotkey();
+   virtual ~ConfigurableHotkey();
+   virtual int GetHotkey() const;
+   virtual void SetHotkey(int hotkey);
+
+   virtual LPCSTR GetName() const = 0;
+   
+protected:
+   int m_hotkey;
+
+private:
    int m_tempHotkey;
    void Commit()  { SetHotkey(m_tempHotkey); }
 };
 
-LRESULT CALLBACK ShortcutsConfiguration(HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM lParam);
+class ShortcutsConfigurationDlg
+{
+public:
+   static DLGPROC GetWindowProc()                              { return (DLGPROC)DlgProc; }
+   
+   static void RegisterHotkey(ConfigurableHotkey * hotkey)     { m_hotkeys.push_back(hotkey); }
+   static void UnRegisterHotkey(ConfigurableHotkey * hotkey)   { m_hotkeys.remove(hotkey); }
+
+   ShortcutsConfigurationDlg(HWND hwnd);
+   ~ShortcutsConfigurationDlg();
+
+protected:
+   void InsertItem(ConfigurableHotkey* hotkey);
+   ConfigurableHotkey* GetItemHotkey(int index);
+   void SetItemShortcut(int index, int shortcut);
+   int GetItemShortcut(int index);
+   void BeginEdit(int item);
+   void EndEdit();
+
+   LRESULT OnApply();
+   void OnClick(LPNMITEMACTIVATE lpnmitem);
+   void OnRightClick(LPNMITEMACTIVATE lpnmitem);
+   void OnSetFocus();
+
+   bool IsEditing() const                                      { return IsWindowVisible(m_editCtrl) ? true : false; }
+
+   HWND m_hDlg;
+   HWND m_editCtrl;
+   HWND m_listViewWnd;
+   int m_editedItemIndex;
+
+   static list<ConfigurableHotkey*> m_hotkeys;
+   static LRESULT CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM lParam);
+};
 
 #endif /*__HOTKEYCONFIG_H__*/
