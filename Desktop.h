@@ -65,6 +65,7 @@ public:
 
    LPTSTR GetWallpaper()      { return m_wallpaperFile; }
    void SetWallpaper(LPTSTR fileName);
+   void RefreshWallpaper()    { m_wallpaper.Activate(); }
 
    COLORREF GetBackgroundColor() const   { return m_bkColor; }
    void SetBackgroundColor(COLORREF col);
