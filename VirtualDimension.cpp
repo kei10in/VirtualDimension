@@ -327,53 +327,59 @@ LRESULT VirtualDimension::OnLeftButtonDblClk(HWND /*hWnd*/, UINT /*message*/, WP
    desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
    if ( (desk) &&
         ((window = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) )
-      window->OnMenuItemSelected(NULL, Window::VDM_ACTIVATEWINDOW);
+      window->Activate();
    return 0;
 }
 
 LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
-   HMENU hMenu, hmenuTrackPopup;
+   HMENU hMenu, hBaseMenu;
    POINT pt;
    HRESULT res;
 
    pt.x = GET_X_LPARAM(lParam);
    pt.y = GET_Y_LPARAM(lParam);
 
-   //Get the "base" menu
-   hMenu = LoadMenu(vdWindow, (LPCTSTR)IDC_VIRTUALDIMENSION);
-   if (hMenu == NULL)
-      return 0;
-   hmenuTrackPopup = GetSubMenu(hMenu, 0); 
-
-   //Add desktop specific information
+   //Get the context menu
    Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
    Window * window = NULL;
    if (desk != NULL)
    {
       window = desk->GetWindowFromPoint(pt.x, pt.y);
       if (window)
-         window->BuildMenu(hmenuTrackPopup);
+         hMenu = window->BuildMenu();
       else
-         desk->BuildMenu(hmenuTrackPopup);
+         hMenu = desk->BuildMenu();
+      hBaseMenu = hMenu;
    }
+   else
+   {
+      //Get the "base" menu
+      hBaseMenu = LoadMenu(vdWindow, (LPCTSTR)IDC_VIRTUALDIMENSION);
+      if (hBaseMenu == NULL)
+         return 0;
+      hMenu = GetSubMenu(hBaseMenu, 0); 
+   }
+
+   if (hMenu == NULL)
+      return 0;
 
    //And show the menu
    ClientToScreen(hWnd, &pt);
-   res = TrackPopupMenu(hmenuTrackPopup, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, hWnd, NULL);
+   res = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, hWnd, NULL);
 
    //Process the resulting message
    if (res >= WM_USER)
    {
       if (window != NULL)
-         window->OnMenuItemSelected(hmenuTrackPopup, res);
+         window->OnMenuItemSelected(hMenu, res);
       else
-         desk->OnMenuItemSelected(hmenuTrackPopup, res);
+         desk->OnMenuItemSelected(hMenu, res);
    }
    else
       PostMessage(hWnd, WM_COMMAND, res, 0);
 
-   DestroyMenu(hMenu);
+   DestroyMenu(hBaseMenu);
 
    return 0;
 }
