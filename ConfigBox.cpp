@@ -346,6 +346,16 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          {
             HWND listBox = GetDlgItem(hDlg, IDC_DESK_LIST);
             LRESULT index;
+
+            //To not delete the last desktop, as the following code would not display the content of the
+            //list properly in that case (due to the desktop being automatically created)
+            if (deskMan->GetNbDesktops() == 1)
+            {
+               MessageBox(hDlg, "Virtual Dimension needs at least one virtual desktop to function properly !", 
+                          "Unable to remove desktop", MB_OK|MB_ICONERROR);
+               break;
+            }
+
             index = SendMessage(listBox, LB_GETCURSEL, 0, 0);
             if (index != LB_ERR)
             {
