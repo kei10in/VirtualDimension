@@ -131,6 +131,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetMessageHandler(WM_LBUTTONDBLCLK, this, &VirtualDimension::OnLeftButtonDblClk);
    SetMessageHandler(WM_RBUTTONDOWN, this, &VirtualDimension::OnRightButtonDown);
 
+   SetMessageHandler(WM_MEASUREITEM, this, &VirtualDimension::OnMeasureItem);
+   SetMessageHandler(WM_DRAWITEM, this, &VirtualDimension::OnDrawItem);
+
    // Create the main window
    settings.LoadPosition(&pos);
    Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, 
@@ -452,6 +455,33 @@ LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam
 
    return 0;
 }
+
+LRESULT VirtualDimension::OnMeasureItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
+
+   if (wParam != NULL)
+      return DefWindowProc(hWnd, message, wParam, lParam);
+
+   lpmis->itemHeight = 16;
+   lpmis->itemWidth = 16;
+
+   return TRUE;
+}
+
+LRESULT VirtualDimension::OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
+   Window * window;
+
+   if (wParam != NULL)
+      return DefWindowProc(hWnd, message, wParam, lParam);
+
+   window = (Window*)lpdis->itemData;
+
+   DrawIconEx(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, window->GetIcon(), 16, 16, 0, NULL, DI_NORMAL);
+}
+
 
 // Message handler for about box.
 LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
