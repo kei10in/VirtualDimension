@@ -369,6 +369,8 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                   EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), FALSE);
                   EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), FALSE);
                }
+               else
+                  EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), deskMan->GetNbDesktops()>1 ? TRUE : FALSE);
                vdWindow.Refresh();
             }
             else
@@ -421,7 +423,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                SendMessage(hWnd, UDM_SETRANGE, 0, (LPARAM) MAKELONG((short) max, (short) 0));
                SendMessage(hWnd, UDM_SETPOS, 0, (LPARAM) MAKELONG((short) pos, 0));
 
-               EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), TRUE);
+               EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), deskMan->GetNbDesktops()>1 ? TRUE : FALSE);
                EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), TRUE);
             }
             break;
