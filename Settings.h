@@ -108,12 +108,16 @@ public:
       void Destroy();
 
       char * GetName(char * buffer, unsigned int length);
-      bool GetOnAllDesktops();
-      void SetOnAllDesktops(bool all);
-      bool GetAlwaysOnTop();
-      void SetAlwaysOnTop(bool ontop);
-      bool GetMinimizeToTray();
-      void SetMinimizeToTray(bool totray);
+      bool LoadOnAllDesktops();
+      void SaveOnAllDesktops(bool all);
+      bool LoadAlwaysOnTop();
+      void SaveAlwaysOnTop(bool ontop);
+      bool LoadMinimizeToTray();
+      void SaveMinimizeToTray(bool totray);
+      unsigned char LoadTransparencyLevel();
+      void SaveTransparencyLevel(unsigned char level);
+      bool LoadEnableTransparency();
+      void SaveEnableTransparency(bool enable);
 
    protected:
       void Init(Settings * settings);
@@ -122,6 +126,8 @@ public:
       static const char regValOnAllDesktops[];
       static const char regValAlwaysOnTop[];
       static const char regValMinimizeToTray[];
+      static const char regValTransparencyLevel[];
+      static const char regValEnableTransparency[];
       
       char m_name[MAX_NAME_LENGTH];
 

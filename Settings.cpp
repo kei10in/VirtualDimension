@@ -324,7 +324,7 @@ bool Settings::Desktop::Rename(char * buffer)
 
 int Settings::Desktop::GetIndex(int * index)
 {
-   DWORD idx = Settings::LoadDWord(m_regKey, m_keyOpened, regValIndex, 0);
+   DWORD idx = LoadDWord(m_regKey, m_keyOpened, regValIndex, 0);
 
    if (index != NULL)
       *index = idx;
@@ -334,7 +334,7 @@ int Settings::Desktop::GetIndex(int * index)
 
 void Settings::Desktop::SetIndex(int index)
 {
-   Settings::SaveDWord(m_regKey, m_keyOpened, regValIndex, index);
+   SaveDWord(m_regKey, m_keyOpened, regValIndex, index);
 }
 
 char * Settings::Desktop::GetWallpaper(char * buffer, unsigned int length)
@@ -401,6 +401,8 @@ const char Settings::Window::regKeyWindows[] = "Windows";
 const char Settings::Window::regValAlwaysOnTop[] = "AlwaysOnTop";
 const char Settings::Window::regValOnAllDesktops[] = "OnAllDesktops";
 const char Settings::Window::regValMinimizeToTray[] = "MinimizeToTray";
+const char Settings::Window::regValTransparencyLevel[] = "TransparencyLevel";
+const char Settings::Window::regValEnableTransparency[] = "EnableTransparency";
 
 Settings::Window::Window(Settings * settings)
 {
@@ -512,32 +514,52 @@ char * Settings::Window::GetName(char * buffer, unsigned int length)
    return buffer;
 }
 
-bool Settings::Window::GetAlwaysOnTop()
+bool Settings::Window::LoadAlwaysOnTop()
 {
-   return Settings::LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, FALSE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, FALSE) ? true : false;
 }
 
-void Settings::Window::SetAlwaysOnTop(bool ontop)
+void Settings::Window::SaveAlwaysOnTop(bool ontop)
 {
-   Settings::SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, ontop);
+   SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, ontop);
 }
 
-bool Settings::Window::GetOnAllDesktops()
+bool Settings::Window::LoadOnAllDesktops()
 {
-   return Settings::LoadDWord(m_regKey, m_keyOpened, regValOnAllDesktops, FALSE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValOnAllDesktops, FALSE) ? true : false;
 }
 
-void Settings::Window::SetOnAllDesktops(bool all)
+void Settings::Window::SaveOnAllDesktops(bool all)
 {
-   Settings::SaveDWord(m_regKey, m_keyOpened, regValOnAllDesktops, all);
+   SaveDWord(m_regKey, m_keyOpened, regValOnAllDesktops, all);
 }
 
-bool Settings::Window::GetMinimizeToTray()
+bool Settings::Window::LoadMinimizeToTray()
 {
-   return Settings::LoadDWord(m_regKey, m_keyOpened, regValMinimizeToTray, FALSE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValMinimizeToTray, FALSE) ? true : false;
 }
 
-void Settings::Window::SetMinimizeToTray(bool totray)
+void Settings::Window::SaveMinimizeToTray(bool totray)
 {
-   Settings::SaveDWord(m_regKey, m_keyOpened, regValMinimizeToTray, totray);
+   SaveDWord(m_regKey, m_keyOpened, regValMinimizeToTray, totray);
+}
+
+unsigned char Settings::Window::LoadTransparencyLevel()
+{
+   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, 255);
+}
+
+void Settings::Window::SaveTransparencyLevel(unsigned char level)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValTransparencyLevel, level);
+}
+
+bool Settings::Window::LoadEnableTransparency()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValEnableTransparency, false) ? true : false;
+}
+
+void Settings::Window::SaveEnableTransparency(bool enable)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValEnableTransparency, enable);
 }
