@@ -32,7 +32,7 @@ void InitHotkeyControl()
    RegisterHotkeyClass(vdWindow);
 }
 
-typedef struct {
+typedef struct _HKControl {
    short key;
    char  flags;
    TCHAR text[40];
@@ -48,7 +48,7 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 	wcex.style			= CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc	= (WNDPROC)HotKeyWndProc;
 	wcex.cbClsExtra   = 0;
-   wcex.cbWndExtra	= sizeof(HKControl*);
+   wcex.cbWndExtra	= 0;
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= NULL;
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
