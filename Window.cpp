@@ -32,7 +32,8 @@ ITaskbarList* Window::m_tasklist = NULL;
 
 Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(hWnd), m_transpLevel(128),
-                           m_autoSaveSettings(false), m_autosize(false), m_autopos(false)
+                           m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
+                           m_hIcon(NULL)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -186,17 +187,16 @@ bool Window::IsOnCurrentDesk() const
 
 HICON Window::GetIcon(void)
 {
-   HICON hIcon = NULL;
+   if ( !m_hIcon )
+     	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
+	if ( !m_hIcon )
+		m_hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
+	if ( !m_hIcon )
+		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
+   if ( !m_hIcon )
+      m_hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
 
-  	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 10, (LPDWORD) &hIcon );
-	if ( !hIcon )
-		hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
-	if ( !hIcon )
-		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 10, (LPDWORD) &hIcon );
-   if ( !hIcon )
-      hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
-
-   return hIcon;
+   return m_hIcon;
 }
 
 void Window::InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str)

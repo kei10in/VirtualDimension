@@ -187,6 +187,7 @@ protected:
    bool m_autopos;
 
    TCHAR m_className[30];
+   HICON m_hIcon;
 
    /** Pointer to the COM taskbar interface.
     * This interface is used for the WHM_MINIMIZE hiding method, to add/remove the icons
