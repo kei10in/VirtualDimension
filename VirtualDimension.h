@@ -56,6 +56,9 @@ public:
 
    inline void Refresh()  { InvalidateRect(m_hWnd, NULL, FALSE); }
 
+	inline int GetSnapSize() const		{ return m_snapSize; }
+	inline void SetSnapSize(int size)	{ m_snapSize = size; }
+
 protected:
    Window * m_draggedWindow;
    HCURSOR m_dragCursor;
