@@ -29,6 +29,7 @@
 #include <ocidl.h>
 #include "HotKeyManager.h"
 #include "WallPaper.h"
+#include "TaskPool.h"
 
 using namespace std;
 class Window;
@@ -80,16 +81,21 @@ protected:
 
    static LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
+   static void ShowWindowWorkerProc(LPVOID lpParam);
+   static void HideWindowWorkerProc(LPVOID lpParam);
+
    bool m_active;
 
    int m_index;
    char m_name[80];
    int m_hotkey;
    RECT m_rect;
-   
+
    WallPaper m_wallpaper;
    TCHAR m_wallpaperFile[MAX_PATH];
    COLORREF m_bkColor;
+
+   TaskPool m_taskPool;
 
    class DesktopProperties
    {

@@ -303,12 +303,41 @@ void Desktop::Save()
    desktop.SetColor(m_bkColor);
 }
 
+void Desktop::ShowWindowWorkerProc(void * lpParam)
+{
+   Window * win = (Window *)lpParam;
+
+   if (win->IsInTray())
+      trayManager->AddIcon(win);
+   else
+   {
+      win->ShowWindow();
+
+      Window * prev = winMan->GetPredecessor(win);
+
+      if (prev)
+         SetWindowPos(*win, *prev, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+      else
+         SetWindowPos(*win, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+
+      if (*win == winMan->GetActiveWindow())
+         SetForegroundWindow(*win);
+   }
+}
+
+void Desktop::HideWindowWorkerProc(void * lpParam)
+{
+   Window * win = (Window*)lpParam;
+            
+   if (win->IsInTray())
+      trayManager->DelIcon(win);
+   else
+      win->HideWindow();
+}
+
 void Desktop::Activate(void)
 {
    WindowsManager::Iterator it;
-   Window * topmost = NULL;
-   HDWP hWinPosInfo;
-   HWND prev = HWND_TOP;
 
    m_active = true;
 
@@ -318,42 +347,18 @@ void Desktop::Activate(void)
    /* Set the background color */
    BackgroundColor::GetInstance().SetColor(m_bkColor);
 
+   SetForegroundWindow(vdWindow);
+
    // Show the windows
-   hWinPosInfo = BeginDeferWindowPos(0);
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
 
       if (win->IsOnDesk(this))
-      {
-         if (win->IsInTray())
-            trayManager->AddIcon(win);
-         else
-         {
-            win->ShowWindow();
-
-            DeferWindowPos(hWinPosInfo, *win, prev, 0, 0, 0, 0, 
-                           SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-
-            if (topmost)
-               prev = *win;
-            else
-               topmost = win;
-         }
-      }
+         m_taskPool.QueueJob(ShowWindowWorkerProc, win);
       else
-      {
-         if (win->IsInTray())
-            trayManager->DelIcon(win);
-         else
-            win->HideWindow();
-      }
+         m_taskPool.QueueJob(HideWindowWorkerProc, win);
    }
-   EndDeferWindowPos(hWinPosInfo);
-
-   // Restore the foreground window
-   if (topmost)
-      SetForegroundWindow(topmost->GetOwnedWindow());
 }
 
 void Desktop::Desactivate(void)
