@@ -69,6 +69,7 @@ protected:
 
    LRESULT OnLeftButtonDown(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnLeftButtonUp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnLeftButtonDblClk(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnRightButtonDown(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnDestroy(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

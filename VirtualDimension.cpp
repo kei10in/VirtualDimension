@@ -140,6 +140,7 @@ void VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetMessageHandler(WM_DESTROY, this, &VirtualDimension::OnDestroy);
    SetMessageHandler(WM_LBUTTONDOWN, this, &VirtualDimension::OnLeftButtonDown);
    SetMessageHandler(WM_LBUTTONUP, this, &VirtualDimension::OnLeftButtonUp);
+   SetMessageHandler(WM_LBUTTONDBLCLK, this, &VirtualDimension::OnLeftButtonDblClk);
    SetMessageHandler(WM_RBUTTONDOWN, this, &VirtualDimension::OnRightButtonDown);
 
    // Create the main window
@@ -203,7 +204,7 @@ ATOM VirtualDimension::RegisterClass()
 
 	wcex.cbSize = sizeof(WNDCLASSEX); 
 
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
+	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= m_hInstance;
@@ -261,7 +262,6 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
       ICONINFO icon;
 
       //Dragging a window
-//      dragging = true;
       SetCapture(hWnd);
 
       GetIconInfo(m_draggedWindow->GetIcon(), &icon);
@@ -271,7 +271,8 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
    }
    else
    {
-      //dragging = false;  //no needed
+      m_draggedWindow = NULL;
+
       deskMan->SwitchToDesktop(desk);
       InvalidateRect(hWnd, NULL, TRUE);
    }
@@ -288,7 +289,6 @@ LRESULT VirtualDimension::OnLeftButtonUp(HWND hWnd, UINT /*message*/, WPARAM /*w
       return 0;
 
    //Release capture
-//   dragging = false;
    ReleaseCapture();
 
    //Free the cursor
@@ -308,6 +308,22 @@ LRESULT VirtualDimension::OnLeftButtonUp(HWND hWnd, UINT /*message*/, WPARAM /*w
    //Refresh the window
    InvalidateRect(hWnd, NULL, TRUE);
 
+   return 0;
+}
+
+LRESULT VirtualDimension::OnLeftButtonDblClk(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   POINT pt;
+   Window * window;
+   Desktop * desk;
+
+   pt.x = GET_X_LPARAM(lParam);
+   pt.y = GET_Y_LPARAM(lParam);
+
+   desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+   if ( (desk) &&
+        ((window = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) )
+      window->OnMenuItemSelected(NULL, Window::VDM_ACTIVATEWINDOW);
    return 0;
 }
 
