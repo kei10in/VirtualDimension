@@ -166,7 +166,7 @@ void TrayIcon::OnLeftButtonDown()
 
 LRESULT TrayIcon::OnCmdClose(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
-   if (m_closeToTray && m_iconLoaded && (HIWORD(lParam) != 0) && (HIWORD(lParam) != -1))
+   if (m_closeToTray && m_iconLoaded && (HIWORD(lParam) != 0) && (HIWORD(lParam) != (WORD)-1))
       ShowWindow(m_hWnd, SW_HIDE);
    else
       PostMessage(hWnd, WM_COMMAND, IDM_EXIT, 0);
