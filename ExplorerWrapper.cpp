@@ -32,22 +32,27 @@ ExplorerWrapper::ExplorerWrapper(FastWindow * wnd)
    wnd->SetCommandHandler(uTaskbarRestart, this, &ExplorerWrapper::OnTaskbarRestart);
 
    BindTaskbar();
+   BindActiveDesktop();
 }
 
 ExplorerWrapper::~ExplorerWrapper(void)
 {
 #ifdef HIDEWINDOW_COMINTERFACE
-   m_tasklist->Release();
+   if (m_tasklist)
+      m_tasklist->Release();
 #endif
+   if (m_pActiveDesktop)
+      m_pActiveDesktop->Release();
 }
 
 void ExplorerWrapper::BindTaskbar()
 {
 #ifdef HIDEWINDOW_COMINTERFACE
 
-   CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist);
-   if (m_tasklist != NULL)
+   if (CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist) == S_OK)
       m_tasklist->HrInit();
+   else
+      m_tasklist = NULL;
 
 #else
 
@@ -65,6 +70,12 @@ void ExplorerWrapper::BindTaskbar()
 #endif
 }
 
+void ExplorerWrapper::BindActiveDesktop()
+{
+   if (CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_INPROC_SERVER, IID_IActiveDesktop, (LPVOID*)&m_pActiveDesktop) != S_OK)
+      m_pActiveDesktop = NULL;
+}
+
 LRESULT ExplorerWrapper::OnTaskbarRestart(HWND /*hWnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
    //Refresh tray icons
@@ -75,6 +86,7 @@ LRESULT ExplorerWrapper::OnTaskbarRestart(HWND /*hWnd*/, UINT /*msg*/, WPARAM /*
    m_tasklist->Release();  //release the interface before re-binding it...
 #endif
    BindTaskbar();
+   BindActiveDesktop();
 
    //Restore wallpaper
    deskMan->GetCurrentDesktop()->RefreshWallpaper();

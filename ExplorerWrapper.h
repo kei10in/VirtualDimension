@@ -21,7 +21,10 @@
 #ifndef __EXPLORERWRAPPER_H__
 #define __EXPLORERWRAPPER_H__
 
+#include <wininet.h>
+#include <shlobj.h>
 #include "FastWindow.h"
+#include "PlatformHelper.h"
 
 class ExplorerWrapper
 {
@@ -47,9 +50,18 @@ public:
 #endif
    }
 
+   inline bool HasActiveDesktop() const        { return m_pActiveDesktop!=NULL; }
+   inline IActiveDesktop * GetActiveDesktop()  { return m_pActiveDesktop; }
+
 protected:
    LRESULT OnTaskbarRestart(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
    void BindTaskbar();
+   void BindActiveDesktop();
+
+   /** Pointer to the COM ActiveDesktop interface.
+    * Used for getting/changing wallpaper
+    */
+   IActiveDesktop * m_pActiveDesktop;
 
 #ifdef HIDEWINDOW_COMINTERFACE
    /** Pointer to the COM taskbar interface.

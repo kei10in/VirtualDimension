@@ -22,14 +22,15 @@
 #include "WallPaper.h"
 #include "PlatformHelper.h"
 #include "BackgroundColor.h"
+#include "ExplorerWrapper.h"
 
 WallPaper * WallPaper::m_activeWallPaper = NULL;
-IActiveDesktop * WallPaper::m_pActiveDesktop = NULL;
+bool WallPaper::m_defaultWallpaperInit = false;
 TCHAR WallPaper::m_defaultWallpaper[MAX_PATH];
 
 WallPaper::WallPaper()
 {
-   InitActiveDesktop();
+   LoadDefaultWallpaper();
 
    m_fileName = m_bmpFileName = NULL;
    SetImage("");
@@ -37,7 +38,7 @@ WallPaper::WallPaper()
 
 WallPaper::WallPaper(LPTSTR fileName)
 {
-   InitActiveDesktop();
+   LoadDefaultWallpaper();
 
    m_fileName = m_bmpFileName = NULL;
    SetImage(fileName);
@@ -58,50 +59,27 @@ WallPaper::~WallPaper(void)
       SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, SETWALLPAPER_DEFAULT, 0);
 
       //Restore active desktop wallpaper, if any
-      if ((m_pActiveDesktop) && (*m_defaultWallpaper != 0))
-         m_pActiveDesktop->ApplyChanges(AD_APPLY_REFRESH);
-   }
-
-   //Cleanup active desktop interface
-   if (m_pActiveDesktop)
-   {
-      ULONG count;
-      count = m_pActiveDesktop->Release();
-      if (count == 0)
-         m_pActiveDesktop = NULL;
+      if (explorerWrapper->HasActiveDesktop() && *m_defaultWallpaper != 0)
+         explorerWrapper->GetActiveDesktop()->ApplyChanges(AD_APPLY_REFRESH);
    }
 }
 
-void WallPaper::InitActiveDesktop()
+void WallPaper::LoadDefaultWallpaper()
 {
-   //Create active desktop interface
-   if (m_pActiveDesktop)
-      //Increase ref count
-      m_pActiveDesktop->AddRef();
-   else
+   if (!m_defaultWallpaperInit)
    {
       WCHAR buffer[MAX_PATH];
 
-      //Get the interface
-      if (CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_INPROC_SERVER, IID_IActiveDesktop, (LPVOID*)&m_pActiveDesktop) != S_OK)
+      //Try to get default wallpaper using active desktop
+      if (!explorerWrapper->HasActiveDesktop() ||
+          explorerWrapper->GetActiveDesktop()->GetWallpaper(buffer, sizeof(buffer)/sizeof(WCHAR), 0) != S_OK ||
+          WideCharToMultiByte(CP_OEMCP, 0, buffer, -1, m_defaultWallpaper, sizeof(m_defaultWallpaper), NULL, NULL) == 0)
       {
-         *m_defaultWallpaper = 0;
-         m_pActiveDesktop = NULL;
-      }
-      //Get the default wallpaper
-      else if (m_pActiveDesktop->GetWallpaper(buffer, sizeof(buffer)/sizeof(WCHAR), 0) != S_OK)
-      {
-         *m_defaultWallpaper = 0;
-      }
-      //Get the filename in TCHAR
-      else if (WideCharToMultiByte(CP_OEMCP, 0, buffer, -1, m_defaultWallpaper, sizeof(m_defaultWallpaper), NULL, NULL) == 0)
-      {
-         *m_defaultWallpaper = 0;
+         //If we could not get the default wallpaper properly from active desktop, try to get it from system parameters...
+         SystemParametersInfo(SPI_GETDESKWALLPAPER, sizeof(m_defaultWallpaper)/sizeof(TCHAR), m_defaultWallpaper, 0);
       }
 
-      //If we could not get the defaut wallpaper properly from active desktop, try to get it from system parameters...
-      if (*m_defaultWallpaper == 0)
-         SystemParametersInfo(SPI_GETDESKWALLPAPER, sizeof(m_defaultWallpaper)/sizeof(TCHAR), m_defaultWallpaper, 0);
+      m_defaultWallpaperInit = true;
    }
 }
 

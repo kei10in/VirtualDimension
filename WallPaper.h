@@ -22,9 +22,6 @@
 #define __WALLPAPER_H__
 
 #include <list>
-#include <wininet.h>
-#include <shlobj.h>
-#include "PlatformHelper.h"
 
 using namespace std;
 
@@ -64,12 +61,12 @@ protected:
       HANDLE m_hWallPaperLoaderThread;
    };
 
-   static void InitActiveDesktop();
+   static void LoadDefaultWallpaper();
 
    static WallPaper * m_activeWallPaper;
    static WallPaperLoader m_wallPaperLoader;
 
-   static IActiveDesktop * m_pActiveDesktop;
+   static bool m_defaultWallpaperInit;
    static TCHAR m_defaultWallpaper[MAX_PATH];
 };
 
