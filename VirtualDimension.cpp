@@ -27,6 +27,7 @@
 #include "Windowsx.h"
 #include "hotkeymanager.h"
 #include "shellhook.h"
+#include <objbase.h>
 
 #define MAX_LOADSTRING 100
 
@@ -63,6 +64,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	HACCEL hAccelTable;
 
    InitCommonControls();
+
+   CoInitialize ( NULL );
 
 	// Initialize global strings
 	LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -255,16 +258,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             for(desk = deskMan->GetFirstDesktop();
                 desk != NULL;
                 desk = deskMan->GetNextDesktop())
-            {/*
-               UINT flags;
-
-               if (desk->m_active)
-                  flags = MF_CHECKED;
-               else
-                  flags = MF_UNCHECKED;
-               flags |= MF_BYPOSITION | MF_STRING;
-
-               InsertMenu(hmenuTrackPopup, 0, flags, 0, desk->m_name);*/
+            {
                MENUITEMINFO mii;
 
                mii.cbSize = sizeof(mii);
