@@ -98,6 +98,10 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
          EnableWindow(hWnd, trayIcon->HasIcon());
          SendMessage(hWnd, BM_SETCHECK, trayIcon->IsCloseToTray() ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         //Setup start with windows
+         hWnd = GetDlgItem(hDlg, IDC_STARTWITHWINDOWS_CHECK);
+         SendMessage(hWnd, BM_SETCHECK, settings.LoadStartWithWindows() ? BST_CHECKED : BST_UNCHECKED, 0);
       }
 		return TRUE;
 
@@ -176,6 +180,11 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
             res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
             trayIcon->SetCloseToTray(res);
+
+            //Apply start with windows
+            hWnd = GetDlgItem(hDlg, IDC_STARTWITHWINDOWS_CHECK);
+            res = SendMessage(hWnd, BM_GETCHECK, 0, 0) ==  BST_CHECKED ? true : false;
+            settings.SaveStartWithWindows(res);
 
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
