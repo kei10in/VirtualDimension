@@ -26,9 +26,10 @@ class ToolTip
 public:
    class Tool 
    {
-   public:
+   protected:
       virtual char * GetText() = 0;
       virtual void GetRect(LPRECT rect) = 0;
+      friend class ToolTip;
    };
 
    ToolTip(HWND hwnd);
