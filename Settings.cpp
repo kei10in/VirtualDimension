@@ -42,6 +42,8 @@ const char Settings::regValAllWindowsInTaskList[] = "AllWindowsInTaskList";
 const char Settings::regValIntegrateWithShell[] = "IntegrateWithShell";
 const char Settings::regValSwitchToNextDesktopHotkey[] = "SwitchToNextDesktopHotkey";
 const char Settings::regValSwitchToPreviousDesktopHotkey[] = "SwitchToPreviousDesktopHotkey";
+const char Settings::regValSwitchToBottomDesktopHotkey[] = "SwitchToTopDesktopHotkey";
+const char Settings::regValSwitchToTopDesktopHotkey[] = "SwitchToBottomDesktopHotkey";
 const char Settings::regValMoveWindowToNextDesktopHotkey[] = "MoveWindowToNextDesktopHotkey";
 const char Settings::regValMoveWindowToPreviousDesktopHotkey[] = "MoveWindowToPreviousDesktopHotkey";
 const char Settings::regValMoveWindowToDesktopHotkey[] = "MoveWindowToDesktopHotkey";
@@ -327,6 +329,27 @@ void Settings::SaveSwitchToPreviousDesktopHotkey(int hotkey)
 {
    SaveDWord(m_regKey, m_keyOpened, regValSwitchToPreviousDesktopHotkey, hotkey);
 }
+
+int Settings::LoadSwitchToBottomDesktopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToBottomDesktopHotkey, 0);
+}
+
+void Settings::SaveSwitchToBottomDesktopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValSwitchToBottomDesktopHotkey, hotkey);
+}
+
+int Settings::LoadSwitchToTopDesktopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToTopDesktopHotkey, 0);
+}
+
+void Settings::SaveSwitchToTopDesktopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValSwitchToTopDesktopHotkey, hotkey);
+}
+
 
 int Settings::LoadMoveWindowToNextDesktopHotkey()
 {

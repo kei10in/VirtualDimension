@@ -104,6 +104,24 @@ protected:
       virtual LPCSTR GetName() const   { return "Activate previous desk"; }
    };
 
+   class BottomDesktopEventHandler: public ConfigurableHotkey
+   {
+   public:
+      BottomDesktopEventHandler();
+      virtual ~BottomDesktopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Activate desk below"; }
+   };
+
+   class TopDesktopEventHandler: public ConfigurableHotkey
+   {
+   public:
+      TopDesktopEventHandler();
+      virtual ~TopDesktopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Activate desk above"; }
+   };
+
    int m_nbColumn;
 
    vector<Desktop*> m_desks;
@@ -112,6 +130,8 @@ protected:
 
    NextDesktopEventHandler m_nextDeskEventHandler;
    PrevDesktopEventHandler m_prevDeskEventHandler;
+   BottomDesktopEventHandler m_bottomDeskEventHandler;
+   TopDesktopEventHandler m_topDeskEventHandler;
 
    int m_width, m_height;
 

@@ -376,14 +376,19 @@ Desktop* DesktopManager::GetOtherDesk(int change)
 {
    vector<Desktop*>::iterator it;
    Desktop * desk;
+   int pos;
 
    it = find(m_desks.begin(), m_desks.end(), m_currentDesktop);
    if (it == m_desks.end())
       return m_currentDesktop;
-   
-   if (it == m_desks.begin() && (change < 0))
-      desk = m_desks.back();
-   else if ( (it += change) == m_desks.end())
+
+   pos = distance(m_desks.begin(), it) + change;
+   while(pos < 0)
+      pos += GetNbDesktops();
+   while(pos >= GetNbDesktops())
+      pos -= GetNbDesktops();
+   it = m_desks.begin() + pos;
+   if (it == m_desks.end())
       desk = m_desks.front();
    else
       desk = *it;
@@ -500,6 +505,40 @@ DesktopManager::PrevDesktopEventHandler::~PrevDesktopEventHandler()
 void DesktopManager::PrevDesktopEventHandler::OnHotkey()
 {
    deskMan->SwitchToDesktop(deskMan->GetOtherDesk(-1)); 
+}
+
+DesktopManager::BottomDesktopEventHandler::BottomDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadSwitchToBottomDesktopHotkey());
+}
+
+DesktopManager::BottomDesktopEventHandler::~BottomDesktopEventHandler()
+{
+   Settings s;
+   s.SaveSwitchToBottomDesktopHotkey(GetHotkey());
+}
+
+void DesktopManager::BottomDesktopEventHandler::OnHotkey()
+{
+   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(deskMan->GetNbColumns())); 
+}
+
+DesktopManager::TopDesktopEventHandler::TopDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadSwitchToTopDesktopHotkey());
+}
+
+DesktopManager::TopDesktopEventHandler::~TopDesktopEventHandler()
+{
+   Settings s;
+   s.SaveSwitchToTopDesktopHotkey(GetHotkey());
+}
+
+void DesktopManager::TopDesktopEventHandler::OnHotkey()
+{
+   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(-deskMan->GetNbColumns())); 
 }
 
 Desktop * DesktopManager::GetDesktop(int index) const
