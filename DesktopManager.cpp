@@ -30,7 +30,6 @@
 DesktopManager::DesktopManager(void)
 {
    Settings settings;
-   HotKeyManager * keyMan;
 
    m_currentDesktop = NULL;
 
@@ -56,11 +55,12 @@ DesktopManager::DesktopManager(void)
    LoadDesktops();
 
    //Register the hotkeys to go to the next/previous desktop
-   keyMan = HotKeyManager::GetInstance();
-   m_nextDeskEventHandler = new DeskChangeEventHandler(this, 1);
-   keyMan->RegisterHotkey( (MOD_ALT|MOD_CONTROL)<<8 | VK_TAB, m_nextDeskEventHandler);
-   m_prevDeskEventHandler = new DeskChangeEventHandler(this, -1);
-   keyMan->RegisterHotkey( (MOD_ALT|MOD_CONTROL|MOD_SHIFT)<<8 | VK_TAB, m_prevDeskEventHandler);
+   m_nextDesktopHotkey = 0;
+   m_nextDeskEventHandler = NULL;
+   SetSwitchToNextDesktopHotkey(settings.LoadSwitchToNextDesktopHotkey());
+   m_prevDeskEventHandler = NULL;
+   m_previousDesktopHotkey = 0;
+   SetSwitchToPreviousDesktopHotkey(settings.LoadSwitchToPreviousDesktopHotkey());
 
    //Initialize the OSD
    m_osd.Create();
@@ -94,6 +94,8 @@ DesktopManager::~DesktopManager(void)
    }
    m_desks.clear();
 
+   settings.SaveSwitchToNextDesktopHotkey(GetSwitchToNextDesktopHotkey());
+   settings.SaveSwitchToPreviousDesktopHotkey(GetSwitchToPreviousDesktopHotkey());
    settings.SaveNbCols(m_nbColumn);
    settings.SaveDesktopNameOSD(m_useOSD);
    settings.SaveDisplayMode(m_displayMode);
@@ -436,4 +438,64 @@ bool DesktopManager::ChooseBackgroundDisplayModeOptions(HWND hWnd)
       vdWindow.Refresh();
 
    return res;
+}
+
+void DesktopManager::SetSwitchToNextDesktopHotkey(int key)
+{
+   HotKeyManager * keyMan = HotKeyManager::GetInstance();
+
+   //If we are not changing the hotkey, nothing to do
+   if (key == m_nextDesktopHotkey)
+      return;
+   
+   m_nextDesktopHotkey = key;
+
+   //Setting the hotkey to 0 removes the shortcut
+   if (m_nextDesktopHotkey == 0)
+   {
+      if (m_nextDeskEventHandler)
+         keyMan->UnregisterHotkey(m_nextDeskEventHandler);
+      delete m_nextDeskEventHandler;
+      m_nextDeskEventHandler = NULL;
+      return;
+   }
+
+   //Unregister the previous hotkey, or create a new handler
+   if (m_nextDeskEventHandler)
+      keyMan->UnregisterHotkey(m_nextDeskEventHandler);
+   else
+      m_nextDeskEventHandler = new DeskChangeEventHandler(this, 1);
+
+   //Register the new hotkey
+   keyMan->RegisterHotkey(m_nextDesktopHotkey, m_nextDeskEventHandler);
+}
+
+void DesktopManager::SetSwitchToPreviousDesktopHotkey(int key)
+{
+   HotKeyManager * keyMan = HotKeyManager::GetInstance();
+
+   //If we are not changing the hotkey, nothing to do
+   if (key == m_previousDesktopHotkey)
+      return;
+   
+   m_previousDesktopHotkey = key;
+
+   //Setting the hotkey to 0 removes the shortcut
+   if (m_previousDesktopHotkey == 0)
+   {
+      if (m_prevDeskEventHandler)
+         keyMan->UnregisterHotkey(m_prevDeskEventHandler);
+      delete m_prevDeskEventHandler;
+      m_prevDeskEventHandler = NULL;
+      return;
+   }
+
+   //Unregister the previous hotkey, or create a new handler
+   if (m_prevDeskEventHandler)
+      keyMan->UnregisterHotkey(m_prevDeskEventHandler);
+   else
+      m_prevDeskEventHandler = new DeskChangeEventHandler(this, -1);
+
+   //Register the new hotkey
+   keyMan->RegisterHotkey(m_previousDesktopHotkey, m_prevDeskEventHandler);
 }

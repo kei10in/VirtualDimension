@@ -70,6 +70,11 @@ public:
    void SetDisplayMode(DisplayMode dm);
    bool ChooseBackgroundDisplayModeOptions(HWND hWnd);
 
+   int GetSwitchToNextDesktopHotkey()         { return m_nextDesktopHotkey; }
+   void SetSwitchToNextDesktopHotkey(int key);
+   int GetSwitchToPreviousDesktopHotkey()     { return m_previousDesktopHotkey; }
+   void SetSwitchToPreviousDesktopHotkey(int key);
+
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -91,7 +96,9 @@ protected:
    Desktop * m_currentDesktop;
 
    DeskChangeEventHandler * m_nextDeskEventHandler;
+   int m_nextDesktopHotkey;
    DeskChangeEventHandler * m_prevDeskEventHandler;
+   int m_previousDesktopHotkey;
 
    int m_width, m_height;
 
