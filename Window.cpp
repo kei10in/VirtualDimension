@@ -452,7 +452,7 @@ void Window::Activate()
       deskMan->SwitchToDesktop(m_desk);
    if (IsIconic())
       Restore();
-   SetForegroundWindow(m_hWnd);
+   SetForegroundWindow(m_hOwnedWnd);
 }
 
 void Window::Restore()
