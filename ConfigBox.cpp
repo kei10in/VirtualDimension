@@ -61,20 +61,16 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          Settings settings;
 
          //Setup always on top
-         hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
-         SendMessage(hWnd, BM_SETCHECK, ontop->IsAlwaysOnTop() ? BST_CHECKED : BST_UNCHECKED, 0);
+         CheckDlgButton(hDlg, IDC_ONTOP_CHECK, ontop->IsAlwaysOnTop() ? BST_CHECKED : BST_UNCHECKED);
 
          //Setup enable tray icon
-         hWnd = GetDlgItem(hDlg, IDC_TRAYICON_CHECK);
-         SendMessage(hWnd, BM_SETCHECK, trayIcon->HasIcon() ? BST_CHECKED : BST_UNCHECKED, 0);
+         CheckDlgButton(hDlg, IDC_TRAYICON_CHECK, trayIcon->HasIcon() ? BST_CHECKED : BST_UNCHECKED);
 
          //Setup enable tooltips
-         hWnd = GetDlgItem(hDlg, IDC_TOOLTIPS_CHECK);
-         SendMessage(hWnd, BM_SETCHECK, tooltip->IsEnabled() ? BST_CHECKED : BST_UNCHECKED, 0);
+         CheckDlgButton(hDlg, IDC_TOOLTIPS_CHECK, tooltip->IsEnabled() ? BST_CHECKED : BST_UNCHECKED);
 
          //Setup confirm killing
-         hWnd = GetDlgItem(hDlg, IDC_CONFIRMKILL_CHECK);
-         SendMessage(hWnd, BM_SETCHECK, winMan->IsConfirmKill() ? BST_CHECKED : BST_UNCHECKED, 0);
+         CheckDlgButton(hDlg, IDC_CONFIRMKILL_CHECK, winMan->IsConfirmKill() ? BST_CHECKED : BST_UNCHECKED);
 
          //Setup close to tray
          hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
@@ -82,8 +78,7 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          SendMessage(hWnd, BM_SETCHECK, trayIcon->IsCloseToTray() ? BST_CHECKED : BST_UNCHECKED, 0);
 
          //Setup start with windows
-         hWnd = GetDlgItem(hDlg, IDC_STARTWITHWINDOWS_CHECK);
-         SendMessage(hWnd, BM_SETCHECK, settings.LoadStartWithWindows() ? BST_CHECKED : BST_UNCHECKED, 0);
+         CheckDlgButton(hDlg, IDC_STARTWITHWINDOWS_CHECK, settings.LoadStartWithWindows() ? BST_CHECKED : BST_UNCHECKED);
 
          //Setup auto switch desktop
          CheckDlgButton(hDlg, IDC_AUTOSWITCHDESKTOP_CHECK, winMan->IsAutoSwitchDesktop() ? BST_CHECKED : BST_UNCHECKED);
@@ -93,6 +88,11 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 
          //Setup integrate with shell
          CheckDlgButton(hDlg, IDC_ALLWINDOWSINTASKLIST_CHECK, winMan->IsShowAllWindowsInTaskList() ? BST_CHECKED : BST_UNCHECKED);
+
+			//Setup snap size
+			SetDlgItemInt(hDlg, IDC_SNAPSIZE_EDIT, vdWindow.GetSnapSize(), FALSE);
+			hWnd = GetDlgItem(hDlg, IDC_SNAPSIZE_SPIN);
+			SendMessage(hWnd, UDM_SETRANGE32, 0, 100); 
       }
 		return TRUE;
 
@@ -157,6 +157,9 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 
             //Setup integrate with shell
             winMan->ShowAllWindowsInTaskList(IsDlgButtonChecked(hDlg, IDC_ALLWINDOWSINTASKLIST_CHECK) == BST_CHECKED);
+
+				//Apply snap-size
+				vdWindow.SetSnapSize(GetDlgItemInt(hDlg, IDC_SNAPSIZE_EDIT, NULL, FALSE));
 
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);

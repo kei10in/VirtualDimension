@@ -312,6 +312,13 @@ BEGIN
     CONTROL         "Auto switch desktop",IDC_AUTOSWITCHDESKTOP_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,56,80,10
     GROUPBOX        "Options",IDC_STATIC,7,7,200,100
+    LTEXT           "Snap to desktop border sensibility:",IDC_STATIC,18,92,
+                    113,8
+    EDITTEXT        IDC_SNAPSIZE_EDIT,132,90,33,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "",IDC_SNAPSIZE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,168,89,10,14
 END
 
 
