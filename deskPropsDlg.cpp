@@ -102,7 +102,7 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
                SendMessage((HWND)lParam, WM_GETTEXT, sizeof(desk_wallpaper), (LPARAM)desk_wallpaper);
                if (image_handle != NULL)
                   DeleteObject(image_handle);
-               image_handle = LoadImage(hInst, desk_wallpaper, IMAGE_BITMAP, 96, 72, LR_LOADFROMFILE);
+               image_handle = LoadImage(vdWindow, desk_wallpaper, IMAGE_BITMAP, 96, 72, LR_LOADFROMFILE);
                SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)image_handle);
                InvalidateRect(hDlg, NULL, TRUE);
             }
