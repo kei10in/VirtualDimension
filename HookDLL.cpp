@@ -1,0 +1,286 @@
+// HookDLL.cpp : Defines the entry point for the DLL application.
+//
+
+#include "stdafx.h"
+#include <list>
+
+//First, some data shared by all instances of the DLL
+#pragma data_seg("shared")
+HWND hVDWnd = FindWindow("VIRTUALDIMENSION", NULL);
+
+ATOM g_aPropName = 0;
+int g_iProcessCount = 0;
+
+const UINT g_uiHookMessageId = RegisterWindowMessage("Virtual Dimension Message");
+#pragma data_seg() 
+
+
+
+using namespace std;
+
+#define HOOKDLL_API __declspec(dllexport)
+
+list<HWND> m_hookedWindows;
+
+class HWNDHookData
+{
+public:
+   WNDPROC m_fnPrevWndProc;
+   int m_iData;
+   HANDLE m_hMutex;
+};
+
+enum MenuItems {
+   VDM_TOGGLEONTOP = WM_USER+1,
+   VDM_TOGGLEMINIMIZETOTRAY,
+   VDM_TOGGLETRANSPARENCY,
+
+   VDM_TOGGLEALLDESKTOPS,
+   VDM_MOVEWINDOW,
+
+   VDM_ACTIVATEWINDOW,
+   VDM_RESTORE,
+   VDM_MINIMIZE,
+   VDM_MAXIMIZE,
+   VDM_MAXIMIZEHEIGHT,
+   VDM_MAXIMIZEWIDTH,
+   VDM_CLOSE,
+   VDM_KILL,
+
+   VDM_PROPERTIES
+};
+
+LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   HWNDHookData * pData;
+   LRESULT res;
+
+   //Get the hook information
+   pData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+   if (!pData)
+      return 0;
+
+   //Gain access to the data
+   WaitForSingleObject(pData->m_hMutex, INFINITE);
+
+   //Process some messages
+   if (message == WM_SYSCOMMAND)
+   {
+      switch(wParam)
+      {
+      case SC_MINIMIZE:
+         //Minimize using VD
+         res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
+         break;
+
+      case SC_RESTORE:
+         //Restore using VD
+         res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_RESTORE, (WPARAM)pData->m_iData);
+         break;
+
+      case SC_MAXIMIZE:
+         {
+            short shift = GetKeyState(VK_SHIFT) & 0x8000;
+            short ctrl = GetKeyState(VK_CONTROL) & 0x8000;
+
+            if (shift && !ctrl)
+               //Maximize width using VD
+               res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
+            else if (ctrl && !shift)
+               //Maximize height using VD
+               res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
+            else
+               //Call the original window proc   
+               res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
+         }
+         break;
+
+      default:
+         //Call the original window proc
+         res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
+      }
+   }
+   else
+      res = CallWindowProcW(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
+
+   //Release the mutex to give back access to the data
+   ReleaseMutex(pData->m_hMutex);
+
+   return res;
+}
+
+LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   HWNDHookData * pData;
+   LRESULT res;
+
+   //Get the hook information
+   pData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+   if (!pData)
+      return 0;
+
+   //Gain access to the data
+   WaitForSingleObject(pData->m_hMutex, INFINITE);
+
+   //Process the message
+   if (message == WM_SYSCOMMAND)
+   {
+      switch(wParam)
+      {
+      case SC_MINIMIZE:
+         //Minimize using VD
+         res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
+         break;
+
+      case SC_RESTORE:
+         //Restore using VD
+         res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_RESTORE, (WPARAM)pData->m_iData);
+         break;
+
+      case SC_MAXIMIZE:
+         {
+            short shift = GetKeyState(VK_SHIFT) & 0x8000;
+            short ctrl = GetKeyState(VK_CONTROL) & 0x8000;
+
+            if (shift && !ctrl)
+               //Maximize width using VD
+               res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
+            else if (ctrl && !shift)
+               //Maximize height using VD
+               res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
+            else
+               //Call the original window proc   
+               res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
+         }
+         break;
+
+      default:
+         //Call the original window proc
+         res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
+      }
+   }
+   else
+      res = CallWindowProcA(pData->m_fnPrevWndProc, hWnd, message, wParam, lParam);
+
+   //Release the mutex to give back access to the data
+   ReleaseMutex(pData->m_hMutex);
+
+   return res;
+}
+
+
+HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
+{
+   HWNDHookData * pHookData = new HWNDHookData;
+
+   pHookData->m_hMutex = CreateMutex(NULL, FALSE, NULL);
+   if (!pHookData->m_hMutex)
+   {
+      delete pHookData;
+      return FALSE;
+   }
+
+   pHookData->m_iData = data;
+
+   if (IsWindowUnicode(hWnd))
+   {
+      SetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName), (HANDLE)pHookData);  
+      pHookData->m_fnPrevWndProc = (WNDPROC)SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)hookWndProcW);
+   }
+   else
+   {
+      SetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName), (HANDLE)pHookData);
+      pHookData->m_fnPrevWndProc = (WNDPROC)SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)hookWndProcA);
+   }
+
+   if (!pHookData->m_fnPrevWndProc)
+   {
+      delete pHookData;
+      return FALSE;
+   }
+   else
+   {
+      m_hookedWindows.push_front(hWnd);
+      return TRUE;
+   }
+}
+
+HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd)
+{
+   LONG_PTR res;
+   HWNDHookData* pData;
+   BOOL unicode = IsWindowUnicode(hWnd);
+
+   if (unicode)
+      pData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+   else
+      pData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+   if (!pData)
+      return FALSE;
+
+   //Get the mutex for this window
+   WaitForSingleObject(pData->m_hMutex, INFINITE);
+
+   //Unsubclass the window
+   if (unicode)
+      res = SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
+   else
+      res = SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
+
+   //Release the semaphore
+   ReleaseMutex(pData->m_hMutex);
+
+   if (res)
+   {
+      //Wait till all calls to the "subclassed" window proc are finished
+      WaitForSingleObject(pData->m_hMutex, INFINITE);
+
+      //Cleanup the hook inforations related to this window
+      CloseHandle(pData->m_hMutex);
+      if (unicode)
+         RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+      else
+         RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+      delete pData;
+
+      m_hookedWindows.remove(hWnd);
+
+      return TRUE;
+   }
+   else
+      return FALSE;
+}
+
+BOOL APIENTRY DllMain( HANDLE /*hModule*/, 
+                       DWORD  ul_reason_for_call, 
+                       LPVOID /*lpReserved*/
+					 )
+{
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH:
+      if (g_iProcessCount == 0)
+         g_aPropName = GlobalAddAtom("Virtual Dimension hook data property");
+      g_iProcessCount++;
+      break;
+
+   case DLL_PROCESS_DETACH:
+      //Unhook all windows that would still be hooked
+      while(!m_hookedWindows.empty())
+      {
+         doUnHookWindow(m_hookedWindows.front());
+         m_hookedWindows.pop_front();
+      }
+
+      g_iProcessCount--;
+      if (g_iProcessCount == 0)
+         GlobalDeleteAtom(g_aPropName);
+      break;
+
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+      break;
+	}
+
+   return TRUE;
+}
