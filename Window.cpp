@@ -167,7 +167,7 @@ void Window::ShowWindow()
 
    //Restore the application if needed
    if (!m_iconic)
-      ::ShowWindowAsync(m_hWnd, SW_SHOWNOACTIVATE);
+      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
 
    //Show the icon
    m_tasklist->AddTab(m_hWnd);
