@@ -201,7 +201,7 @@ void HidingMethodMove::Show(Window * wnd)
    explorerWrapper->ShowWindowInTaskbar(*wnd);
 
    // Bring back to visible area, SWP_FRAMECHANGED makes it repaint 
-   SetWindowPos(*wnd, 0, aPosition.left, - aPosition.top - aPosition.bottom  - 10, 
+   SetWindowPos(*wnd, 0, aPosition.left, - 10 - aPosition.bottom, 
                 0, 0, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE ); 
 
    // Notify taskbar of the change
@@ -214,7 +214,7 @@ void HidingMethodMove::Hide(Window * wnd)
    GetWindowRect(*wnd, &aPosition);
 
    // Move the window off visible area
-   SetWindowPos(*wnd, 0, aPosition.left, - aPosition.top + aPosition.bottom + 10, 
+   SetWindowPos(*wnd, 0, aPosition.left, - aPosition.bottom - 10, 
                 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
 
    // This removes window from taskbar and alt+tab list

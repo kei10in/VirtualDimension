@@ -34,7 +34,7 @@ public:
 #ifdef HIDEWINDOW_COMINTERFACE
       m_tasklist->AddTab(hWnd);
 #else
-      PostMessage(m_hWndTasklist, m_ShellhookMsg, 1, (LPARAM)hWnd);
+      SendMessage(m_hWndTasklist, m_ShellhookMsg, 1, (LPARAM)hWnd);
 #endif
    }
 
