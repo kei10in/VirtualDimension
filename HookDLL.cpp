@@ -370,8 +370,6 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
 		delete pData;
 	}
-   else
-      MessageBox(NULL, "Cleanup could not be done properly", "Virtual Dimension Warning", MB_OK);
 
    //Free the library
    FreeLibraryAndExitThread(hInstance, TRUE);
