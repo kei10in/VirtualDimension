@@ -34,6 +34,8 @@ public:
    ~MouseWarp(void);
 
    void EnableWarp(bool enable);
+   bool IsWarpEnabled() const             { return m_enableWarp; }
+
    void SetSensibility(LONG sensibility);
    void SetMinDuration(DWORD minDuration);
    void SetRewarpDelay(DWORD rewarpDelay);

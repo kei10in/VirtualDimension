@@ -306,11 +306,9 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,31,80,10
     CONTROL         "Enable tooltips",IDC_TOOLTIPS_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,44,80,10
-    CONTROL         "Integrate with shell",IDC_INTEGRATEWTHSHELL_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,57,80,10
     CONTROL         "All windows in task list",
                     IDC_ALLWINDOWSINTASKLIST_CHECK,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,16,70,84,10
+                    WS_TABSTOP,16,57,84,10
     CONTROL         "Confirm before killing",IDC_CONFIRMKILL_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,111,18,80,10
     CONTROL         "Close To Tray",IDC_CLOSETOTRAY_CHECK,"Button",
@@ -321,18 +319,20 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,111,57,80,10
     GROUPBOX        "Options",IDC_STATIC,7,7,200,100
     LTEXT           "Snap sensibility:",IDC_STATIC,112,91,52,8
-    EDITTEXT        IDC_SNAPSIZE_EDIT,169,89,33,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_SNAPSIZE_EDIT,167,89,35,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_SNAPSIZE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | NOT 
-                    WS_VISIBLE,207,92,6,6
-    LTEXT           "Auto-hide delay:",IDC_STATIC,112,75,55,8
-    EDITTEXT        IDC_AUTOHIDEDELAY_EDIT,169,73,33,13,ES_AUTOHSCROLL | 
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+                    UDS_NOTHOUSANDS,207,92,6,6
+    LTEXT           "Auto-hide delay:",IDC_STATIC,112,75,54,8
+    EDITTEXT        IDC_AUTOHIDEDELAY_EDIT,167,73,35,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
     CONTROL         "",IDC_AUTOHIDEDELAY_SPIN,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
-                    UDS_NOTHOUSANDS | NOT WS_VISIBLE,207,77,6,6,
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,207,77,6,6,
                     WS_EX_TRANSPARENT
+    CONTROL         "Mouse warp",IDC_MOUSEWARP_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,70,82,10
 END
 
 IDD_TROUBLESHOOTING_SETTINGS DIALOGEX 0, 0, 214, 114

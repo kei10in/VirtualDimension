@@ -54,6 +54,7 @@
 #define IDI_MAXIMIZE_HORIZ              145
 #define IDI_MINIMIZE_TRAY               146
 #define IDC_SHELLINTEGEXCEPTION_BTN     1000
+#define IDC_MOUSEWARP_CHECK             1000
 #define IDC_DESK_LIST                   1001
 #define IDC_PRODUCT                     1001
 #define IDC_INSERT_DESK                 1002
@@ -112,8 +113,8 @@
 #define IDC_HIDEMETHOD_RADIO            1063
 #define IDC_MINIMIZEMETHOD_RATIO        1064
 #define IDC_MOVEMETHOD_RATIO            1065
-#define IDC_IMAGE_RATIO                 1064
-#define IDC_SCREENSHOT_RATIO            1065
+#define IDC_IMAGE_RATIO                 1066
+#define IDC_SCREENSHOT_RATIO            1067
 #define IDC_EXTRAPARAM_BTN              1068
 #define IDC_GPL_LINK                    1072
 #define IDC_HOMEPAGE_LINK               1075

@@ -80,10 +80,7 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          //Setup auto switch desktop
          CheckDlgButton(hDlg, IDC_AUTOSWITCHDESKTOP_CHECK, winMan->IsAutoSwitchDesktop() ? BST_CHECKED : BST_UNCHECKED);
 
-         //Setup integrate with shell
-         CheckDlgButton(hDlg, IDC_INTEGRATEWTHSHELL_CHECK, winMan->IsIntegrateWithShell() ? BST_CHECKED : BST_UNCHECKED);
-
-         //Setup integrate with shell
+         //Setup all windows in task list
          CheckDlgButton(hDlg, IDC_ALLWINDOWSINTASKLIST_CHECK, winMan->IsShowAllWindowsInTaskList() ? BST_CHECKED : BST_UNCHECKED);
 
 			//Setup snap size
@@ -95,6 +92,9 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 			SetDlgItemInt(hDlg, IDC_AUTOHIDEDELAY_EDIT, vdWindow.GetAutoHideDelay(), FALSE);
 			hWnd = GetDlgItem(hDlg, IDC_AUTOHIDEDELAY_SPIN);
 			SendMessage(hWnd, UDM_SETRANGE32, 0, 0xffffff);
+
+         //Setup mouse warp
+         CheckDlgButton(hDlg, IDC_MOUSEWARP_CHECK, mousewarp->IsWarpEnabled() ? BST_CHECKED : BST_UNCHECKED);
       }
 		return TRUE;
 
@@ -154,9 +154,6 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             //Apply auto switch desktop
             winMan->SetAutoSwitchDesktop(IsDlgButtonChecked(hDlg, IDC_AUTOSWITCHDESKTOP_CHECK) == BST_CHECKED);
 
-            //Apply integrate with shell
-            winMan->SetIntegrateWithShell(IsDlgButtonChecked(hDlg, IDC_INTEGRATEWTHSHELL_CHECK) == BST_CHECKED);
-
             //Setup integrate with shell
             winMan->ShowAllWindowsInTaskList(IsDlgButtonChecked(hDlg, IDC_ALLWINDOWSINTASKLIST_CHECK) == BST_CHECKED);
 
@@ -165,6 +162,9 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 
 				//Apply auto-hide delay
 				vdWindow.SetAutoHideDelay(GetDlgItemInt(hDlg, IDC_AUTOHIDEDELAY_EDIT, NULL, FALSE));
+
+            //Apply mouse warp
+            mousewarp->EnableWarp(IsDlgButtonChecked(hDlg, IDC_MOUSEWARP_CHECK) == BST_CHECKED);
 
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
@@ -725,7 +725,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
          {
             int i;
 
-            winMan->SetIntegrateWithShell(IsDlgButtonChecked(hDlg, IDC_INTEGRATEWTHSHELL_CHECK) ? true : false);
+            winMan->SetIntegrateWithShell(IsDlgButtonChecked(hDlg, IDC_INTEGRATEWTHSHELL_CHECK) == BST_CHECKED);
 
             for(i = IDC_HIDEMETHOD_RADIO; i <= IDC_MOVEMETHOD_RATIO; i++)
                if (IsDlgButtonChecked(hDlg, i))
@@ -792,7 +792,7 @@ HWND CreateConfigBox()
    pages[4].hInstance = vdWindow;
    pages[4].dwFlags = PSP_USETITLE ;
    pages[4].pfnDlgProc = (DLGPROC)TroubleShootingConfiguration;
-   pages[4].pszTitle = "TroubleShooting";
+   pages[4].pszTitle = "Advanced";
    pages[4].pszTemplate = MAKEINTRESOURCE(IDD_TROUBLESHOOTING_SETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));
