@@ -5,11 +5,11 @@
 #include <list>
 
 //First, some data shared by all instances of the DLL
-HWND hVDWnd /*__attribute__((section (".shared"), shared))*/ = NULL;
-ATOM g_aPropName /*__attribute__((section (".shared"), shared))*/ = 0;
-int g_iProcessCount /*__attribute__((section (".shared"), shared))*/ = 0;
-UINT g_uiHookMessageId /*__attribute__((section (".shared"), shared))*/ = 0;
-UINT g_uiShellHookMsg /*__attribute__((section (".shared"), shared))*/ = 0;
+HWND hVDWnd __attribute__((section (".shared"), shared)) = NULL;
+ATOM g_aPropName __attribute__((section (".shared"), shared)) = 0;
+int g_iProcessCount __attribute__((section (".shared"), shared)) = 0;
+UINT g_uiHookMessageId __attribute__((section (".shared"), shared)) = 0;
+UINT g_uiShellHookMsg __attribute__((section (".shared"), shared)) = 0;
 
 using namespace std;
 
