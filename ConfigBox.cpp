@@ -88,7 +88,12 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 			//Setup snap size
 			SetDlgItemInt(hDlg, IDC_SNAPSIZE_EDIT, vdWindow.GetSnapSize(), FALSE);
 			hWnd = GetDlgItem(hDlg, IDC_SNAPSIZE_SPIN);
-			SendMessage(hWnd, UDM_SETRANGE32, 0, 100); 
+			SendMessage(hWnd, UDM_SETRANGE32, 0, 100);
+
+			//Setup auto hide delay
+			SetDlgItemInt(hDlg, IDC_AUTOHIDEDELAY_EDIT, vdWindow.GetAutoHideDelay(), FALSE);
+			hWnd = GetDlgItem(hDlg, IDC_AUTOHIDEDELAY_SPIN);
+			SendMessage(hWnd, UDM_SETRANGE32, 0, 0xffffff);
       }
 		return TRUE;
 
@@ -156,6 +161,9 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 
 				//Apply snap-size
 				vdWindow.SetSnapSize(GetDlgItemInt(hDlg, IDC_SNAPSIZE_EDIT, NULL, FALSE));
+
+				//Apply auto-hide delay
+				vdWindow.SetAutoHideDelay(GetDlgItemInt(hDlg, IDC_AUTOHIDEDELAY_EDIT, NULL, FALSE));
 
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
