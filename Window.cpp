@@ -34,7 +34,12 @@
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 
+#ifdef HIDEWINDOW_COMINTERFACE
 ITaskbarList* Window::m_tasklist = NULL;
+#else
+HWND Window::m_hWndTasklist = NULL;
+UINT Window::m_ShellhookMsg = 0;
+#endif
 
 Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwnedWnd),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
@@ -45,6 +50,7 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
    Settings s;
    Settings::Window settings(&s);
 
+#ifdef HIDEWINDOW_COMINTERFACE
    if (m_tasklist == NULL)
    {
       CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist);
@@ -53,8 +59,23 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
    }
    else
       m_tasklist->AddRef();
+#else
+   if (!m_hWndTasklist)
+   {
+      m_ShellhookMsg = RegisterWindowMessage("SHELLHOOK");
 
-   m_mutex = CreateMutex(NULL, FALSE, NULL);
+      HWND hwndTray = FindWindowEx(NULL, NULL, "Shell_TrayWnd", NULL);
+      HWND hwndBar = FindWindowEx(hwndTray, NULL, "ReBarWindow32", NULL );
+   
+      // Maybe "RebarWindow32" is not a child to "Shell_TrayWnd", then try this
+      if( hwndBar == NULL )
+         hwndBar = hwndTray;
+   
+      m_hWndTasklist = FindWindowEx(hwndBar, NULL, "MSTaskSwWClass", NULL);
+   }
+#endif
+
+   InitializeCriticalSection(&m_CriticalSection);
 
    //Try to see if there are some special settings for this window
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
@@ -94,12 +115,9 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
 
 Window::~Window(void)
 {
-   ULONG count;
-
    UnHook();
 
-   WaitForSingleObject(m_mutex, INFINITE);
-   CloseHandle(m_mutex);
+   DeleteCriticalSection(&m_CriticalSection);
 
    if (m_hMinToTrayEvent)
       CloseHandle(m_hMinToTrayEvent);
@@ -110,9 +128,12 @@ Window::~Window(void)
    if (m_autoSaveSettings)
       SaveSettings();
 
+#ifdef HIDEWINDOW_COMINTERFACE
+   ULONG count;
    count = m_tasklist->Release();
    if (count == 0)
       m_tasklist = NULL;
+#endif
 }
 
 void Window::MoveToDesktop(Desktop * desk)
@@ -156,11 +177,11 @@ void Window::MoveToDesktop(Desktop * desk)
 
 void Window::ShowWindow()
 {
-   WaitForSingleObject(m_mutex, INFINITE);
+   EnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
 
    if (!m_hidden)
    {
-      ReleaseMutex(m_mutex);
+      LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
       return;
    }
 
@@ -172,7 +193,11 @@ void Window::ShowWindow()
    }
 
    //Show the icon
+#ifdef HIDEWINDOW_COMINTERFACE
    m_tasklist->AddTab(m_hWnd);
+#else
+   PostMessage(m_hWndTasklist, m_ShellhookMsg, 1, (LPARAM)m_hWnd);
+#endif
 
    //Restore the application if needed
    if (!m_iconic)
@@ -180,16 +205,16 @@ void Window::ShowWindow()
 
    m_hidden = false;
 
-   ReleaseMutex(m_mutex);
+   LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
 }
 
 void Window::HideWindow()
 {
-   WaitForSingleObject(m_mutex, INFINITE);
+   EnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
 
    if (m_hidden)
    {
-      ReleaseMutex(m_mutex);
+      LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
       return;
    }
 
@@ -205,7 +230,11 @@ void Window::HideWindow()
       ::ShowWindow(m_hWnd, SW_SHOWMINNOACTIVE);
 
    //Hide the icon
+#ifdef HIDEWINDOW_COMINTERFACE
    m_tasklist->DeleteTab(m_hWnd);
+#else
+   PostMessage(m_hWndTasklist, m_ShellhookMsg, 2, (LPARAM)m_hWnd);
+#endif
 
    //disable the window so that it does not appear in task list
    if (!winMan->IsShowAllWindowsInTaskList())
@@ -217,7 +246,7 @@ void Window::HideWindow()
    
    m_hidden = true;
 
-   ReleaseMutex(m_mutex);
+   LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
 }
 
 bool Window::IsOnCurrentDesk() const
