@@ -43,6 +43,10 @@ public:
    void SaveTransparencyLevel(unsigned char level);
    bool LoadEnableTooltips();
    void SaveEnableTooltips(bool enable);
+   bool LoadConfirmKilling();
+   void SaveConfirmKilling(bool confirm);
+   bool LoadAutoSaveWindowSettings();
+   void SaveAutoSaveWindowSettings(bool autosave);
 
    class Desktop 
    {
@@ -69,18 +73,24 @@ public:
       void SetHotkey(int hotkey);
 
    protected:
+      void Init(Settings * settings);
+      static const char regKeyDesktops[];
+
       static const char regValIndex[];
       static const char regValWallpaper[];
       static const char regValHotkey[];
       
       HKEY m_regKey;
-      char m_name[MAX_NAME_LENGTH];
-      Settings * m_settings;
       bool m_keyOpened;
+      char m_name[MAX_NAME_LENGTH];
+      
+      HKEY m_topKey;
+      bool m_topKeyOpened;
    };
 
 protected:
    static const char regKeyName[];
+
    static const char regValPosition[];
    static const char regValNbColumns[];
    static const char regValShowWindow[];
@@ -88,10 +98,14 @@ protected:
    static const char regValAlwaysOnTop[];
    static const char regValTransparencyLevel[];
    static const char regValEnableTooltips[];
+   static const char regValConfirmKilling[];
+   static const char regValAutoSaveWindowsSettings[];
 
-   HKEY regKey;
-   bool keyOpened;
-   int deskIndex;
+   DWORD LoadDWord(const char * entry, DWORD defVal);
+   void SaveDWord(const char * entry, DWORD value);
+
+   HKEY m_regKey;
+   bool m_keyOpened;
 
    friend class Settings::Desktop;
 };
