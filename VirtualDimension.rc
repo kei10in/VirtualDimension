@@ -199,7 +199,7 @@ BEGIN
     CONTROL         "Image",IDC_IMAGE_RATIO,"Button",BS_AUTORADIOBUTTON,16,
                     31,36,10
     CONTROL         "Screenshot",IDC_SCREENSHOT_RATIO,"Button",
-                    BS_AUTORADIOBUTTON,16,43,52,10
+                    BS_AUTORADIOBUTTON | WS_DISABLED,16,43,52,10
     PUSHBUTTON      "Color",IDC_EXTRAPARAM_BTN,148,17,50,14
     PUSHBUTTON      "Font",IDC_FONT_BTN,148,38,50,14
 END
