@@ -24,7 +24,7 @@
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false)
+Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_alldesks(false)
 {
    //Find out on which desktop the window is
    m_desk = deskMan->GetCurrentDesktop();
@@ -71,8 +71,9 @@ void Window::MoveToDesktop(Desktop * desk)
       return;
 
    m_desk = desk;
+   m_alldesks = (m_desk == NULL ? true : false);
 
-   if ((desk == NULL) || (desk->m_active))
+   if (IsOnDesk(deskMan->GetCurrentDesktop()))
       ShowWindow();
    else
       HideWindow();
@@ -143,8 +144,12 @@ void Window::HideWindow()
 
 bool Window::IsOnDesk(Desktop * desk)
 {
+   if (m_alldesks)
+      return true;
+
    if (m_desk == NULL)
       m_desk = desk; //Move to the first desktop that asks
+
    return desk == m_desk;
 }
 
@@ -159,4 +164,46 @@ HICON Window::GetIcon(void)
 		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 50, (LPDWORD) &hIcon );
 
    return hIcon;
+}
+
+void Window::BuildMenu(HMENU menu)
+{
+   AppendMenu(menu, MF_SEPARATOR, 0, 0);
+   AppendMenu(menu, MF_STRING, VDM_ACTIVATEWINDOW, "Activate");
+
+   bool ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
+   AppendMenu(menu, MF_STRING | (ontop ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEONTOP, "Always on top");
+
+   AppendMenu(menu, MF_STRING | (m_alldesks ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEALLDESKTOPS, "All desktops");
+   AppendMenu(menu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
+}
+
+void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
+{
+   bool ontop;
+   switch(cmdId)
+   {
+   case VDM_ACTIVATEWINDOW:
+      if (!IsOnDesk(deskMan->GetCurrentDesktop()))
+         deskMan->SwitchToDesktop(m_desk);
+      SetForegroundWindow(m_hWnd);
+      break;
+
+   case VDM_TOGGLEONTOP:
+      ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
+      SetWindowPos(m_hWnd, ontop ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+      break;
+
+   case VDM_TOGGLEALLDESKTOPS:
+      m_alldesks = !m_alldesks;
+      if (m_alldesks)
+         ShowWindow();
+      InvalidateRect(mainWnd, NULL, FALSE);
+      break;
+
+   case VDM_MOVEWINDOW:
+      PostMessage(mainWnd, WM_VIRTUALDIMENSION, (WPARAM)VD_MOVEWINDOW, (LPARAM)this);
+      break;
+
+   }
 }
