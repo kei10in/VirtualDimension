@@ -239,6 +239,7 @@ protected:
    bool m_iconic;
    char m_name[255];
    LONG_PTR m_style;
+   bool m_setStyle;
 
    Transparency m_transp;
    unsigned char m_transpLevel;

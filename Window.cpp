@@ -189,7 +189,7 @@ void Window::ShowWindow()
    }
 
    //Restore the window's style
-   if (m_style)
+   if (m_setStyle)
    {
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
       SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
@@ -226,10 +226,9 @@ void Window::HideWindow()
    }
 
    //Hide from task list, if needed
-   if (!winMan->IsShowAllWindowsInTaskList())
+   m_setStyle = !winMan->IsShowAllWindowsInTaskList();
+   if (m_setStyle)
       m_style = GetWindowLongPtr(m_hWnd, GWL_EXSTYLE);
-   else
-      m_style = 0;
 
    //Minimize the application
    m_iconic = IsIconic();
@@ -248,7 +247,7 @@ void Window::HideWindow()
 #endif
 
    //disable the window so that it does not appear in task list
-   if (!winMan->IsShowAllWindowsInTaskList())
+   if (m_setStyle)
    {
       LONG_PTR style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, style);
