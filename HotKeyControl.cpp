@@ -60,13 +60,18 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 	return RegisterClassEx(&wcex);
 }
 
+void GetShortcutName(int shortcut, char* str, int bufLen)
+{
+   BuildDisplayString((char)((shortcut>>8)&0xff), (char)(shortcut&0xff), str, bufLen);
+}
+
 static void BuildDisplayString(char mods, char vk, char* str, int bufLen)
 {
    strncpy(str, " ", bufLen);
-   if (mods & MOD_ALT)
-      strncat(str, "ALT+", bufLen);
    if (mods & MOD_CONTROL)
       strncat(str, "CTRL+", bufLen);
+   if (mods & MOD_ALT)
+      strncat(str, "ALT+", bufLen);
    if (mods & MOD_SHIFT)
       strncat(str, "SHIFT+", bufLen);
    if (mods & MOD_WIN)
