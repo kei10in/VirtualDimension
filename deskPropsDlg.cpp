@@ -24,27 +24,11 @@
 #include "desktopmanager.h"
 #include "Commdlg.h"
 #include "PlatformHelper.h"
-
-char desk_name[80] = "";
-char desk_wallpaper[256] = "";
-int  desk_hotkey = 0;
+#include "Desktop.h"
 
 static WNDPROC wpOrigEditProc;
-static IPicture * picture;
 
-static void FreePicture()
-{
-   if (picture)
-      picture->Release();
-   picture = NULL;
-}
-
-static void LoadPicture(HWND /*hDlg*/, char * filename)
-{
-   picture = PlatformHelper::OpenImage(filename);
-}
-
-LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+LRESULT APIENTRY Desktop::ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 { 
    switch(uMsg) 
    { 
@@ -53,6 +37,7 @@ LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
          PAINTSTRUCT ps;
          RECT rect;
          HDC hdc;
+         IPicture * picture = (IPicture*)CallWindowProc(wpOrigEditProc, hwnd, STM_GETIMAGE, IMAGE_BITMAP, 0);
 
          //Display the image, or a text if there is no image
          hdc = BeginPaint(hwnd, &ps);
@@ -73,12 +58,6 @@ LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
       }
       break; 
 
-   case STM_SETIMAGE:
-      {
-         return FALSE;
-      }
-      break;
-
    default:
       return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
    } 
@@ -86,26 +65,33 @@ LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 }
 
 // Message handler for the desktop properties dialog box.
-LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+   DesktopProperties * self;
+
    switch (message)
 	{
 	case WM_INITDIALOG:
       {
          HWND hWnd;
+         self = new DesktopProperties();
+         
+         self->desk = (Desktop *)lParam;
 
-         picture = NULL;
+         SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR)self);
+
+         self->m_picture = NULL;
 
          hWnd = GetDlgItem(hDlg, IDC_WALLPAPER);
-         SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)sizeof(desk_wallpaper), (LPARAM)0);
-         SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)desk_wallpaper);
+         SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)MAX_PATH, (LPARAM)0);
+         SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)self->desk->GetWallpaper());
 
          hWnd = GetDlgItem(hDlg, IDC_NAME);
-         SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)sizeof(desk_name), (LPARAM)0);
-         SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)desk_name);
+         SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)sizeof(self->desk->m_name), (LPARAM)0);
+         SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)self->desk->GetText());
 
          hWnd = GetDlgItem(hDlg, IDC_HOTKEY);
-         SendMessage(hWnd, HKM_SETHOTKEY, (WPARAM)desk_hotkey, 0);
+         SendMessage(hWnd, HKM_SETHOTKEY, (WPARAM)self->desk->GetHotkey(), 0);
 
          hWnd = GetDlgItem(hDlg, IDC_PREVIEW);
          wpOrigEditProc = (WNDPROC)SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)ImageCtrlProc);
@@ -113,13 +99,22 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 		return TRUE;
 
 	case WM_COMMAND:
+      self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
 		switch(LOWORD(wParam))
 		{
       case IDOK:
-         //Do some processing before leaving
-         SendMessage(GetDlgItem(hDlg, IDC_NAME), WM_GETTEXT, sizeof(desk_name), (LPARAM)desk_name);
-         SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_GETTEXT, sizeof(desk_wallpaper), (LPARAM)desk_wallpaper);
-         desk_hotkey = (int)SendMessage(GetDlgItem(hDlg, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0);
+         {
+            //Change desktop name
+            TCHAR name[80];   
+            GetDlgItemText(hDlg, IDC_NAME, name, sizeof(name));
+            self->desk->Rename(name);
+
+            //Change wallpaper
+            self->desk->SetWallpaper(self->m_wallpaper);
+            
+            //Set hotkey
+            self->desk->SetHotkey((int)SendMessage(GetDlgItem(hDlg, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0));
+         }
 
       case IDCANCEL:
          {
@@ -128,8 +123,10 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
             SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)wpOrigEditProc);
             
             //Free the image, if any
-            if (picture != NULL)
-               FreePicture();
+            if (self->m_picture)
+               self->m_picture->Release();
+
+            delete self;
 
             //Close the dialog
 			   EndDialog(hDlg, LOWORD(wParam)); //Return the last pressed button
@@ -145,8 +142,8 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
             ZeroMemory(&ofn, sizeof(OPENFILENAME));
             ofn.lStructSize = sizeof(OPENFILENAME);
             ofn.hwndOwner = hDlg;
-            ofn.lpstrFile = desk_wallpaper;
-            ofn.nMaxFile = sizeof(desk_wallpaper);
+            ofn.lpstrFile = self->m_wallpaper;
+            ofn.nMaxFile = MAX_PATH;
             ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
             ofn.nFilterIndex = 1;
             ofn.lpstrFileTitle = NULL;
@@ -156,7 +153,7 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
             ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
 
             if (GetOpenFileName(&ofn) == TRUE)
-               SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)desk_wallpaper);
+               SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)self->m_wallpaper);
          }
          break;
 
@@ -165,10 +162,13 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
          {
          case EN_CHANGE:
             {
-               SendMessage((HWND)lParam, WM_GETTEXT, sizeof(desk_wallpaper), (LPARAM)desk_wallpaper);
-               if (picture != NULL)
-                  FreePicture();
-               LoadPicture(hDlg, desk_wallpaper);
+               self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
+
+               SendMessage((HWND)lParam, WM_GETTEXT, MAX_PATH, (LPARAM)self->m_wallpaper);
+               if (self->m_picture)
+                  self->m_picture->Release();
+               self->m_picture = PlatformHelper::OpenImage(self->m_wallpaper);
+               SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)self->m_picture);
                InvalidateRect(hDlg, NULL, TRUE);
             }
             break;
@@ -179,4 +179,9 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 
    }
 	return FALSE;
+}
+
+bool Desktop::Configure(HWND hDlg)
+{
+   return DialogBoxParam(vdWindow, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties, (LPARAM)this) == IDOK;
 }
