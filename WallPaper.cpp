@@ -70,9 +70,7 @@ void WallPaper::SetImage(LPTSTR fileName)
 
 void WallPaper::Reload()
 {
-   if (m_bmpFileName)
-      SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_bmpFileName, 0);
-   else if (m_fileName)
+   if (m_fileName)
    {
 		m_wallPaperLoader.LoadImageAsync(this);
    }
@@ -117,8 +115,13 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
       WallPaper * wallpaper = self->m_WallPapersQueue.front();
       self->m_WallPapersQueue.pop_front();
       ReleaseMutex(self->m_hQueueMutex);
-
-      if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
+   
+      if (wallpaper->m_bmpFileName)
+      {
+         if (wallpaper == m_activeWallPaper)
+            SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+      }
+      else if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
       {
          wallpaper->m_bmpFileName = wallpaper->m_fileName;
 
