@@ -50,9 +50,8 @@ MAKEDEPEND = g++ -MM $(CPPFLAGS) -o $*.d $<
 
 .PHONY: all recall clean pre_comp
 
-VPATH = ..
-
 ifdef INCDEP
+VPATH = ..
 DEP_FILE_TMP = $(SRC_FILE:cpp=P)
 DEP_FILE = $(DEP_FILE_TMP:c=P)
 -include $(DEP_FILE)
@@ -62,6 +61,9 @@ all: pre_comp
 	@cd $(BUILDDIR); make allrec -f ../Makefile INCDEP=1
 
 allrec: $(TARGET)
+
+install: install-script.nsi all
+	/c/Program\ Files/NSIS/makeNSIS.exe $<
 
 clean:
 	@if ( [ -d ${BUILDDIR} ] ) then \
