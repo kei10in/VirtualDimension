@@ -58,13 +58,19 @@ all: pre_comp
 allrec: $(TARGET)
 
 clean:
-	-rm -r ${BUILDDIR}
+	@if ( [ -d ${BUILDDIR} ] ) then \
+	   echo rm -r ${BUILDDIR};      \
+	   rm -r ${BUILDDIR};           \
+	fi
 
 pre_comp:
-	-mkdir ${BUILDDIR}
-	
+	@if (! [ -d ${BUILDDIR} ] ) then   \
+	   echo mkdir ${BUILDDIR};         \
+	   mkdir ${BUILDDIR};              \
+	fi
+
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
-	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 $(CXXFLAGS)
+	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 -lolepro32 $(CXXFLAGS)
 ifndef DEBUG
 	strip $@
 endif
