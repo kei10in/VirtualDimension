@@ -89,8 +89,26 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          //Setup enable tooltips
          hWnd = GetDlgItem(hDlg, IDC_TOOLTIPS_CHECK);
          SendMessage(hWnd, BM_SETCHECK, tooltip->IsEnabled() ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         //Setup confirm killing
+         hWnd = GetDlgItem(hDlg, IDC_CONFIRMKILL_CHECK);
+         SendMessage(hWnd, BM_SETCHECK, winMan->IsConfirmKill() ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         //Setup close to tray
+         hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
+         EnableWindow(hWnd, trayIcon->HasIcon());
+         SendMessage(hWnd, BM_SETCHECK, trayIcon->IsCloseToTray() ? BST_CHECKED : BST_UNCHECKED, 0);
       }
 		return TRUE;
+
+   case WM_COMMAND:
+      if (LOWORD(wParam) == IDC_TRAYICON_CHECK)
+      {
+         HRESULT res = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
+         HWND hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
+         EnableWindow(hWnd, res);
+      }
+      break;
 
    case WM_HSCROLL:
       {
@@ -148,6 +166,16 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             hWnd = GetDlgItem(hDlg, IDC_TOOLTIPS_CHECK);
             res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
             tooltip->EnableTooltips(res);
+
+            //Apply confirm killing
+            hWnd = GetDlgItem(hDlg, IDC_CONFIRMKILL_CHECK);
+            res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+            winMan->SetConfirmKill(res);
+
+            //Apply close to tray
+            hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
+            res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+            trayIcon->SetCloseToTray(res);
 
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
