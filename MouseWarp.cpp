@@ -27,60 +27,84 @@ MouseWarp * mousewarp;
 
 MouseWarp::MouseWarp()
 {
+   //Create synchronization objects
+   m_hTerminateThreadEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
+   m_hDataMutex = CreateMutex(NULL, FALSE, NULL);
+
+   //Init settings
+   m_enableWarp = true;
+   m_sensibility = 3;
+   m_minDuration = 500;
+   m_reWarpDelay = 3000;
+
+   //Compute size of center rect
+   RefreshDesktopSize();
+
+   //Register message handle and timer
    vdWindow.SetMessageHandler(WM_VD_MOUSEWARP, this, &MouseWarp::OnMouseWarp);
-   m_hThread = CreateThread(NULL, 0, MouseCheckThread, this, 0/*CREATE_SUSPENDED*/, NULL);
    m_timerId = vdWindow.CreateTimer(this, &MouseWarp::OnTimer);
+
+   //Create mouse watch thread (suspended or not, depending on settings)
+   m_hThread = CreateThread(NULL, 0, MouseCheckThread, this, m_enableWarp ? 0 : CREATE_SUSPENDED, NULL);
 }
 
 MouseWarp::~MouseWarp(void)
 {
-   TerminateThread(m_hThread, 0);
+   SignalObjectAndWait(m_hTerminateThreadEvt, m_hThread, INFINITE, FALSE);
+
+   CloseHandle(m_hTerminateThreadEvt);
+   CloseHandle(m_hDataMutex);
 }
 
 /** Mouse wrap detect thread.
  * This thread checks the mouse position every 50ms, to detect if it is near the screen
  * border.
+ * This thread is suspended when the mouse warp is disabled.
  */
-DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID /*lpParameter*/)
+DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID lpParameter)
 {
    POINT pt;
+   MouseWarp * self = (MouseWarp *)lpParameter;
    WarpLocation warpLoc = WARP_NONE;
-   RECT screenRect;
    DWORD duration = 0;
 
-   GetWindowRect(GetDesktopWindow(), &screenRect);
-
-   for(;;)
+   while(WaitForSingleObject(self->m_hTerminateThreadEvt, 0) == WAIT_TIMEOUT)
    {
       WarpLocation newWarpLoc;
 
       Sleep(MOUSE_WRAP_DELAY_CHECK);
 
+      //Get access to shared variables
+      WaitForSingleObject(self->m_hDataMutex, INFINITE);
+
       //Compute new warp location
       GetCursorPos(&pt);
 
       if (vdWindow.IsPointInWindow(pt))
-         newWarpLoc = warpLoc;   //ignore the mouse if it is over the preview window
-      else if (pt.x < screenRect.left + 3)
+         newWarpLoc = WARP_NONE;   //ignore the mouse if it is over the preview window
+      else if (pt.x < self->m_centerRect.left)
          newWarpLoc = WARP_LEFT;
-      else if (pt.x > screenRect.right - 3)
+      else if (pt.x > self->m_centerRect.right)
          newWarpLoc = WARP_RIGHT;
-      else if (pt.y < screenRect.top + 3)
+      else if (pt.y < self->m_centerRect.top)
          newWarpLoc = WARP_TOP;
-      else if (pt.y > screenRect.bottom - 3)
+      else if (pt.y > self->m_centerRect.bottom)
          newWarpLoc = WARP_BOTTOM;
       else
          newWarpLoc = WARP_NONE;
 
       //Notify application if warp location has changed, or if it has not changed for some time
-      if (newWarpLoc != warpLoc || duration >= 3000)
+      if (newWarpLoc != warpLoc || duration >= self->m_reWarpDelay)
       {
          duration = 0;
          warpLoc = newWarpLoc;
          PostMessage(vdWindow, WM_VD_MOUSEWARP, 0, warpLoc);
       }
-      else if (warpLoc != WARP_NONE)   //do not generate multiple WARP_NONE events
+      else if (warpLoc != WARP_NONE && self->m_reWarpDelay != 0)   //do not generate multiple WARP_NONE events
          duration += MOUSE_WRAP_DELAY_CHECK;
+
+      //Release access to shared variables
+      ReleaseMutex(self->m_hDataMutex);
    }
 
    return TRUE;
@@ -116,7 +140,77 @@ LRESULT MouseWarp::OnMouseWarp(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*
    if (m_warpLocation == WARP_NONE)
       vdWindow.KillTimer(m_timerId);
    else 
-      vdWindow.SetTimer(m_timerId, 500);
+      vdWindow.SetTimer(m_timerId, m_minDuration);
 
    return TRUE;
+}
+
+void MouseWarp::EnableWarp(bool enable)
+{
+   //Check if already in the correct state
+   if (enable == m_enableWarp)
+      return;
+
+   m_enableWarp = enable;
+   if (m_enableWarp)
+   {
+      //Resume the thread to enable warp detection
+      ResumeThread(m_hThread);
+   }
+   else
+   {
+      //Get access to shared variables
+      WaitForSingleObject(m_hDataMutex, INFINITE);
+
+      //Suspend the thread to disable warp detection
+      SuspendThread(m_hThread);
+
+      //Release access to shared variables
+      ReleaseMutex(m_hDataMutex);
+   }
+}
+
+void MouseWarp::SetSensibility(LONG sensibility)
+{
+   if (sensibility != m_sensibility)
+   {
+      //Update sensibility
+      m_sensibility = sensibility;
+
+      //Refresh center rect
+      RefreshDesktopSize();
+   }
+}
+
+void MouseWarp::SetMinDuration(DWORD minDuration)
+{
+   //Update min duration
+   m_minDuration = minDuration;
+}
+
+void MouseWarp::SetRewarpDelay(DWORD rewarpDelay)
+{
+   //Get access to shared variables
+   WaitForSingleObject(m_hDataMutex, INFINITE);
+
+   m_reWarpDelay = rewarpDelay;
+
+   //Release access to shared variables
+   ReleaseMutex(m_hDataMutex);
+}
+
+void MouseWarp::RefreshDesktopSize()
+{
+   //Get access to shared variables
+   WaitForSingleObject(m_hDataMutex, INFINITE);
+
+   //Update center rect
+   GetWindowRect(GetDesktopWindow(), &m_centerRect);
+   m_centerRect.left += m_sensibility;
+   m_centerRect.right -= m_sensibility;
+   m_centerRect.top += m_sensibility;
+   m_centerRect.bottom -= m_sensibility;
+
+   //Release access to shared variables
+   ReleaseMutex(m_hDataMutex);
 }

@@ -33,6 +33,13 @@ public:
    MouseWarp();
    ~MouseWarp(void);
 
+   void EnableWarp(bool enable);
+   void SetSensibility(LONG sensibility);
+   void SetMinDuration(DWORD minDuration);
+   void SetRewarpDelay(DWORD rewarpDelay);
+
+   void RefreshDesktopSize();
+
 protected:
    static DWORD WINAPI MouseCheckThread(LPVOID lpParameter);
 
@@ -48,8 +55,19 @@ protected:
    };
 
    WarpLocation m_warpLocation;
-   HANDLE m_hThread;
    UINT_PTR m_timerId;
+
+   HANDLE m_hThread;       ///Mouse watch thread handle.
+   HANDLE m_hDataMutex;    ///Mutex protecting access to the various settings. These are shared between the mouse watch thread and application thread.
+   HANDLE m_hTerminateThreadEvt; ///Event used to terminate the thread.
+
+   RECT m_centerRect;      ///Rectangle outside of which warp should be initiated. Desktop rect corrected with sensibility. Protected by m_hDataMutex.
+   DWORD m_reWarpDelay;    ///Delay before a second warp is triggered on the same border. 0 to disable. Protected by m_hDataMutex.
+
+   LONG m_sensibility;     ///Number of pixels from the border for warp to be triggered
+   DWORD m_minDuration;    ///Minimum duration to stay on a border for warp to happen
+
+   bool m_enableWarp;      ///Is warp enable ?
 };
 
 #endif /*__MOUSEWARP_H__*/
