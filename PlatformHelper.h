@@ -34,6 +34,7 @@
 
 #define MNS_CHECKORBMP 0x04000000
 
+#define LVCFMT_IMAGE 0x800
 #define LVS_EX_FULLROWSELECT     0x20  
 #define LVS_EX_GRIDLINES         0x01
 #define LVM_GETSUBITEMRECT           (LVM_FIRST+56)

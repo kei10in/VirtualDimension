@@ -26,7 +26,7 @@
 class ApplicationListDlg
 {
 public:
-   ApplicationListDlg(Config::Group * group, int defaultValue = 0, const LPCTSTR * values=NULL);
+   ApplicationListDlg(Config::Group * group, LPCTSTR title=NULL, int defaultValue = 0, const LPCTSTR * values=NULL);
    ~ApplicationListDlg(void);
 
    int ShowDialog(HINSTANCE hinstance, HWND hWndParent);
@@ -44,6 +44,7 @@ protected:
    Config::Group * m_appgroup;
    int m_defaultValue;
    const LPCTSTR * m_values;
+   LPCTSTR m_valTitle;
 
    HWND m_hDlg;
    HWND m_hAppListWnd;

@@ -716,7 +716,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
             };
             Settings settings;
             Config::Group * group = settings.GetHidingMethodExceptions();
-            ApplicationListDlg dlg(group, settings.LoadSetting(Settings::DefaultHidingMethod), values);
+            ApplicationListDlg dlg(group, "Method", settings.LoadSetting(Settings::DefaultHidingMethod), values);
             dlg.ShowDialog(vdWindow, hDlg);
             delete group;
          }

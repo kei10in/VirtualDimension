@@ -24,12 +24,14 @@
 #include <ShellAPI.h>
 #include "Resource.h"
 #include "ApplicationListDlg.h"
+#include "PlatformHelper.h"
 
-ApplicationListDlg::ApplicationListDlg(Config::Group * group, int defaultValue, const LPCTSTR * values)
+ApplicationListDlg::ApplicationListDlg(Config::Group * group, LPCTSTR title, int defaultValue, const LPCTSTR * values)
 {
    m_appgroup = group;
    m_defaultValue = defaultValue;
    m_values = values;
+   m_valTitle = title;
 }
 
 ApplicationListDlg::~ApplicationListDlg(void)
@@ -63,11 +65,11 @@ void ApplicationListDlg::InitDialog()
    column.iSubItem = -1;
    ListView_InsertColumn(m_hAppListWnd, 0, &column);
 
-   if (m_values)
+   if (m_valTitle)
    {
       column.fmt = LVCFMT_LEFT;
       column.cx = 70;
-      column.pszText = "Value";
+      column.pszText = (LPTSTR)m_valTitle;
       column.iSubItem = 0;
       ListView_InsertColumn(m_hAppListWnd, 1, &column);
    }
@@ -99,7 +101,7 @@ void ApplicationListDlg::OnEditApplBtn()
    int idx;
 
    //Get selected item index
-   idx = ListView_GetNextItem(m_hAppListWnd, -1, LVNI_SELECTED);
+   idx = ListView_GetNextItem(m_hAppListWnd, (WPARAM)-1, LVNI_SELECTED);
    if (idx == -1)
       return;
 
@@ -115,7 +117,7 @@ void ApplicationListDlg::OnEditApplBtn()
 void ApplicationListDlg::OnRemoveApplBtn()
 {
    //Get selected item index
-   int idx = ListView_GetNextItem(m_hAppListWnd, -1, LVNI_SELECTED);
+   int idx = ListView_GetNextItem(m_hAppListWnd, (WPARAM)-1, LVNI_SELECTED);
 
    //Remove it from the list
    if (idx != -1)
@@ -178,7 +180,15 @@ void ApplicationListDlg::InsertProgram(LPTSTR filename, int value, int idx)
 
    //Setup sub-items
    if (m_values)
+   {
       ListView_SetItemText(m_hAppListWnd, idx, 1, (LPTSTR)m_values[value]);
+   }
+   else if (m_valTitle) //else, this is not needed, as the data will not be shown/changed anyway
+   {
+      char buf[6];
+      itoa(value, buf, 10);
+      ListView_SetItemText(m_hAppListWnd, idx, 1, buf);
+   }
 }
 
 INT_PTR CALLBACK ApplicationListDlg::DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
