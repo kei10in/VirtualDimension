@@ -123,12 +123,13 @@ public:
    }
    void GetRect(LPRECT /*rect*/)  { return; }
 
+   inline static HWND GetOwnedWindow(HWND hWnd);
+
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnContextMenu();
    inline void InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str);
    inline HBITMAP LoadBmpRes(int id);
-   inline static HWND GetOwnedWindow(HWND hWnd);
 
    enum AutoSettingsModes {
       ASS_DISABLED,
