@@ -22,6 +22,7 @@
 #define __TRAYICON_H__
 
 #include "TrayIconsManager.h"
+#include "HotkeyConfig.h"
 
 class TrayIcon: public TrayIconsManager::TrayIconHandler
 {
@@ -49,6 +50,15 @@ protected:
    HWND m_hWnd;
    bool m_iconLoaded;
    bool m_closeToTray;
+
+   class ToggleWindowEventHandler: public ConfigurableHotkey
+   {
+   public:
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Show/hide preview window"; }
+   };
+
+   ToggleWindowEventHandler m_toggleWindowEventHandler;
 };
 
 #endif /*__TRAYICON_H__*/

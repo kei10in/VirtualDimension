@@ -186,3 +186,13 @@ char* TrayIcon::GetText()
    else
       return "";
 }
+
+void TrayIcon::ToggleWindowEventHandler::OnHotkey()
+{
+   if (!IsWindowVisible(vdWindow))
+      ShowWindow(vdWindow, SW_SHOW);
+   else if (GetForegroundWindow() == (HWND)vdWindow)
+      ShowWindow(vdWindow, SW_HIDE);
+   else
+      SetForegroundWindow(vdWindow);
+}
