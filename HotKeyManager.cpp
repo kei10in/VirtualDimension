@@ -110,7 +110,7 @@ HotKeyManager::EventHandler* HotKeyManager::GetHotkeyData(int id)
 
 LRESULT HotKeyManager::OnHotkey(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
 {
-   EventHandler * handler = HotKeyManager::GetInstance()->GetHotkeyData((int)wParam);
+   EventHandler * handler = GetHotkeyData((int)wParam);
 
    if (handler != NULL)
       handler->OnHotkey();
