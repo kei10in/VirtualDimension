@@ -236,17 +236,71 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          {
             HMENU hMenu, hmenuTrackPopup;
             POINT pt;
+            HRESULT res;
+            int i;
+            Desktop * desk;
 
             //Get the "base" menu
             hMenu = LoadMenu(hInst, (LPCTSTR)IDC_VIRTUALDIMENSION);
             if (hMenu == NULL)
                break;
-            hmenuTrackPopup = GetSubMenu(hMenu, 0); 
+            hmenuTrackPopup = GetSubMenu(hMenu, 0);
+
+            //Append the list of desktops
+            InsertMenu(hmenuTrackPopup, 0, MF_BYPOSITION | MF_SEPARATOR, 0, 0);
+
+            i = 0;
+            for(desk = deskMan->GetFirstDesktop();
+                desk != NULL;
+                desk = deskMan->GetNextDesktop())
+            {/*
+               UINT flags;
+
+               if (desk->m_active)
+                  flags = MF_CHECKED;
+               else
+                  flags = MF_UNCHECKED;
+               flags |= MF_BYPOSITION | MF_STRING;
+
+               InsertMenu(hmenuTrackPopup, 0, flags, 0, desk->m_name);*/
+               MENUITEMINFO mii;
+
+               mii.cbSize = sizeof(mii);
+               mii.fMask = MIIM_STATE | MIIM_STRING | MIIM_ID | MIIM_DATA;
+               if (desk->m_active)
+                  mii.fState = MFS_CHECKED;
+               else
+                  mii.fState = MFS_UNCHECKED;
+               mii.dwItemData = (DWORD)desk;
+               mii.dwTypeData = desk->m_name;
+               mii.cch = strlen(desk->m_name);
+               mii.wID = WM_USER + i++;
+               InsertMenuItem(hmenuTrackPopup, 0, TRUE, &mii);
+            }
 
             //And show the menu
             GetCursorPos(&pt);
-            TrackPopupMenu(hmenuTrackPopup, TPM_RIGHTBUTTON, pt.x, pt.y, 0, mainWnd, NULL);
+            SetForegroundWindow(hWnd);
+            res = TrackPopupMenu(hmenuTrackPopup, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, mainWnd, NULL);
 
+            //Process the resulting message
+            if (res >= WM_USER)
+            {
+               Desktop * desk;
+               MENUITEMINFO mii;
+
+               mii.cbSize = sizeof(mii);
+               mii.fMask = MIIM_DATA;
+               GetMenuItemInfo(hmenuTrackPopup, res, FALSE, &mii);
+               desk = (Desktop*)mii.dwItemData;
+
+               deskMan->SwitchToDesktop(desk);
+               InvalidateRect(hWnd, NULL, TRUE);
+            }
+            else
+               PostMessage(hWnd, WM_COMMAND, res, 0);
+
+            //Do not forget to destroy the menu
             DestroyMenu(hMenu);
          }
          break;
