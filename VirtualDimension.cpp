@@ -400,11 +400,12 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
 	if (m_shrinked)
 	{
 		if (!IsPreviewWindowLocked() &&         //for performance reasons only
-			(screenPos || ClientToScreen(hWnd, &pt)) &&
-			(DragDetect(hWnd, pt)))
+			 (ClientToScreen(hWnd, &pt)) &&
+			 (DragDetect(hWnd, pt)))
 		{
 			//trick windows into thinking we are dragging the title bar, to let the user move the window
 			m_draggedWindow = NULL;
+			m_dragCursor = NULL;
 			ReleaseCapture();
 			::SendMessage(hWnd,WM_NCLBUTTONDOWN,HTCAPTION,(LPARAM)&pt);
 		}
@@ -440,6 +441,7 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
 		{
 			//trick windows into thinking we are dragging the title bar, to let the user move the window
 			m_draggedWindow = NULL;
+			m_dragCursor = NULL;
 			ReleaseCapture();
 			::SendMessage(hWnd,WM_NCLBUTTONDOWN,HTCAPTION,(LPARAM)&pt);
 		}
@@ -458,7 +460,7 @@ LRESULT VirtualDimension::OnLeftButtonUp(HWND /*hWnd*/, UINT /*message*/, WPARAM
 {
    POINT pt;
 
-   //If not dragging, nothing to do
+   //If not dragging a window, nothing to do
    if (m_draggedWindow == NULL)
       return 0;
 
@@ -512,6 +514,9 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
 
    pt.x = GET_X_LPARAM(lParam);
    pt.y = GET_Y_LPARAM(lParam);
+
+	//Stop the hide timer, to ensure the window does not get hidden
+	KillTimer(hWnd, TIMERID_AUTOHIDE);
 
    //Get the context menu
    Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
@@ -669,43 +674,94 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
    RECT	deskRect;
    WINDOWPOS * lpwndpos = (WINDOWPOS*)lParam;
 
-	// No action if the window is shrinked, or if the window is not moved&sized
-	if (m_shrinked || 
-		 ((lpwndpos->flags & SWP_NOMOVE) && (lpwndpos->flags & SWP_NOSIZE)))
+	// No action if the window is not moved or sized
+	if ((lpwndpos->flags & SWP_NOMOVE) && (lpwndpos->flags & SWP_NOSIZE))
 		return TRUE;
 
 	// Get work area dimensions
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
 
-   // Snap to screen border
-	m_dockedBorders = 0;
-	if( (lpwndpos->x >= -m_snapSize + deskRect.left) && 
-		 (lpwndpos->x <= deskRect.left + m_snapSize) )
+	if (!m_shrinked)
 	{
-		//Left border
-      lpwndpos->x = deskRect.left;
-		m_dockedBorders |= DOCK_LEFT;
+		// Snap to screen border
+		m_dockedBorders = 0;
+		if( (lpwndpos->x >= -m_snapSize + deskRect.left) && 
+			(lpwndpos->x <= deskRect.left + m_snapSize) )
+		{
+			//Left border
+			lpwndpos->x = deskRect.left;
+			m_dockedBorders |= DOCK_LEFT;
+		}
+		if( (lpwndpos->y >= -m_snapSize + deskRect.top) && 
+			(lpwndpos->y <= deskRect.top + m_snapSize) )
+		{
+			// Top border
+			lpwndpos->y = deskRect.top;
+			m_dockedBorders |= DOCK_TOP;
+		}
+		if( (lpwndpos->x + lpwndpos->cx <= deskRect.right + m_snapSize) && 
+			(lpwndpos->x + lpwndpos->cx >= deskRect.right - m_snapSize) )
+		{
+			// Right border
+			lpwndpos->x = deskRect.right - lpwndpos->cx;
+			m_dockedBorders |= DOCK_RIGHT;
+		}
+		if( (lpwndpos->y + lpwndpos->cy <= deskRect.bottom + m_snapSize) && 
+			(lpwndpos->y + lpwndpos->cy >= deskRect.bottom - m_snapSize) )
+		{
+			// Bottom border
+			lpwndpos->y = deskRect.bottom - lpwndpos->cy;
+			m_dockedBorders |= DOCK_BOTTOM;
+		}
 	}
-   if( (lpwndpos->y >= -m_snapSize + deskRect.top) && 
-		 (lpwndpos->y <= deskRect.top + m_snapSize) )
+	else
 	{
-		// Top border
-      lpwndpos->y = deskRect.top;
-		m_dockedBorders |= DOCK_TOP;
-	}
-	if( (lpwndpos->x + lpwndpos->cx <= deskRect.right + m_snapSize) && 
-		 (lpwndpos->x + lpwndpos->cx >= deskRect.right - m_snapSize) )
-	{
-		// Right border
-      lpwndpos->x = deskRect.right - lpwndpos->cx;
-		m_dockedBorders |= DOCK_RIGHT;
-	}
-   if( (lpwndpos->y + lpwndpos->cy <= deskRect.bottom + m_snapSize) && 
-		 (lpwndpos->y + lpwndpos->cy >= deskRect.bottom - m_snapSize) )
-	{
-		// Bottom border
-      lpwndpos->y = deskRect.bottom - lpwndpos->cy;
-		m_dockedBorders |= DOCK_BOTTOM;
+		//Contrain to borders
+		if (lpwndpos->x < deskRect.left)
+			lpwndpos->x = deskRect.left;
+		if (lpwndpos->x+lpwndpos->cx > deskRect.right)
+			lpwndpos->x = deskRect.right - lpwndpos->cx;
+		if (lpwndpos->y < deskRect.top)
+			lpwndpos->y = deskRect.top;
+		if (lpwndpos->y+lpwndpos->cy > deskRect.bottom)
+			lpwndpos->y = deskRect.bottom - lpwndpos->cy;
+
+		int xdist = min(lpwndpos->x-deskRect.left, deskRect.right-lpwndpos->x-lpwndpos->cx) >> 4;
+		int ydist = min(lpwndpos->y-deskRect.top, deskRect.bottom-lpwndpos->y-lpwndpos->cy) >> 4;
+
+		m_dockedBorders = 0;
+		if (xdist <= ydist)
+		{
+			//Dock to left/right
+			if (2*lpwndpos->x+lpwndpos->cx > deskRect.right-deskRect.left)
+			{
+				//dock to right
+				lpwndpos->x = deskRect.right - lpwndpos->cx;
+				m_dockedBorders |= DOCK_RIGHT;
+			}
+			else
+			{
+				//dock to left
+				lpwndpos->x = deskRect.left;
+				m_dockedBorders |= DOCK_LEFT;
+			}
+		}
+		if (xdist >= ydist)
+		{
+			//Dock to top/bottom
+			if (2*lpwndpos->y+lpwndpos->cy > deskRect.bottom-deskRect.top)
+			{
+				//dock to bottom
+				lpwndpos->y = deskRect.bottom - lpwndpos->cy;
+				m_dockedBorders |= DOCK_BOTTOM;
+			}
+			else
+			{
+				//dock to top
+				lpwndpos->y = deskRect.top;
+				m_dockedBorders |= DOCK_TOP;
+			}
+		}
 	}
 
    return TRUE;
@@ -713,15 +769,15 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 
 LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	Shrink();	
+	Shrink();
 	return 0;
 }
 
-LRESULT VirtualDimension::OnActivateApp(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
+LRESULT VirtualDimension::OnActivateApp(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
 	if (wParam == TRUE)
 		KillTimer(hWnd, TIMERID_AUTOHIDE);
-	else if (m_autoHideDelay > 0)
+	else if (m_autoHideDelay > 0 && ((DWORD)lParam != GetCurrentThreadId()))
 		SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
 	return 0;
 }
@@ -856,6 +912,9 @@ void VirtualDimension::Shrink(void)
 	style &= ~WS_THICKFRAME;
 	SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
 
+   RemoveMenu(m_pSysMenu, SC_MOVE, MF_BYCOMMAND);
+   RemoveMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND);
+
 	//Apply the changes
 	SetWindowPos(m_hWnd, NULL, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, SWP_NOZORDER | SWP_FRAMECHANGED);
 
@@ -882,6 +941,12 @@ void VirtualDimension::UnShrink(void)
 	style |= (m_hasCaption ? WS_CAPTION : WS_DLGFRAME);
 	style |= (m_lockPreviewWindow ? 0 : WS_THICKFRAME);
 	SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
+
+	if (!m_lockPreviewWindow)
+	{
+		InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_SIZE, "&Size");
+		InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_MOVE, "&Move");
+	}
 
 	//Restore the windows position
 	pos.left = m_location.x;
