@@ -384,11 +384,17 @@ void Desktop::Activate(void)
             win->HideWindow();
       }
    }
+
+   // Restore the foreground window
+   SetForegroundWindow(m_foregroundWnd);
 }
 
 void Desktop::Desactivate(void)
 {
    m_active = false;
+
+   // Save the foreground window
+   m_foregroundWnd = GetForegroundWindow();
 }
 
 void Desktop::SetHotkey(int hotkey)

@@ -69,6 +69,7 @@ public:
    char m_wallpaper[256];
    int m_hotkey;
    RECT m_rect;
+   HWND m_foregroundWnd;
 
 #ifdef USE_IACTIVEDESKTOP
    static IActiveDesktop * m_ActiveDesktop;
