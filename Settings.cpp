@@ -33,6 +33,8 @@ const char Settings::regValEnableTooltips[] = "EnableToolTips";
 const char Settings::regValConfirmKilling[] = "ConfirmKilling";
 const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
 const char Settings::regValCloseToTray[] = "CloseToTray";
+const char Settings::regValAutoSwitchDesktop[] = "AutoSwitchDesktop";
+const char Settings::regValAllWindowsInTaskList[] = "AllWindowsInTaskList";
 const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
 const char Settings::regValOSDTimeout[] = "OSDTimeout";
 const char Settings::regValOSDFont[] = "OSDFont";
@@ -215,6 +217,26 @@ bool Settings::LoadCloseToTray()
 void Settings::SaveCloseToTray(bool totray)
 {
    SaveDWord(m_regKey, m_keyOpened, regValCloseToTray, totray);
+}
+
+bool Settings::LoadAutoSwitchDesktop()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValAutoSwitchDesktop, TRUE) ? true : false;
+}
+
+void Settings::SaveAutoSwitchDesktop(bool autoSwitch)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValAutoSwitchDesktop, autoSwitch);
+}
+
+bool Settings::LoadAllWindowsInTaskList()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValAllWindowsInTaskList, FALSE) ? true : false;
+}
+
+void Settings::SaveAllWindowsInTaskList(bool all)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValAllWindowsInTaskList, all);
 }
 
 bool Settings::LoadDesktopNameOSD()

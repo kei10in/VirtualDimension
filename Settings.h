@@ -51,6 +51,10 @@ public:
    void SaveAutoSaveWindowsSettings(bool autosave);
    bool LoadCloseToTray();
    void SaveCloseToTray(bool totray);
+   bool LoadAutoSwitchDesktop();
+   void SaveAutoSwitchDesktop(bool autoSwitch);
+   bool LoadAllWindowsInTaskList();
+   void SaveAllWindowsInTaskList(bool all);
 
    bool LoadDesktopNameOSD();
    void SaveDesktopNameOSD(bool osd);
@@ -189,6 +193,8 @@ protected:
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
    static const char regValCloseToTray[];
+   static const char regValAutoSwitchDesktop[];
+   static const char regValAllWindowsInTaskList[];
    static const char regValDesktopNameOSD[];
    static const char regValOSDTimeout[];
    static const char regValOSDFont[];
