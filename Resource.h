@@ -107,6 +107,7 @@
 #define IDC_GPL_LINK                    1072
 #define IDC_HOMEPAGE_LINK               1075
 #define IDC_SHORTCUTSLIST               1076
+#define IDC_AUTODESK_CHECK              1077
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -116,7 +117,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        143
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1077
+#define _APS_NEXT_CONTROL_VALUE         1078
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif
