@@ -42,7 +42,7 @@ VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	g++ $^ -o $@ -mwindows -lcomctl32 $(CXXFLAGS)
 
 libtransp.a: transp.def
-	dlltool --def $< --dllname /c/WINDOWS/system32/user32.dll  --output-lib ${BUILDDIR}/$@
+	dlltool --def $< --dllname user32.dll  --output-lib ${BUILDDIR}/$@
 
 VirtualDimension.res: VirtualDimension.rc
 	windres -i $< -I rc -o ${BUILDDIR}/$@ -O coff 
