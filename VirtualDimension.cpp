@@ -34,7 +34,6 @@
 #include "LinkControl.h"
 #include <shellapi.h>
 
-
 // Global Variables:
 HWND configBox = NULL;
 DesktopManager * deskMan;
@@ -97,7 +96,7 @@ VirtualDimension::VirtualDimension()
 bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 {
    HWND hWnd;
-   RECT pos;
+   RECT pos, deskRect;
    Settings settings;
    HWND hwndPrev;
    DWORD dwStyle;
@@ -149,12 +148,42 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    SetMessageHandler(WM_APP+0x100, this, &VirtualDimension::OnHookWindowMessage);
 
-   // Create the main window
-   settings.LoadPosition(&pos);
+	// Compate the window's style
    m_hasCaption = settings.LoadHasCaption();
    dwStyle = WS_POPUP | WS_SYSMENU | (m_hasCaption ? WS_CAPTION : WS_DLGFRAME);
+
+	// Reload the window's position
+	settings.LoadPosition(&pos);
    AdjustWindowRectEx(&pos, dwStyle, FALSE, WS_EX_TOOLWINDOW);
-   Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, dwStyle,
+
+	// Dock the window to the screen borders
+	m_dockedBorders = settings.LoadDockedBorders();
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
+	if (m_dockedBorders & DOCK_LEFT)
+	{
+		pos.right -= pos.left - deskRect.left;
+		pos.left = deskRect.left;
+	}
+	if (m_dockedBorders & DOCK_RIGHT)
+	{
+		if (!(m_dockedBorders & DOCK_LEFT))
+			pos.left -= pos.right - deskRect.right;
+		pos.right = deskRect.right;
+	}
+	if (m_dockedBorders & DOCK_TOP)
+	{
+		pos.bottom -= pos.top - deskRect.top;
+		pos.top = deskRect.top;
+	}
+	if (m_dockedBorders & DOCK_BOTTOM)
+	{
+		if (!(m_dockedBorders & DOCK_TOP))
+			pos.top -= pos.bottom - deskRect.bottom;
+		pos.bottom = deskRect.bottom;
+	}
+
+	// Create the main window
+	Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, dwStyle,
            pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, 
            NULL, NULL, hInstance);
    if (!IsValid())
@@ -165,6 +194,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	// Load some settings
 	m_snapSize = settings.LoadSnapSize();
 	m_autoHideDelay = settings.LoadAutoHideDelay();
+	m_shrinked = false;
 
    // Setup the system menu
    m_pSysMenu = GetSystemMenu(hWnd, FALSE);
@@ -221,7 +251,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
 	//Bind some additional message handlers (which need the desktop manager)
    SetMessageHandler(WM_SIZE, this, &VirtualDimension::OnSize);
-   SetMessageHandler(WM_PAINT, this, &VirtualDimension::OnPaint);
+	SetMessageHandler(WM_PAINT, deskMan, &DesktopManager::OnPaint);
 
    // Show window if needed
    if (settings.LoadShowWindow())
@@ -361,38 +391,55 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
    pt.x = GET_X_LPARAM(lParam);
    pt.y = GET_Y_LPARAM(lParam);
 
-   Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
-   if ( (desk) &&
-        ((m_draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
-        (!m_draggedWindow->IsOnDesk(NULL)) &&
-        ((screenPos = ClientToScreen(hWnd, &pt)) != FALSE) &&
-        (DragDetect(hWnd, pt)) )
-   {
-      ICONINFO icon;
+	if (m_shrinked)
+	{
+		if (!IsPreviewWindowLocked() &&         //for performance reasons only
+			(screenPos || ClientToScreen(hWnd, &pt)) &&
+			(DragDetect(hWnd, pt)))
+		{
+			//trick windows into thinking we are dragging the title bar, to let the user move the window
+			m_draggedWindow = NULL;
+			ReleaseCapture();
+			::SendMessage(hWnd,WM_NCLBUTTONDOWN,HTCAPTION,(LPARAM)&pt);
+		}
+		else
+			UnShrink();
+	}
+	else
+	{
+		Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+		if ( (desk) &&
+			((m_draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
+			(!m_draggedWindow->IsOnDesk(NULL)) &&
+			((screenPos = ClientToScreen(hWnd, &pt)) != FALSE) &&
+			(DragDetect(hWnd, pt)) )
+		{
+			ICONINFO icon;
 
-      //Dragging a window's icon
-      SetCapture(hWnd);
+			//Dragging a window's icon
+			SetCapture(hWnd);
 
-      GetIconInfo(m_draggedWindow->GetIcon(), &icon);
-      icon.fIcon = FALSE;
-      m_dragCursor = (HCURSOR)CreateIconIndirect(&icon);
-      SetCursor(m_dragCursor);
-   }
-   else if (!IsPreviewWindowLocked() &&         //for performance reasons only
-            (screenPos || ClientToScreen(hWnd, &pt)) &&
-            (DragDetect(hWnd, pt)))
-   {
-      //trick windows into thinking we are dragging the title bar, to let the user move the window
-      m_draggedWindow = NULL;
-      ReleaseCapture();
-      ::SendMessage(hWnd,WM_NCLBUTTONDOWN,HTCAPTION,(LPARAM)&pt);
-   }
-   else
-   {
-      //switch to the desktop that was clicked
-      m_draggedWindow = NULL;
-      deskMan->SwitchToDesktop(desk);
-   }
+			GetIconInfo(m_draggedWindow->GetIcon(), &icon);
+			icon.fIcon = FALSE;
+			m_dragCursor = (HCURSOR)CreateIconIndirect(&icon);
+			SetCursor(m_dragCursor);
+		}
+		else if (!IsPreviewWindowLocked() &&         //for performance reasons only
+					(screenPos || ClientToScreen(hWnd, &pt)) &&
+					(DragDetect(hWnd, pt)))
+		{
+			//trick windows into thinking we are dragging the title bar, to let the user move the window
+			m_draggedWindow = NULL;
+			ReleaseCapture();
+			::SendMessage(hWnd,WM_NCLBUTTONDOWN,HTCAPTION,(LPARAM)&pt);
+		}
+		else
+		{
+			//switch to the desktop that was clicked
+			m_draggedWindow = NULL;
+			deskMan->SwitchToDesktop(desk);
+		}
+	}
 
    return 0;
 }
@@ -434,6 +481,9 @@ LRESULT VirtualDimension::OnLeftButtonDblClk(HWND /*hWnd*/, UINT /*message*/, WP
    Window * window;
    Desktop * desk;
 
+	if (m_shrinked)
+		return 0;
+
    pt.x = GET_X_LPARAM(lParam);
    pt.y = GET_Y_LPARAM(lParam);
 
@@ -456,7 +506,8 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    //Get the context menu
    Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
    Window * window = NULL;
-   if (((wParam & MK_CONTROL) == 0) && 
+   if ((!m_shrinked) &&
+		 ((wParam & MK_CONTROL) == 0) && 
        (desk != NULL))
    {
       window = desk->GetWindowFromPoint(pt.x, pt.y);
@@ -480,7 +531,7 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    res = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, hWnd, NULL);
 
    //Process the resulting message
-   if (wParam & MK_CONTROL)
+   if (hMenu == m_pSysMenu)
       PostMessage(hWnd, WM_SYSCOMMAND, res, 0);
    else if (res >= WM_USER)
    {
@@ -502,12 +553,13 @@ LRESULT VirtualDimension::OnDestroy(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wP
    RECT pos;
    Settings settings;
    
-   // Before exiting, save the window position and visibility
+   // Before exiting, save the window position
    pos.left = m_location.x;
    pos.top = m_location.y;
    pos.right = m_location.x + deskMan->GetWindowWidth();
    pos.bottom = m_location.y + deskMan->GetWindowHeight();
    settings.SavePosition(&pos);
+	settings.SaveDockedBorders(m_dockedBorders);
 
    //Save the locking state of the window
    settings.SaveLockPreviewWindow(IsPreviewWindowLocked());
@@ -593,8 +645,11 @@ LRESULT VirtualDimension::OnEndSession(HWND /*hWnd*/, UINT /*message*/, WPARAM w
 
 LRESULT VirtualDimension::OnMove(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
-   m_location.x = (int)(short) LOWORD(lParam);
-   m_location.y = (int)(short) HIWORD(lParam);
+	if (!m_shrinked)
+	{
+		m_location.x = (int)(short) LOWORD(lParam);
+		m_location.y = (int)(short) HIWORD(lParam);
+	}
 
    return 0;
 }
@@ -603,6 +658,11 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 {
    RECT	deskRect;
    WINDOWPOS * lpwndpos = (WINDOWPOS*)lParam;
+
+	// No action if the window is shrinked, or if the window is not moved&sized
+	if (m_shrinked || 
+		 ((lpwndpos->flags & SWP_NOMOVE) && (lpwndpos->flags & SWP_NOSIZE)))
+		return TRUE;
 
 	// Get work area dimensions
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
@@ -641,9 +701,9 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
    return TRUE;
 }
 
-LRESULT VirtualDimension::OnTimer(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	ShowWindow(hWnd, SW_HIDE);	
+	Shrink();	
 	return 0;
 }
 
@@ -656,17 +716,181 @@ LRESULT VirtualDimension::OnActivateApp(HWND hWnd, UINT /*message*/, WPARAM wPar
 	return 0;
 }
 
-LRESULT VirtualDimension::OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	return deskMan->OnPaint(hWnd, message, wParam, lParam);
+	//This method is used to paint the shrinked window
+	PAINTSTRUCT ps;
+	RECT rect;
+	HDC hdc;
+
+	GetClientRect(hWnd, &rect);
+	hdc = BeginPaint(hWnd, &ps);
+
+	Rectangle(hdc, rect.left, rect.top, rect.right, rect.bottom);
+
+	EndPaint(hWnd, &ps);
+	return 0;
 }
 
 LRESULT VirtualDimension::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
-   if (wParam == SIZE_RESTORED)
+   if ((!m_shrinked) && (wParam == SIZE_RESTORED))
 		deskMan->ReSize(LOWORD(lParam), HIWORD(lParam));
 
 	return 0;
+}
+
+void VirtualDimension::Shrink(void)
+{
+	RECT pos, deskRect;
+	DWORD style;
+
+	if (m_shrinked || !m_dockedBorders)
+		return;
+
+	m_shrinked = true;
+
+	//Compute the position where to display the handle
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
+	GetWindowRect(m_hWnd, &pos);
+	switch(m_dockedBorders)
+	{
+	case DOCK_LEFT:
+		pos.right = deskRect.left + 10;
+		pos.left = pos.right - 10;
+		break;
+
+	case DOCK_RIGHT:
+		pos.left = deskRect.right - 10;
+		pos.right = pos.left + 10;
+		break;
+
+	case DOCK_TOP:
+		pos.bottom = deskRect.top + 10;
+		pos.top = pos.bottom - 10;
+		break;
+
+	case DOCK_BOTTOM:
+		pos.top = deskRect.bottom - 10;
+		pos.bottom = pos.top + 10;
+		break;
+
+	case DOCK_TOP|DOCK_LEFT:
+		pos.right = deskRect.left + 10;
+		pos.left = pos.right - 10;
+		pos.bottom = deskRect.top + 10;
+		pos.top = pos.bottom - 10;
+		break;
+
+	case DOCK_TOP|DOCK_RIGHT:	
+		pos.left = deskRect.right - 10;
+		pos.right = pos.left + 10;
+		pos.bottom = deskRect.top + 10;
+		pos.top = pos.bottom - 10;
+		break;
+
+	case DOCK_BOTTOM|DOCK_LEFT:
+		pos.right = deskRect.left + 10;
+		pos.left = pos.right - 10;
+		pos.top = deskRect.bottom - 10;
+		pos.bottom = pos.top + 10;
+		break;
+
+	case DOCK_BOTTOM|DOCK_RIGHT:
+		pos.left = deskRect.right - 10;
+		pos.right = pos.left + 10;
+		pos.top = deskRect.bottom - 10;
+		pos.bottom = pos.top + 10;
+		break;
+
+	case DOCK_TOP|DOCK_LEFT|DOCK_RIGHT:
+		pos.left = deskRect.left;
+		pos.right = deskRect.right;
+		pos.bottom = deskRect.top + 10;
+		pos.top = pos.bottom - 10;
+		break;
+
+	case DOCK_BOTTOM|DOCK_LEFT|DOCK_RIGHT:
+		pos.left = deskRect.left;
+		pos.right = deskRect.right;
+		pos.top = deskRect.bottom - 10;
+		pos.bottom = pos.top + 10;
+		break;
+
+	case DOCK_TOP|DOCK_BOTTOM|DOCK_LEFT:
+		pos.right = deskRect.left + 10;
+		pos.left = pos.right - 10;
+		pos.top = deskRect.top;
+		pos.bottom = deskRect.bottom;
+		break;
+
+	case DOCK_TOP|DOCK_BOTTOM|DOCK_RIGHT:
+		pos.left = deskRect.right - 10;
+		pos.right = pos.left + 10;
+		pos.top = deskRect.top;
+		pos.bottom = deskRect.bottom;
+		break;
+
+	default:
+		m_shrinked = false;
+		return;
+	}
+
+	//Change the method to use for painting the window
+	SetMessageHandler(WM_PAINT, this, &VirtualDimension::OnPaint);
+
+	//Change the style of the window
+	style = GetWindowLongPtr(m_hWnd, GWL_STYLE);
+	style &= ~WS_CAPTION;
+	style &= ~WS_DLGFRAME;
+	style &= ~WS_BORDER;
+	style &= ~WS_THICKFRAME;
+	SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
+
+	//Apply the changes
+	SetWindowPos(m_hWnd, NULL, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, SWP_NOZORDER | SWP_FRAMECHANGED);
+
+	//Disable tooltips
+	tooltip->EnableTooltips(false);
+
+	//Refresh the display
+	Refresh();
+}
+
+void VirtualDimension::UnShrink(void)
+{
+	RECT pos;
+	DWORD style;
+
+	if (!m_shrinked)
+	return;
+
+	//Change the method to use for painting the window
+	SetMessageHandler(WM_PAINT, deskMan, &DesktopManager::OnPaint);
+
+	//Restore the window's style
+	style = GetWindowLongPtr(m_hWnd, GWL_STYLE);
+	style |= (m_hasCaption ? WS_CAPTION : WS_DLGFRAME);
+	style |= (m_lockPreviewWindow ? 0 : WS_THICKFRAME);
+	SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
+
+	//Restore the windows position
+	pos.left = m_location.x;
+	pos.right = pos.left + deskMan->GetWindowWidth();
+	pos.top = m_location.y;
+	pos.bottom = pos.top + deskMan->GetWindowHeight();
+	AdjustWindowRectEx(&pos, GetWindowLongPtr(m_hWnd, GWL_STYLE), FALSE, GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+
+	//Apply the changes
+	SetWindowPos(m_hWnd, NULL, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, SWP_DRAWFRAME | SWP_NOZORDER | SWP_FRAMECHANGED);
+
+	//Enable tooltips
+	tooltip->EnableTooltips(true);
+
+	//Refresh the display
+	Refresh();
+
+	m_shrinked = false;
 }
 
 // Message handler for about box.

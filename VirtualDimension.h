@@ -61,6 +61,9 @@ public:
 	inline int GetSnapSize() const		{ return m_snapSize; }
 	inline void SetSnapSize(int size)	{ m_snapSize = size; }
 
+	void Shrink(void);
+	void UnShrink(void);
+
 protected:
    Window * m_draggedWindow;
    HCURSOR m_dragCursor;
@@ -83,7 +86,8 @@ protected:
 	int m_dockedBorders;
 
 	int m_snapSize;
-
+	
+	bool m_shrinked;
    bool m_lockPreviewWindow;
    bool m_hasCaption;
 	int m_autoHideDelay;
