@@ -181,5 +181,8 @@ HICON TrayIcon::GetIcon()
 
 char* TrayIcon::GetText()
 {
-   return "";
+   if (deskMan && deskMan->GetCurrentDesktop())
+      return deskMan->GetCurrentDesktop()->GetText();
+   else
+      return "";
 }
