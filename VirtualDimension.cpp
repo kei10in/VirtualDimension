@@ -47,10 +47,10 @@ VirtualDimension vdWindow;;
 // Forward function definition
 HWND CreateConfigBox();
 
-int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE /*hPrevInstance*/,
-                     LPTSTR    /*lpCmdLine*/,
-                     int       nCmdShow)
+int APIENTRY _tWinMain( HINSTANCE hInstance,
+                        HINSTANCE /*hPrevInstance*/,
+                        LPTSTR    /*lpCmdLine*/,
+                        int       nCmdShow)
 {
 	MSG msg;
 	HACCEL hAccelTable;
@@ -58,7 +58,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
    InitCommonControls();
    CoInitialize ( NULL );
 
-   vdWindow.Start(hInstance, nCmdShow);
+   if (!vdWindow.Start(hInstance, nCmdShow))
+      return -1;
 
    // Load accelerators
 	hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_VIRTUALDIMENSION);
@@ -84,46 +85,27 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	return (int) msg.wParam;
 }
 
-/*LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-   static UINT s_uTaskbarRestart;
-   static bool dragging = false;
-   static Window* draggedWindow = NULL;
-   static HCURSOR dragCursor;
-
-	int wmId, wmEvent;
-	PAINTSTRUCT ps;
-	HDC hdc;
-
-   switch (message) 
-   {
-
-
-   case WM_VIRTUALDIMENSION:
-      switch(wParam)
-      {
-      case VD_MOVEWINDOW:
-         SelectDesktopForWindow((Window*)lParam);
-         break;
-      }
-      break;
-
-	default:
-
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-	return 0;
-}*/
-
 VirtualDimension::VirtualDimension()
 {
+   LoadString(m_hInstance, IDS_APP_TITLE, m_szTitle, MAX_LOADSTRING);
+	LoadString(m_hInstance, IDC_VIRTUALDIMENSION, m_szWindowClass, MAX_LOADSTRING);
 }
 
-void VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
+bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 {
    HWND hWnd;
    RECT pos;
    Settings settings;
+   HWND hwndPrev;
+   
+   // If a previous instance is running, activate
+   // that instance and terminate this one.
+   hwndPrev = FindWindow(m_szWindowClass, NULL);
+   if (hwndPrev != NULL)
+   {
+        SetForegroundWindow (hwndPrev);
+        return false;
+   }
 
    m_hInstance = hInstance;
 
@@ -150,7 +132,7 @@ void VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
            pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, 
            NULL, NULL, hInstance);
    if (!IsValid())
-      return;
+      return false;
 
    hWnd = *this;
 
@@ -193,6 +175,8 @@ void VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // Retrieve the initial list of windows
    winMan->PopulateInitialWindowsSet();
+
+   return true;
 }
 
 VirtualDimension::~VirtualDimension()
@@ -202,9 +186,6 @@ VirtualDimension::~VirtualDimension()
 ATOM VirtualDimension::RegisterClass()
 {
 	WNDCLASSEX wcex;
-
-   LoadString(m_hInstance, IDS_APP_TITLE, m_szTitle, MAX_LOADSTRING);
-	LoadString(m_hInstance, IDC_VIRTUALDIMENSION, m_szWindowClass, MAX_LOADSTRING);
 
 	wcex.cbSize = sizeof(WNDCLASSEX); 
 
