@@ -17,30 +17,42 @@
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
-#define __HIDINGMETHOD_H__
 
 #ifndef __HIDINGMETHOD_H__
 #define __HIDINGMETHOD_H__
 
+class Window;
+
 class HidingMethod
 {
 public:
-   virtual void Init(Window * wnd)               { return; }
-   virtual void Cleanup(Window * wnd)            { return; }
+   inline void SetWindowData(Window * wnd, int data);
+   inline int GetWindowData(Window * wnd);
+
+   virtual void Attach(Window * /*wnd*/)            { return; }
+   virtual void Detach(Window * /*wnd*/)            { return; }
    virtual void Show(Window * wnd) = 0;
    virtual void Hide(Window * wnd) = 0;
-   virtual bool CheckCreated(Window * wnd) = 0;
-   virtual bool CheckDestroyed(Window * wnd) = 0;
+   virtual bool CheckCreated(Window * /*wnd*/)      { return true; }
+   virtual bool CheckDestroyed(Window * /*wnd*/)    { return true; }
 };
 
 class HidingMethodHide: public HidingMethod
 {
 public:
-   virtual void Init(Window * wnd);
+   virtual void Attach(Window * wnd);
    virtual void Show(Window * wnd);
    virtual void Hide(Window * wnd);
    virtual bool CheckCreated(Window * wnd);
    virtual bool CheckDestroyed(Window * wnd);
+
+protected:
+   enum States {
+      SHOWN,
+      SHOWING,
+      HIDDEN,
+      HIDING
+   };
 };
 
 class HidingMethodMinimize: public HidingMethod
@@ -48,8 +60,6 @@ class HidingMethodMinimize: public HidingMethod
 public:
    virtual void Show(Window * wnd);
    virtual void Hide(Window * wnd);
-   virtual bool CheckCreated(Window * wnd)      { return true; }
-   virtual bool CheckDestroyed(Window * wnd)    { return true; }
 };
 
 class HidingMethodMove: public HidingMethod
@@ -57,8 +67,6 @@ class HidingMethodMove: public HidingMethod
 public:
    virtual void Show(Window * wnd);
    virtual void Hide(Window * wnd);
-   virtual bool CheckCreated(Window * wnd);
-   virtual bool CheckDestroyed(Window * wnd);
 };
 
 #endif /*__HIDINGMETHOD_H__*/

@@ -21,138 +21,148 @@
 #include "StdAfx.h"
 #include "Window.h"
 #include "HidingMethod.h"
+#include "ExplorerWrapper.h"
+#include "Window.h"
+#include "WindowsManager.h"
 
-
-void HidingMethodHide::Init(Window * wnd)
+void HidingMethod::SetWindowData(Window * wnd, int data)
 {
-   wnd->m_hidingMethodData = SHOWN;
+   wnd->m_hidingMethodData = data;
+}
+
+int HidingMethod::GetWindowData(Window * wnd)
+{
+   return wnd->m_hidingMethodData;
+}
+
+
+void HidingMethodHide::Attach(Window * wnd)
+{
+   SetWindowData(wnd, SHOWN);
 }
 
 void HidingMethodHide::Show(Window * wnd)
 {
-   wnd->m_hidingMethodData = SHOWING;
+   SetWindowData(wnd, SHOWING);
    ShowWindow(*wnd, SW_SHOWNA);
    ShowOwnedPopups(*wnd, SW_SHOWNA);
 }
 
 void HidingMethodHide::Hide(Window * wnd)
 {
-   wnd->m_hidingMethodData = HIDING;
+   SetWindowData(wnd, HIDING);
    ShowWindow(*wnd, SW_HIDE);
    ShowOwnedPopups(*wnd, SW_HIDE);
 }
 
 bool HidingMethodHide::CheckCreated(Window * wnd)
 {
-   if (wnd->m_hidingMethodData == SHOWING)
+   if (GetWindowData(wnd) == SHOWING)
    {
-      wnd->m_hidingMethodData = SHOWN;
-      return true;
+      SetWindowData(wnd, SHOWN);
+      return false;
    }
    else
-      return false;
+      return true;
 }
 
 bool HidingMethodHide::CheckDestroyed(Window * wnd)
 {
-   if (wnd->m_hidingMethodData == HIDING)
+   if (GetWindowData(wnd) == HIDING)
    {
-      wnd->m_hidingMethodData = HIDDEN;
-      return true;
+      SetWindowData(wnd, HIDDEN);
+      return false;
    }
    else
-      return false;
+      return true;
 }
+
 
 void HidingMethodMinimize::Show(Window * wnd)
 {
+   LONG_PTR oldstyle = GetWindowData(wnd) & 0x7fff;
+
    //Restore the window's style
-   if (m_setStyle)
+   if (oldstyle != GetWindowLongPtr(*wnd, GWL_EXSTYLE))
    {
-      SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
-      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+      SetWindowLongPtr(*wnd, GWL_EXSTYLE, oldstyle);
+      SetWindowPos(*wnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
    }
 
    //Show the icon
-#ifdef HIDEWINDOW_COMINTERFACE
-   m_tasklist->AddTab(m_hWnd);
-#else
-   PostMessage(m_hWndTasklist, m_ShellhookMsg, 1, (LPARAM)m_hWnd);
-#endif
+   explorerWrapper->ShowWindowInTaskbar(*wnd);
 
    //Restore the application if needed
-   if (!m_iconic)
+   if (!(GetWindowData(wnd) >> 31))
    {
       winMan->DisableAnimations();
-      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
+      ::ShowWindow(*wnd, SW_SHOWNOACTIVATE);
       winMan->EnableAnimations();
    }
 }
 
 void HidingMethodMinimize::Hide(Window * wnd)
 {
-   m_setStyle = !winMan->IsShowAllWindowsInTaskList();
-   if (m_setStyle)
-      m_style = GetWindowLongPtr(m_hWnd, GWL_EXSTYLE);
+   LONG_PTR oldstyle = GetWindowLongPtr(*wnd, GWL_EXSTYLE);
 
    //Minimize the application
-   m_iconic = IsIconic();
-   if (!m_iconic)
+   int iconic = wnd->IsIconic() ? 1 : 0;
+   if (!iconic)
    {
       winMan->DisableAnimations();
-      ::ShowWindow(m_hWnd, SW_SHOWMINNOACTIVE);
+      ::ShowWindow(*wnd, SW_SHOWMINNOACTIVE);
       winMan->EnableAnimations();
    }
 
+   SetWindowData(wnd, oldstyle | (iconic << 31));
+
    //Hide the icon
-#ifdef HIDEWINDOW_COMINTERFACE
-   m_tasklist->DeleteTab(m_hWnd);
-#else
-   PostMessage(m_hWndTasklist, m_ShellhookMsg, 2, (LPARAM)m_hWnd);
-#endif
+   explorerWrapper->HideWindowInTaskbar(*wnd);
 
    //disable the window so that it does not appear in task list
-   if (m_setStyle)
+   if (!winMan->IsShowAllWindowsInTaskList())
    {
-      LONG_PTR style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
-      SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, style);
-      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+      LONG_PTR style = (oldstyle & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
+      SetWindowLongPtr(*wnd, GWL_EXSTYLE, style);
+      SetWindowPos(*wnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
    }
 }
+
 
 void HidingMethodMove::Show(Window * wnd)
 {
    RECT aPosition;
-   GetWindowRect( *wnd, &aPosition );
+   GetWindowRect(*wnd, &aPosition);
 
    // Restore the window mode
-   SetWindowLong( *wnd, GWL_EXSTYLE, wnd->m_style );  
+   SetWindowLong(*wnd, GWL_EXSTYLE, GetWindowData(wnd));  
 
    // Notify taskbar of the change
-   PostMessage( hwndTask, RM_Shellhook, 1, (LPARAM) *wnd );
+   explorerWrapper->ShowWindowInTaskbar(*wnd);
 
    // Bring back to visible area, SWP_FRAMECHANGED makes it repaint 
-   SetWindowPos( *wnd, 0, aPosition.left, aPosition.top - screenBottom - 10, 
-                  0, 0, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE ); 
+   SetWindowPos(*wnd, 0, aPosition.left, - aPosition.top - aPosition.bottom  - 10, 
+                0, 0, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE ); 
 
    // Notify taskbar of the change
-   PostMessage( hwndTask, RM_Shellhook, 1, (LPARAM) *wnd );
+   explorerWrapper->ShowWindowInTaskbar(*wnd);
 }
 
 void HidingMethodMove::Hide(Window * wnd)
 {
    RECT aPosition;
-   GetWindowRect( *wnd, &aPosition );
+   GetWindowRect(*wnd, &aPosition);
 
    // Move the window off visible area
-   SetWindowPos( *wnd, 0, aPosition.left, aPosition.top + screenBottom + 10, 
-                  0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE );
+   SetWindowPos(*wnd, 0, aPosition.left, - aPosition.top + aPosition.bottom + 10, 
+                0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
 
    // This removes window from taskbar and alt+tab list
-   wnd->m_style = GetWindowLong(*wnd, GWL_EXSTYLE);
-   SetWindowLong( *wnd, GWL_EXSTYLE, 
-                  wnd->m_style & (~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW );
+   LONG_PTR style = GetWindowLongPtr(*wnd, GWL_EXSTYLE);
+   SetWindowLongPtr(*wnd, GWL_EXSTYLE, 
+                    style & (~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW);
+   SetWindowData(wnd, style);
 
    // Notify taskbar of the change
-   PostMessage( hwndTask, RM_Shellhook, 2, (LPARAM) *wnd);
+   explorerWrapper->HideWindowInTaskbar(*wnd);
 }
