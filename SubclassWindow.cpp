@@ -24,7 +24,7 @@ typedef struct RemoteStartupArgs {
 	HINSTANCE (WINAPI *fnLoadLibrary)(LPCTSTR);
    BOOL (WINAPI *fnFreeLibrary)(HINSTANCE);
    FARPROC (WINAPI *fnGetProcAddress)(HINSTANCE,LPCSTR);
-	TCHAR pbLibFile[MAX_PATH * sizeof(TCHAR)];
+	CHAR pbLibFile[MAX_PATH * sizeof(CHAR)];
    int fnIndex;
    HWND hWnd;
    int data;
@@ -199,7 +199,13 @@ HINSTANCE HookWindow(HWND hWnd, int data)
    args.hWnd = hWnd;
    args.data = data;
    args.fnIndex = 0x1;
-   strcpy(args.pbLibFile, "HookDLL.dll");
+   DWORD result = SearchPathA(NULL, "HookDLL.dll", NULL, MAX_PATH, args.pbLibFile, NULL);
+   if ((result < 0) || (result > MAX_PATH))
+   {
+      FreeProcessMemory(hProcess, pdwCodeRemote);
+      CloseHandle(hProcess);
+      return NULL;
+   }
 
 	// Write a copy of the arguments to the remote process (the structure MUST start on a 32-bit bourdary)
    pArgsRemote = (RemoteStartupArgs*)(pdwCodeRemote + ((cbCodeSize + 4) & ~3));
