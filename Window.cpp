@@ -54,6 +54,7 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
 {
    Settings s;
    Settings::Window settings(&s);
+   int method;
 
    //Try to see if there are some special settings for this window
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
@@ -61,7 +62,10 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
 
    //Setup the hiding method to use
    m_hHideMutex = CreateMutex(NULL, FALSE, NULL);
-   m_hidingMethod = s_hiding_methods[s.LoadHidingMethod(m_className)];
+   method = s.LoadHidingMethod(m_className);
+   if (method < 0 && method > sizeof(s_hiding_methods)/sizeof(*s_hiding_methods))
+      method = 0;
+   m_hidingMethod = s_hiding_methods[method];
    m_hidingMethod->Attach(this);
 
    //Load settings for this window

@@ -75,6 +75,7 @@ DEFINE_SETTING(Settings, WarpEnable, bool, false);
 DEFINE_SETTING(Settings, WarpSensibility, LONG, 3);
 DEFINE_SETTING(Settings, WarpMinDuration, DWORD, 500);
 DEFINE_SETTING(Settings, WarpRewarpDelay, DWORD, 3000);
+DEFINE_SETTING(Settings, DefaultHidingMethod, int, 0);
 
 Settings::Settings(void): RegistryGroup(regKeyName)
 {
@@ -197,7 +198,7 @@ int Settings::LoadHidingMethod(const char * windowclass)
 
    res = (m_opened &&
           RegOpenKeyEx(m_regKey, regSubKeyHidingMethods, 0, KEY_READ, &regKey) == ERROR_SUCCESS &&
-          RegQueryValueEx(regKey, windowclass, NULL, NULL, (BYTE*)&val, &size) == ERROR_SUCCESS) ? val : 0;
+          RegQueryValueEx(regKey, windowclass, NULL, NULL, (BYTE*)&val, &size) == ERROR_SUCCESS) ? val : LoadSetting(DefaultHidingMethod);
 
    if (regKey!=NULL)
       RegCloseKey(regKey);

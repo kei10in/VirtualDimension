@@ -78,6 +78,7 @@ public:
    static DECLARE_SETTING(WarpSensibility, LONG);
    static DECLARE_SETTING(WarpMinDuration, DWORD);
    static DECLARE_SETTING(WarpRewarpDelay, DWORD);
+   static DECLARE_SETTING(DefaultHidingMethod, int);
 
    // Other settings
    bool LoadStartWithWindows();
