@@ -119,3 +119,19 @@ LRESULT TrayIconsManager::RefreshIcons(HWND, UINT, WPARAM, LPARAM)
 
    return 0;
 }
+
+void TrayIconsManager::TrayIconHandler::Update()
+{
+	NOTIFYICONDATA data;
+
+   // Refresh the actual tray icon
+   data.cbSize = sizeof(data);
+   data.hWnd = vdWindow;
+   data.uID = (UINT)this;
+   data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+   data.uCallbackMessage = m_callbackMessage;
+   data.hIcon = GetIcon();
+   strcpy(data.szTip, GetText());
+
+   Shell_NotifyIcon(NIM_MODIFY, &data);
+}

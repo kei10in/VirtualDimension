@@ -32,6 +32,7 @@ public:
    {
    public:
       TrayIconHandler(): m_callbackMessage(0) { return; }
+      void Update();
    protected:
 	   virtual LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
       virtual HICON GetIcon() = 0;
