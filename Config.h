@@ -60,6 +60,7 @@ public:
    // Group selection
    virtual bool Open(const char * path) = 0;
    virtual void Close() = 0;
+   bool IsOpened()      { return m_opened; }
 
    virtual Group * GetSubGroup(const char * path) = 0;
 
@@ -68,6 +69,8 @@ public:
    // Generic settings accessors for "large", fixed size, settings, saved as binary
    template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data)          { return LoadSetting(setting, data, setting); }
    template<class T> inline void SaveSetting(const Setting<T> &setting, const T* data)    { SaveSetting(setting, data, setting); }
+
+   //TODO: add a method to load a DWORD setting and know if load was OK or if default was used
 
    // Generic settings accessors for "small" settings (32bits or less), saved as DWORD
    template<class T> inline T LoadSetting(const Setting<T> &setting)                      { return LoadSetting(setting, setting); }
@@ -145,6 +148,8 @@ public:
    bool Open(HKEY parent, const char * path);
 
    virtual Group * GetSubGroup(const char * path);
+
+   operator HKEY()                                               { return m_regKey; }
 
 protected:
    virtual DWORD LoadDWord(const char * entry, DWORD defVal);
