@@ -47,6 +47,7 @@ protected:
    COLORREF m_fgColor;
    HBRUSH m_bgBrush;
    POINT m_position;
+   bool m_shadeBackground;
 
    static ATOM s_classAtom;
 

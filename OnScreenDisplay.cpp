@@ -26,7 +26,7 @@
 
 ATOM OnScreenDisplayWnd::s_classAtom = 0;
 
-OnScreenDisplayWnd::OnScreenDisplayWnd(): m_transp(NULL)
+OnScreenDisplayWnd::OnScreenDisplayWnd(): m_transp(NULL), m_shadeBackground(false)
 {
    Settings settings;
 
@@ -61,7 +61,7 @@ void OnScreenDisplayWnd::Create()
 {
    RegisterClass();
 
-   m_hWnd = CreateWindowEx( WS_EX_TOPMOST, (LPSTR)s_classAtom, "OSD", WS_POPUP, 
+   m_hWnd = CreateWindowEx( WS_EX_TOPMOST|WS_EX_TRANSPARENT, (LPSTR)s_classAtom, "OSD", WS_POPUP, 
                             m_position.x, m_position.y, 0, 0, 
                             vdWindow, NULL, vdWindow, this);
    ShowWindow(m_hWnd, SW_HIDE);
@@ -136,7 +136,10 @@ void OnScreenDisplayWnd::paint(HDC hdc)
 
    defFont = (HFONT)SelectObject(hdc, m_font);
    SetTextColor(hdc, m_fgColor);
-   FillRect(hdc, &rect, m_bgBrush);
+   if (m_shadeBackground)
+      FillRect(hdc, &rect, m_bgBrush);
+   else
+      SetBkMode(hdc, TRANSPARENT);
    DrawTextEx(hdc, m_text, -1, &rect, DT_SINGLELINE|DT_CENTER|DT_VCENTER|DT_NOPREFIX, NULL);
    SelectObject(hdc, defFont);
 }
@@ -182,7 +185,7 @@ void OnScreenDisplayWnd::RegisterClass()
 	wcex.hInstance		  = (HINSTANCE)vdWindow;
 	wcex.hIcon			  = NULL;
 	wcex.hCursor		  = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground  = NULL;
+   wcex.hbrBackground  = (HBRUSH)GetStockObject(HOLLOW_BRUSH);
 	wcex.lpszMenuName	  = NULL;
 	wcex.lpszClassName  = "OSDWindow";
 	wcex.hIconSm		  = NULL;
