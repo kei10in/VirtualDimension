@@ -53,7 +53,7 @@ public:
    ~Window(void);
 
    void MoveToDesktop(Desktop * desk);
-   bool IsOnDesk(Desktop * desk) { return desk == m_desk; }
+   bool IsOnDesk(Desktop * desk);
 
    void ShowWindow();
    void HideWindow();

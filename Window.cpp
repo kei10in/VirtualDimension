@@ -139,6 +139,13 @@ void Window::HideWindow()
    m_hidden = true;
 }
 
+bool Window::IsOnDesk(Desktop * desk)
+{
+   if (m_desk == NULL)
+      m_desk = desk; //Move to the first desktop that asks
+   return desk == m_desk;
+}
+
 HICON Window::GetIcon(void)
 {
    HICON hIcon;
