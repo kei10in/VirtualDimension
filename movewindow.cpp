@@ -77,6 +77,7 @@ LRESULT CALLBACK MoveWindowProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /
          if (movedWindow->IsOnDesk(NULL))
          {
             CheckDlgButton(hDlg, IDC_ALLDESKS_CHECK, TRUE);
+            SetFocus(GetDlgItem(hDlg, IDC_ALLDESKS_CHECK));
          }
          else
          {
@@ -90,12 +91,13 @@ LRESULT CALLBACK MoveWindowProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /
                if (movedWindow->IsOnDesk(desk))
                   SendMessage(hWnd, LB_SETCURSEL, index, 0);
             }
+            SetFocus(hWnd);
          }
 
          //Disable the APPLY button
          EnableWindow(GetDlgItem(hDlg, IDC_APPLY), FALSE);
       }
-		return TRUE;
+		return FALSE;
 
 	case WM_COMMAND:
       switch(LOWORD(wParam))
