@@ -27,7 +27,8 @@
 #define __STDAFX_H__
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#define _WIN32_WINNT 0x501       // For development purpose only. Should work with other versions as well
+#define WINVER 0x0501
+#define _WIN32_WINNT 0x0501       // For development purpose only. Should work with other versions as well
 
 // Windows Header Files:
 #include <windows.h>
