@@ -47,6 +47,7 @@ public:
    void LoadDesktops();
    void SaveDesktops();
 
+   Desktop * GetCurrentDesktop() const { return m_currentDesktop; }
    Desktop* GetDesktopFromPoint(int x, int y);
    void SwitchToDesktop(Desktop * desk);
 
