@@ -35,6 +35,7 @@ const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
 const char Settings::regValCloseToTray[] = "CloseToTray";
 const char Settings::regValAutoSwitchDesktop[] = "AutoSwitchDesktop";
 const char Settings::regValAllWindowsInTaskList[] = "AllWindowsInTaskList";
+const char Settings::regValIntegrateWithShell[] = "IntegrateWithShell";
 const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
 const char Settings::regValOSDTimeout[] = "OSDTimeout";
 const char Settings::regValOSDFont[] = "OSDFont";
@@ -237,6 +238,16 @@ bool Settings::LoadAllWindowsInTaskList()
 void Settings::SaveAllWindowsInTaskList(bool all)
 {
    SaveDWord(m_regKey, m_keyOpened, regValAllWindowsInTaskList, all);
+}
+
+bool Settings::LoadIntegrateWithShell()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValIntegrateWithShell, TRUE) ? true : false;
+}
+
+void Settings::SaveIntegrateWithShell(bool integ)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValIntegrateWithShell, integ);
 }
 
 bool Settings::LoadDesktopNameOSD()

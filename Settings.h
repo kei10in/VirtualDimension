@@ -55,6 +55,8 @@ public:
    void SaveAutoSwitchDesktop(bool autoSwitch);
    bool LoadAllWindowsInTaskList();
    void SaveAllWindowsInTaskList(bool all);
+   bool LoadIntegrateWithShell();
+   void SaveIntegrateWithShell(bool integ);
 
    bool LoadDesktopNameOSD();
    void SaveDesktopNameOSD(bool osd);
@@ -195,6 +197,7 @@ protected:
    static const char regValCloseToTray[];
    static const char regValAutoSwitchDesktop[];
    static const char regValAllWindowsInTaskList[];
+   static const char regValIntegrateWithShell[];
    static const char regValDesktopNameOSD[];
    static const char regValOSDTimeout[];
    static const char regValOSDFont[];
