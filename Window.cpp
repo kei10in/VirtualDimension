@@ -337,7 +337,7 @@ HMENU Window::BuildMenu()
    mi.cbSize = sizeof(MENUINFO);
    mi.fMask = MIM_STYLE;
    mi.dwStyle = MNS_CHECKORBMP;
-   SetMenuInfo(hMenu, &mi);
+   PlatformHelper::SetMenuInfo(hMenu, &mi);
 
    //Now add the items
    mii.cbSize = sizeof(MENUITEMINFO);

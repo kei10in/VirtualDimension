@@ -27,6 +27,7 @@
 #include "WindowsManager.h"
 #include "VirtualDimension.h"
 #include "ZOrderKeeper.h"
+#include "PlatformHelper.h"
 
 #ifdef __GNUC__
 #define MIM_STYLE 0x10
@@ -97,7 +98,7 @@ HMENU Desktop::BuildMenu()
    mi.cbSize = sizeof(MENUINFO);
    mi.fMask = MIM_STYLE;
    mi.dwStyle = MNS_CHECKORBMP;
-   SetMenuInfo(hMenu, &mi);
+   PlatformHelper::SetMenuInfo(hMenu, &mi);
 
    //Add the menu items
    mii.cbSize = sizeof(mii);
