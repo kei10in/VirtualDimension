@@ -158,25 +158,40 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
 CAPTION "Global settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | 
-                    WS_TABSTOP,24,75,166,18
-    GROUPBOX        "Transparency level",IDC_TRANSP_STATIC,7,64,200,43
-    LTEXT           "255",IDC_TRANSP_STATIC2,189,77,14,8
-    RTEXT           "0",IDC_TRANSP_STATIC1,14,79,9,12
     CONTROL         "Always on top",IDC_ONTOP_CHECK,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,18,17,80,10
     CONTROL         "Enable tray icon",IDC_TRAYICON_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,30,80,10
     CONTROL         "Enable tooltips",IDC_TOOLTIPS_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,43,80,10
+    CONTROL         "Integrate with shell",IDC_INTEGRATEWTHSHELL_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,18,56,80,10
+    CONTROL         "All windows in task list",IDC_ALLWINDOWSINTASKLIST_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,69,90,10
     CONTROL         "Confirm before killing",IDC_CONFIRMKILL_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,17,80,10
     CONTROL         "Close To Tray",IDC_CLOSETOTRAY_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,30,80,10
     CONTROL         "Start with Windows",IDC_STARTWITHWINDOWS_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,43,80,10
-    GROUPBOX        "Options",IDC_STATIC,7,7,200,52
+    CONTROL         "Auto switch desktop",IDC_AUTOSWITCHDESKTOP_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,115,56,80,10
+    GROUPBOX        "Options",IDC_STATIC,7,7,200,100
+END
+
+IDD_DISPLAY_SETTINGS DIALOGEX 0, 0, 214, 114
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+    DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
+CAPTION "Display settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | 
+                    WS_TABSTOP,24,75,166,18
+    GROUPBOX        "Transparency level",IDC_TRANSP_STATIC,7,64,200,43
+    LTEXT           "255",IDC_TRANSP_STATIC2,189,77,14,8
+    RTEXT           "0",IDC_TRANSP_STATIC1,14,79,9,12
     CTEXT           "255",IDC_TRANSP_DISP,9,94,195,8
+    GROUPBOX        "Appearance",IDC_STATIC,7,7,200,52
 END
 
 IDD_OSD_SETTINGS DIALOGEX 0, 0, 214, 114

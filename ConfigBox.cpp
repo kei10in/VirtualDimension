@@ -57,27 +57,7 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 	case WM_INITDIALOG:
       {
          HWND hWnd;
-         bool supportTransparency;   //is transparency supported on the platform ?
          Settings settings;
-         
-         supportTransparency = Transparency::IsTransparencySupported();
-
-         //Setup the transparency slider and associated controls
-         hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
-         SendMessage(hWnd, TBM_SETRANGE, FALSE, MAKELONG(0,255));
-         SendMessage(hWnd, TBM_SETTICFREQ, 16, 0);
-         SendMessage(hWnd, TBM_SETBUDDY, TRUE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC1));
-         SendMessage(hWnd, TBM_SETBUDDY, FALSE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC2));
-         SendMessage(hWnd, TBM_SETPOS, TRUE, transp->GetTransparencyLevel());
-         EnableWindow(hWnd, supportTransparency);
-        
-         hWnd = GetDlgItem(hDlg, IDC_TRANSP_DISP);
-         FormatTransparencyLevel(hWnd, transp->GetTransparencyLevel());
-         EnableWindow(hWnd, supportTransparency);
-
-         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC), supportTransparency);
-         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC1), supportTransparency);
-         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC2), supportTransparency);
 
          //Setup always on top
          hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
@@ -103,6 +83,15 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          //Setup start with windows
          hWnd = GetDlgItem(hDlg, IDC_STARTWITHWINDOWS_CHECK);
          SendMessage(hWnd, BM_SETCHECK, settings.LoadStartWithWindows() ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         //Setup auto switch desktop
+         CheckDlgButton(hDlg, IDC_AUTOSWITCHDESKTOP_CHECK, winMan->IsAutoSwitchDesktop() ? BST_CHECKED : BST_UNCHECKED);
+
+         //Setup integrate with shell
+         CheckDlgButton(hDlg, IDC_INTEGRATEWTHSHELL_CHECK, winMan->IsIntegrateWithShell() ? BST_CHECKED : BST_UNCHECKED);
+
+         //Setup integrate with shell
+         CheckDlgButton(hDlg, IDC_ALLWINDOWSINTASKLIST_CHECK, winMan->IsShowAllWindowsInTaskList() ? BST_CHECKED : BST_UNCHECKED);
       }
 		return TRUE;
 
@@ -112,34 +101,6 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          HRESULT res = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
          HWND hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
          EnableWindow(hWnd, res);
-      }
-      break;
-
-   case WM_HSCROLL:
-      {
-         int pos;
-
-         switch(LOWORD(wParam))
-         {
-         case TB_THUMBPOSITION:
-         case TB_THUMBTRACK:
-            pos = HIWORD(wParam);
-            break;
-
-         case TB_BOTTOM :
-         case TB_ENDTRACK:
-         case TB_LINEDOWN:
-         case TB_LINEUP:
-         case TB_PAGEDOWN:
-         case TB_PAGEUP:
-         case TB_TOP :
-         default:
-            pos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
-            break;
-         }
-
-         FormatTransparencyLevel(GetDlgItem(hDlg, IDC_TRANSP_DISP), pos);
-         transp->SetTransparencyLevel((unsigned char)pos);
       }
       break;
 
@@ -187,9 +148,96 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             res = SendMessage(hWnd, BM_GETCHECK, 0, 0) ==  BST_CHECKED ? true : false;
             settings.SaveStartWithWindows(res);
 
+            //Apply auto switch desktop
+            winMan->SetAutoSwitchDesktop(IsDlgButtonChecked(hDlg, IDC_AUTOSWITCHDESKTOP_CHECK) == BST_CHECKED);
+
+            //Apply integrate with shell
+            winMan->SetIntegrateWithShell(IsDlgButtonChecked(hDlg, IDC_INTEGRATEWTHSHELL_CHECK) == BST_CHECKED);
+
+            //Setup integrate with shell
+            winMan->ShowAllWindowsInTaskList(IsDlgButtonChecked(hDlg, IDC_ALLWINDOWSINTASKLIST_CHECK) == BST_CHECKED);
+
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
          }
+         return TRUE; 
+      }
+      break;
+	}
+	return FALSE;
+}
+
+// Message handler for the display settings page.
+LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_INITDIALOG:
+      {
+         HWND hWnd;
+         bool supportTransparency;   //is transparency supported on the platform ?
+         Settings settings;
+         
+         supportTransparency = Transparency::IsTransparencySupported();
+
+         //Setup the transparency slider and associated controls
+         hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
+         SendMessage(hWnd, TBM_SETRANGE, FALSE, MAKELONG(0,255));
+         SendMessage(hWnd, TBM_SETTICFREQ, 16, 0);
+         SendMessage(hWnd, TBM_SETBUDDY, TRUE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC1));
+         SendMessage(hWnd, TBM_SETBUDDY, FALSE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC2));
+         SendMessage(hWnd, TBM_SETPOS, TRUE, transp->GetTransparencyLevel());
+         EnableWindow(hWnd, supportTransparency);
+        
+         hWnd = GetDlgItem(hDlg, IDC_TRANSP_DISP);
+         FormatTransparencyLevel(hWnd, transp->GetTransparencyLevel());
+         EnableWindow(hWnd, supportTransparency);
+
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC), supportTransparency);
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC1), supportTransparency);
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC2), supportTransparency);
+      }
+		return TRUE;
+
+   case WM_HSCROLL:
+      {
+         int pos;
+
+         switch(LOWORD(wParam))
+         {
+         case TB_THUMBPOSITION:
+         case TB_THUMBTRACK:
+            pos = HIWORD(wParam);
+            break;
+
+         case TB_BOTTOM :
+         case TB_ENDTRACK:
+         case TB_LINEDOWN:
+         case TB_LINEUP:
+         case TB_PAGEDOWN:
+         case TB_PAGEUP:
+         case TB_TOP :
+         default:
+            pos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+            break;
+         }
+
+         FormatTransparencyLevel(GetDlgItem(hDlg, IDC_TRANSP_DISP), pos);
+         transp->SetTransparencyLevel((unsigned char)pos);
+      }
+      break;
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      switch (pnmh->code)
+      {
+      case PSN_KILLACTIVE:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         return TRUE;
+
+      case PSN_APPLY:
+         //Apply succeeded
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
          return TRUE; 
       }
       break;
@@ -576,7 +624,7 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 //Property Sheet initialization
 HWND CreateConfigBox()
 {
-   PROPSHEETPAGE pages[3];
+   PROPSHEETPAGE pages[4];
    PROPSHEETHEADER propsheet;
 
    memset(&pages, 0, sizeof(pages));
@@ -591,16 +639,23 @@ HWND CreateConfigBox()
    pages[1].dwSize = sizeof(PROPSHEETPAGE);
    pages[1].hInstance = vdWindow;
    pages[1].dwFlags = PSP_USETITLE ;
-   pages[1].pfnDlgProc = (DLGPROC)DeskConfiguration;
-   pages[1].pszTitle = "Desktops";
-   pages[1].pszTemplate = MAKEINTRESOURCE(IDD_DESKS_SETTINGS);
+   pages[1].pfnDlgProc = (DLGPROC)DisplayConfiguration;
+   pages[1].pszTitle = "Display";
+   pages[1].pszTemplate = MAKEINTRESOURCE(IDD_DISPLAY_SETTINGS);
 
    pages[2].dwSize = sizeof(PROPSHEETPAGE);
    pages[2].hInstance = vdWindow;
    pages[2].dwFlags = PSP_USETITLE ;
-   pages[2].pfnDlgProc = (DLGPROC)OSDConfiguration;
-   pages[2].pszTitle = "OSD";
-   pages[2].pszTemplate = MAKEINTRESOURCE(IDD_OSD_SETTINGS);
+   pages[2].pfnDlgProc = (DLGPROC)DeskConfiguration;
+   pages[2].pszTitle = "Desktops";
+   pages[2].pszTemplate = MAKEINTRESOURCE(IDD_DESKS_SETTINGS);
+
+   pages[3].dwSize = sizeof(PROPSHEETPAGE);
+   pages[3].hInstance = vdWindow;
+   pages[3].dwFlags = PSP_USETITLE ;
+   pages[3].pfnDlgProc = (DLGPROC)OSDConfiguration;
+   pages[3].pszTitle = "OSD";
+   pages[3].pszTemplate = MAKEINTRESOURCE(IDD_OSD_SETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
