@@ -245,7 +245,7 @@ void Desktop::Draw(HDC hDc)
       DrawIconEx(hDc, x, y, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 
       x += 16;
-      if (x > m_rect.right-15)
+      if (x > m_rect.right-16)
       {
          x = m_rect.left;
          y += 16;
