@@ -2,21 +2,29 @@
 //
 
 #include "stdafx.h"
-#include <list>
+#include <map>
 
 //First, some data shared by all instances of the DLL
+#ifdef __GNUC__
 HWND hVDWnd __attribute__((section (".shared"), shared)) = NULL;
 ATOM g_aPropName __attribute__((section (".shared"), shared)) = 0;
 int g_iProcessCount __attribute__((section (".shared"), shared)) = 0;
 UINT g_uiHookMessageId __attribute__((section (".shared"), shared)) = 0;
 UINT g_uiShellHookMsg __attribute__((section (".shared"), shared)) = 0;
+#else
+HWND hVDWnd = NULL;
+ATOM g_aPropName = 0;
+int g_iProcessCount = 0;
+UINT g_uiHookMessageId = 0;
+UINT g_uiShellHookMsg = 0;
+#endif
 
 using namespace std;
 
 #define HOOKDLL_API __declspec(dllexport)
 
-HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data);
-HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd);
+HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent);
+HOOKDLL_API DWORD WINAPI doUnHookWindow(DWORD data, HWND hWnd);
 HMENU SetupMenu(HWND hWnd);
 void CleanupMenu(HWND hWnd, HMENU hMenu);
 void InitPopupMenu(HWND hWnd, HMENU hMenu);
@@ -31,6 +39,8 @@ public:
    bool m_bHookWndProcCalled;
 	HMENU m_hSubMenu;
 };
+
+map<HWND,HWNDHookData*> m_HookData;
 
 enum MenuItems {
    VDM_TOGGLEONTOP = WM_USER+1,
@@ -133,22 +143,10 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    case WM_DESTROY:
 	   {
 			//Restore window procedure
-			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
-			SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)fnPrevWndProc);
-
-			//Do some cleanup
-			CloseHandle(pData->m_hMutex);
-			CloseHandle(pData->m_hMinToTrayEvent);
-			CleanupMenu(hWnd, pData->m_hSubMenu);
-
-			RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
-			delete pData;
+			SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
 
 			//Alert VD window
 			PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
-		
-			//Do the normal processing
-			return CallWindowProcW(fnPrevWndProc, hWnd, message, wParam, lParam);
 		}
    }
 
@@ -240,22 +238,10 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    case WM_DESTROY:		
 	   {
 			//Restore window procedure
-			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
-			SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)fnPrevWndProc);
+			SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
 
-			//Do some cleanup
-			CloseHandle(pData->m_hMutex);
-			CloseHandle(pData->m_hMinToTrayEvent);
-			CleanupMenu(hWnd, pData->m_hSubMenu);
-
-			RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEW(g_aPropName));
-			delete pData;
-			
 			//Alert VD window
 			PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
-			
-			//Do the normal processing
-			return CallWindowProcA(fnPrevWndProc, hWnd, message, wParam, lParam);
 		}
 	}
 
@@ -267,7 +253,6 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
    return res;
 }
-
 
 HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent)
 {
@@ -293,8 +278,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    pHookData->m_iData = data;
    pHookData->m_hMinToTrayEvent = minToTrayEvent;
    pHookData->m_bHookWndProcCalled = false;
-
-	pHookData->m_hSubMenu = SetupMenu(hWnd);
+   pHookData->m_hSubMenu = NULL;
 
    if (unicode)
    {
@@ -316,6 +300,8 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    }
    else
    {
+   	pHookData->m_hSubMenu = SetupMenu(hWnd);
+      m_HookData[hWnd] = pHookData;
       ReleaseMutex(pHookData->m_hMutex);
       return TRUE;
    }
@@ -325,11 +311,10 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 {
    HWNDHookData* pData;
    BOOL unicode = IsWindowUnicode(hWnd);
+   map<HWND,HWNDHookData*>::iterator it;
 
-   if (unicode)
-      pData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
-   else
-      pData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+   it = m_HookData.find(hWnd);
+   pData = (it == m_HookData.end()) ? NULL : it->second;
    if (pData && 
        (WaitForSingleObject(pData->m_hMutex, INFINITE) != WAIT_FAILED))
 	{
@@ -360,20 +345,21 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
 		CleanupMenu(hWnd, pData->m_hSubMenu);
 
+      //Remove the hook data from all places where it is referenced
 		if (unicode)
 			RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
 		else
 			RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+      m_HookData.erase(it);
+
 		delete pData;
 	}
-
-   if (hInstance)
-   {
-      FreeLibraryAndExitThread(hInstance, TRUE);
-      return FALSE; //if the previous call succeeded, it will not return
-   }
    else
-      return TRUE;
+      MessageBox(NULL, "Cleanup could not be done properly", "Virtual Dimension Warning", MB_OK);
+
+   //Free the library
+   FreeLibraryAndExitThread(hInstance, TRUE);
+   return FALSE; //if the previous call succeeded, it will not return
 }
 
 HMENU SetupMenu(HWND hWnd)
@@ -405,7 +391,6 @@ HMENU SetupMenu(HWND hWnd)
 void CleanupMenu(HWND hWnd, HMENU hSubMenu)
 {
 	HMENU hMenu = GetSystemMenu(hWnd, FALSE);
-	MENUITEMINFO mii;
 
 	RemoveMenu(hMenu, 1, MF_BYPOSITION);
 	RemoveMenu(hMenu, 0, MF_BYPOSITION);
