@@ -203,6 +203,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    // Retrieve the initial list of windows
    winMan->PopulateInitialWindowsSet();
 
+   //Update tray icon tooltip
+   trayIcon->Update();
+
    return true;
 }
 
