@@ -253,7 +253,7 @@ Desktop* DesktopManager::GetDesktopFromPoint(int X, int Y)
 
 void DesktopManager::SwitchToDesktop(Desktop * desk)
 {
-   if (m_currentDesktop == desk)
+   if ( (desk == NULL) || (m_currentDesktop == desk))
       return;
 
    if (m_currentDesktop != NULL)
