@@ -241,8 +241,8 @@ void OnScreenDisplayWnd::OnLeftButtonDblClk()
 
 void OnScreenDisplayWnd::OnMove(LPARAM lParam)
 {
-   m_position.x = LOWORD(lParam);
-   m_position.y = HIWORD(lParam);
+   m_position.x = (short)LOWORD(lParam);
+   m_position.y = (short)HIWORD(lParam);
 }
 
 void OnScreenDisplayWnd::OnTimer()
