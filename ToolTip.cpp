@@ -48,7 +48,7 @@ void ToolTip::SetTool(Tool * tool)
 
    update = SendMessage(m_hWnd, TTM_GETTOOLINFO, 0, (LPARAM) (LPTOOLINFO) &ti);
 
-   ti.uFlags = TTF_SUBCLASS | TTF_TRANSPARENT;
+   ti.uFlags = TTF_SUBCLASS;
    ti.hinst = hInst;
    ti.lpszText = tool->GetText();
    tool->GetRect(&ti.rect);
