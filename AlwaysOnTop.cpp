@@ -20,20 +20,14 @@
 
 #include "StdAfx.h"
 #include "alwaysontop.h"
-#include "settings.h"
 
-AlwaysOnTop::AlwaysOnTop(HWND hWnd): m_hWnd(hWnd), m_ontop(false)
+AlwaysOnTop::AlwaysOnTop(HWND hWnd): m_hWnd(hWnd)
 {
-   Settings settings;
-
-   SetAlwaysOnTop(settings.LoadAlwaysOnTop());
+   m_ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
 }
 
 AlwaysOnTop::~AlwaysOnTop(void)
 {
-   Settings settings;
-
-   settings.SaveAlwaysOnTop(m_ontop);
 }
 
 void AlwaysOnTop::SetAlwaysOnTop(bool onTop)
