@@ -90,6 +90,8 @@ protected:
    LRESULT OnMeasureItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+   LRESULT OnHookWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
    static LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/);
 };
 

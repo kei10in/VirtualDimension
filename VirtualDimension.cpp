@@ -134,6 +134,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetMessageHandler(WM_MEASUREITEM, this, &VirtualDimension::OnMeasureItem);
    SetMessageHandler(WM_DRAWITEM, this, &VirtualDimension::OnDrawItem);
 
+   SetMessageHandler(WM_APP+0x100, this, &VirtualDimension::OnHookWindowMessage);
+
    // Create the main window
    settings.LoadPosition(&pos);
    Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, 
@@ -484,6 +486,14 @@ LRESULT VirtualDimension::OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPA
    return TRUE;
 }
 
+LRESULT VirtualDimension::OnHookWindowMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+{
+   Window * win = (Window*)lParam;
+
+   win->OnMenuItemSelected(NULL, (int)wParam);
+
+   return TRUE;
+}
 
 // Message handler for about box.
 LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
