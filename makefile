@@ -30,7 +30,7 @@ SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settin
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
 FastWindow.cpp TrayIconsManager.cpp WindowDialogs.cpp HotKeyControl.cpp \
-OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp guids.c
+OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp WindowsList.cpp guids.c
 RES_FILE = VirtualDimension.res
 OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
