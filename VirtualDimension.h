@@ -27,6 +27,7 @@
 #include "trayicon.h"
 #include "alwaysontop.h"
 #include "windowsmanager.h"
+#include "ToolTip.h"
 
 extern HINSTANCE hInst;
 
