@@ -56,7 +56,7 @@ void LoadPicture(HWND hDlg, char * filename)
    unicodeFileName[size] = 0;
    OleLoadPicturePath( (LPOLESTR)unicodeFileName, NULL, 0, 0, IID_IPicture, (void**)&picture);
 #else
-   picture = LoadImage(vdWindow, desk_wallpaper, IMAGE_BITMAP, 96, 72, LR_LOADFROMFILE);
+   picture = LoadImage(vdWindow, filename, IMAGE_BITMAP, 96, 72, LR_LOADFROMFILE);
    SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)picture);
 #endif /*USE_IPICTURE*/
 }
