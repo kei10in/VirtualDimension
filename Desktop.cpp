@@ -22,6 +22,7 @@
 #include "desktop.h"
 #include <string>
 #include <Shellapi.h>
+#include <assert.h>
 #include "hotkeymanager.h"
 #include "windowsmanager.h"
 #include "virtualdimension.h"
@@ -30,6 +31,7 @@ Desktop::Desktop(void)
 {
    m_active = false;
    m_hotkey = 0;
+   m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
 }
 
 Desktop::~Desktop(void)
@@ -68,9 +70,11 @@ Desktop::Desktop(Settings::Desktop * desktop)
 void Desktop::BuildMenu(HMENU menu)
 {
    WindowsManager::Iterator it;
+   int i;
 
    AppendMenu(menu, MF_SEPARATOR, 0, 0);
 
+   i = WM_USER;
    for(it = winMan->GetIterator(); it; it++)
    {
       TCHAR buffer[50];
@@ -85,16 +89,32 @@ void Desktop::BuildMenu(HMENU menu)
       MENUITEMINFO mii;
 
       mii.cbSize = sizeof(mii);
-      mii.fMask = MIIM_STATE | MIIM_STRING | MIIM_ID;
-      mii.fState = MFS_DISABLED | MFS_GRAYED;
+      mii.fMask = MIIM_STRING | MIIM_ID | MIIM_DATA;
+      mii.dwItemData = (DWORD)win;
       mii.dwTypeData = buffer;
       mii.cch = strlen(buffer);
-      mii.wID = 0;
+      mii.wID = i++;
       InsertMenuItem(menu, (UINT)-1, TRUE, &mii);
    }
 }
 
-void Desktop::Draw(HDC hDc, LPRECT rect)
+void Desktop::OnMenuItemSelected(HMENU menu, int cmdId)
+{
+   MENUITEMINFO mii;
+
+   mii.cbSize = sizeof(mii);
+   mii.fMask = MIIM_DATA;
+   GetMenuItemInfo(menu, cmdId, FALSE, &mii);
+
+   PostMessage(mainWnd, WM_VIRTUALDIMENSION, (WPARAM)VD_MOVEWINDOW, (LPARAM)mii.dwItemData);
+}
+
+void Desktop::resize(LPRECT rect)
+{
+   m_rect = *rect;
+}
+
+void Desktop::Draw(HDC hDc)
 {
    char buffer[20];
    int color;
@@ -104,23 +124,23 @@ void Desktop::Draw(HDC hDc, LPRECT rect)
    else
       color = 4;
 
-   FillRect(hDc, rect, GetSysColorBrush(color));
+   FillRect(hDc, &m_rect, GetSysColorBrush(color));
 
    sprintf(buffer, "%.19s", m_name);
    SetBkColor(hDc, GetSysColor(color));
-   DrawText(hDc, buffer, -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+   DrawText(hDc, buffer, -1, &m_rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-   MoveToEx(hDc, rect->left, rect->top, NULL);
-   LineTo(hDc, rect->left, rect->bottom);
-   LineTo(hDc, rect->right, rect->bottom);
-   LineTo(hDc, rect->right, rect->top);
-   LineTo(hDc, rect->left, rect->top);
+   MoveToEx(hDc, m_rect.left, m_rect.top, NULL);
+   LineTo(hDc, m_rect.left, m_rect.bottom);
+   LineTo(hDc, m_rect.right, m_rect.bottom);
+   LineTo(hDc, m_rect.right, m_rect.top);
+   LineTo(hDc, m_rect.left, m_rect.top);
 
    WindowsManager::Iterator it;
    int x, y;
 
-   x = rect->left;
-   y = rect->top;
+   x = m_rect.left;
+   y = m_rect.top;
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
@@ -133,12 +153,48 @@ void Desktop::Draw(HDC hDc, LPRECT rect)
       DrawIconEx(hDc, x, y, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 
       x += 16;
-      if (x > rect->right-15)
+      if (x > m_rect.right-15)
       {
-         x = rect->left;
+         x = m_rect.left;
          y += 16;
       }
    }
+}
+
+/** Get a pointer to the window represented at some position.
+ * This function returns a pointer to the window object that is represented at the specified
+ * position, if any. If there is no such window, it returns NULL.
+ * In addition, one should make sure the point is in the desktop's rectangle.
+ *
+ * @param X Horizontal position of the cursor
+ * @param Y Vertical position of the cursor
+ */
+Window* Desktop::GetWindowFromPoint(int X, int Y)
+{
+   WindowsManager::Iterator it;
+   int index;
+
+   assert(X>=m_rect.left);
+   assert(X<=m_rect.right);
+   assert(Y>=m_rect.top);
+   assert(Y<=m_rect.bottom);
+
+   index = ((X - m_rect.left) / 16) + 
+           ((m_rect.right-m_rect.left) / 16) * ((Y - m_rect.top) / 16);
+
+   for(it = winMan->GetIterator(); it; it++)
+   {
+      Window * win = it;
+      
+      if (!win->IsOnDesk(this))
+         continue;
+
+      if (index == 0)
+         return win;
+      index --;
+   }
+
+   return NULL;
 }
 
 void Desktop::Rename(char * name)
@@ -209,3 +265,4 @@ void Desktop::SetHotkey(int hotkey)
    if (m_hotkey != 0)
       HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, (int)this);
 }
+
