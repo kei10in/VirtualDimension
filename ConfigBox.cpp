@@ -708,15 +708,21 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       {
       case IDC_HIDINGMETHODEXCEPTIONS_BTN:
          {
-            ApplicationListDlg dlg;
+            Settings settings;
+            Config::Group * group = settings.GetHidingMethodExceptions();
+            ApplicationListDlg dlg(group);
             dlg.ShowDialog(vdWindow, hDlg);
+            delete group;
          }
          break;
 
       case IDC_SHELLINTEGEXCEPTION_BTN:
          {
-            ApplicationListDlg dlg;
+            Settings settings;
+            Config::Group * group = settings.GetShellIntegrationExceptions();
+            ApplicationListDlg dlg(group);
             dlg.ShowDialog(vdWindow, hDlg);
+            delete group;
          }
          break;
       }

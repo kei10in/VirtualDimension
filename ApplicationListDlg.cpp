@@ -25,8 +25,9 @@
 #include "Resource.h"
 #include "ApplicationListDlg.h"
 
-ApplicationListDlg::ApplicationListDlg(void)
+ApplicationListDlg::ApplicationListDlg(Config::Group * group)
 {
+   m_appgroup = group;
 }
 
 ApplicationListDlg::~ApplicationListDlg(void)
@@ -65,6 +66,13 @@ void ApplicationListDlg::InitDialog()
    column.pszText = "Param";
    column.iSubItem = 0;
    ListView_InsertColumn(m_hAppListWnd, 1, &column);
+
+   //Populate program list
+   int i;
+   TCHAR filename[MAX_PATH];
+   DWORD length = MAX_PATH;
+   for(i=0; length=MAX_PATH, m_appgroup->EnumEntry(i, filename, &length); i++)
+      InsertProgram(filename);
 }
 
 void ApplicationListDlg::OnInsertApplBtn()
@@ -77,30 +85,7 @@ void ApplicationListDlg::OnInsertApplBtn()
    //Browse for a new program name
    if (GetProgramName(path, MAX_PATH) && 
        (FindProgram(path)==-1 || (MessageBox(m_hDlg, "Selected program is already in the list.", "Error", MB_OK|MB_ICONEXCLAMATION), FALSE)))
-   {
-      LVITEM item;
-      int idx;
-      HICON appicon;
-
-      //Load the icon for this application
-      if (ExtractIconEx(path, 0, NULL, &appicon, 1))
-      {
-         item.iImage = ImageList_AddIcon(m_hImgList, appicon);
-         DestroyIcon(appicon);
-      }
-      else
-         item.iImage = m_defaultIconIdx;
-
-      //Insert the new item
-      item.mask = LVIF_TEXT | LVIF_IMAGE;
-      item.pszText = path;
-      item.iItem = ListView_GetItemCount(m_hAppListWnd);
-      item.iSubItem = 0;
-      idx = ListView_InsertItem(m_hAppListWnd, &item);
-
-      //Setup sub-items
-      ListView_SetItemText(m_hAppListWnd, idx, 1, "VaLuE");
-   }
+      InsertProgram(path);
 }
 
 void ApplicationListDlg::OnEditApplBtn()
@@ -119,10 +104,7 @@ void ApplicationListDlg::OnEditApplBtn()
    //Browse for a new program name
    if (GetProgramName(path, MAX_PATH) && 
        (FindProgram(path)==-1 || (MessageBox(m_hDlg, "Selected program is already in the list.", "Error", MB_OK|MB_ICONEXCLAMATION), FALSE)))
-   {
-      //Change item text
-      ListView_SetItemText(m_hAppListWnd, idx, 0, path);
-   }
+      InsertProgram(path, idx);
 }
 
 void ApplicationListDlg::OnRemoveApplBtn()
@@ -163,6 +145,34 @@ int ApplicationListDlg::FindProgram(LPTSTR filename)
    fi.psz = filename;
 
    return ListView_FindItem(m_hAppListWnd, -1, &fi);
+}
+
+void ApplicationListDlg::InsertProgram(LPTSTR filename, int idx)
+{
+   LVITEM item;
+   HICON appicon;
+
+   //Load the icon for this application
+   if (ExtractIconEx(filename, 0, NULL, &appicon, 1))
+   {
+      item.iImage = ImageList_AddIcon(m_hImgList, appicon);
+      DestroyIcon(appicon);
+   }
+   else
+      item.iImage = m_defaultIconIdx;
+
+   //Insert the new item
+   item.mask = LVIF_TEXT | LVIF_IMAGE;
+   item.pszText = filename;
+   item.iItem = idx == -1 ? ListView_GetItemCount(m_hAppListWnd) : idx;
+   item.iSubItem = 0;
+   if (idx == -1)
+      idx = ListView_InsertItem(m_hAppListWnd, &item);
+   else
+      ListView_SetItem(m_hAppListWnd, &item);
+
+   //Setup sub-items
+   ListView_SetItemText(m_hAppListWnd, idx, 1, "VaLuE");
 }
 
 INT_PTR CALLBACK ApplicationListDlg::DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

@@ -81,6 +81,20 @@ public:
    inline unsigned int LoadSetting(const Setting<LPTSTR> &setting, LPTSTR buffer, unsigned int length)   { return LoadSetting(setting, buffer, length, setting); }
    inline void SaveSetting(const Setting<LPTSTR> &setting, LPTSTR buffer)                                { SaveSetting(setting, buffer, setting); }
 
+   // Load level accessors
+   virtual DWORD LoadDWord(const char * entry, DWORD defVal) = 0;
+   virtual void SaveDWord(const char * entry, DWORD value) = 0;
+   virtual bool LoadBinary(const char * entry, LPBYTE buffer, DWORD length, LPBYTE defval) = 0;
+   virtual void SaveBinary(const char * entry, LPBYTE buffer, DWORD length) = 0;
+   virtual unsigned int LoadString(const char * entry, LPTSTR buffer) = 0;
+   virtual void SaveString(const char * entry, LPTSTR buffer) = 0;
+
+   virtual bool RemoveEntry(LPTSTR entry) = 0;
+   virtual bool RemoveGroup(LPTSTR group) = 0;
+
+   virtual BOOL EnumEntry(DWORD dwIndex, LPTSTR lpName, LPDWORD lpcName) = 0;
+   virtual BOOL EnumGroup(DWORD dwIndex, LPTSTR lpName, DWORD cName) = 0;
+
 protected:
    // Wrappers around the setting readers/writers to check data type against setting type
    template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data, const BinarySetting& type);
@@ -93,14 +107,6 @@ protected:
 
    unsigned int LoadSetting(const Setting<LPTSTR> &setting, LPTSTR buffer, unsigned int length, const StringSetting& type);
    void SaveSetting(const Setting<LPTSTR> &setting, LPTSTR buffer, const StringSetting& /*type*/)               { SaveString(setting.m_name, buffer); }
-
-   // Actual settings readers/writers
-   virtual DWORD LoadDWord(const char * entry, DWORD defVal) = 0;
-   virtual void SaveDWord(const char * entry, DWORD value) = 0;
-   virtual bool LoadBinary(const char * entry, LPBYTE buffer, DWORD length, LPBYTE defval) = 0;
-   virtual void SaveBinary(const char * entry, LPBYTE buffer, DWORD length) = 0;
-   virtual unsigned int LoadString(const char * entry, LPTSTR buffer) = 0;
-   virtual void SaveString(const char * entry, LPTSTR buffer) = 0;
 
    // Variables
    bool m_opened;
@@ -158,7 +164,7 @@ public:
 
    operator HKEY()                                               { return m_regKey; }
 
-protected:
+   // Load level accessors
    virtual DWORD LoadDWord(const char * entry, DWORD defVal);
    virtual void SaveDWord(const char * entry, DWORD value);
    virtual bool LoadBinary(const char * entry, LPBYTE buffer, DWORD length, LPBYTE defval);
@@ -166,6 +172,13 @@ protected:
    virtual unsigned int LoadString(const char * entry, LPTSTR buffer);
    virtual void SaveString(const char * entry, LPTSTR buffer);
 
+   virtual bool RemoveEntry(LPTSTR entry);
+   virtual bool RemoveGroup(LPTSTR group);
+
+   virtual BOOL EnumEntry(DWORD dwIndex, LPTSTR lpName, LPDWORD lpcName);
+   virtual BOOL EnumGroup(DWORD dwIndex, LPTSTR lpName, DWORD cName);
+
+protected:
    HKEY m_regKey;
 };
 

@@ -21,10 +21,12 @@
 #ifndef __APPLICATIONLISTDLG_H__
 #define __APPLICATIONLISTDLG_H__
 
+#include "Config.h"
+
 class ApplicationListDlg
 {
 public:
-   ApplicationListDlg(void);
+   ApplicationListDlg(Config::Group * group);
    ~ApplicationListDlg(void);
 
    int ShowDialog(HINSTANCE hinstance, HWND hWndParent);
@@ -37,6 +39,9 @@ protected:
 
    BOOL GetProgramName(LPTSTR filename, DWORD maxlen);
    int FindProgram(LPTSTR filename);
+   void InsertProgram(LPTSTR filename, int idx=-1);
+
+   Config::Group * m_appgroup;
 
    HWND m_hDlg;
    HWND m_hAppListWnd;

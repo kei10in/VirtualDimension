@@ -136,3 +136,25 @@ void RegistryGroup::SaveString(const char * entry, LPTSTR buffer)
    if (m_opened)
       RegSetValueEx(m_regKey, entry, 0, REG_SZ, (LPBYTE)buffer, len);
 }
+
+bool RegistryGroup::RemoveEntry(LPTSTR entry)
+{
+   return m_opened && RegDeleteValue(m_regKey, entry);
+}
+
+bool RegistryGroup::RemoveGroup(LPTSTR group)
+{
+   return m_opened && RegDeleteKey(m_regKey, group);
+}
+
+BOOL RegistryGroup::EnumEntry(DWORD dwIndex, LPTSTR lpName, LPDWORD lpcName)
+{
+   return m_opened && 
+      RegEnumValue(m_regKey, dwIndex, lpName, lpcName, NULL, NULL, NULL, NULL)/*==ERROR_SUCCESS*/ != ERROR_NO_MORE_ITEMS;
+}
+
+BOOL RegistryGroup::EnumGroup(DWORD dwIndex, LPTSTR lpName, DWORD cName)
+{
+   return m_opened && 
+      RegEnumKey(m_regKey, dwIndex, lpName, cName)==ERROR_SUCCESS;
+}

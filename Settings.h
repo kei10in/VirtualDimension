@@ -81,6 +81,9 @@ public:
    static DECLARE_SETTING(DefaultHidingMethod, int);
 
    // Other settings
+   Config::Group * GetShellIntegrationExceptions() { return GetSubGroup(regSubKeyDisableShellIntegration); }
+   Config::Group * GetHidingMethodExceptions()     { return GetSubGroup(regSubKeyHidingMethods); }
+
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
    bool LoadDisableShellIntegration(const char * windowclass);
