@@ -46,7 +46,7 @@ DECLARE_INTERFACE_(ITaskbarList, IUnknown)
 
 #endif /*__GNUC__*/
 
-class Window
+class Window: public ToolTip::Tool
 {
 public:
    Window(HWND hWnd);
@@ -73,6 +73,8 @@ public:
     */
    bool IsOnDesk(Desktop * desk);
 
+   Desktop * GetDesk() const { return m_desk; }
+
    void BuildMenu(HMENU menu);
    void OnMenuItemSelected(HMENU menu, int cmdId);
 
@@ -82,6 +84,13 @@ public:
 
    operator HWND()               { return m_hWnd; }
    HICON GetIcon(void);
+
+   char * GetText()
+   { 
+      GetWindowText(m_hWnd, m_name, sizeof(m_name)/sizeof(char));
+      return m_name; 
+   }
+   void GetRect(LPRECT /*rect*/)  { return; }
 
    enum HidingMethods {
       WHM_HIDE,
@@ -97,14 +106,13 @@ public:
       VDM_MOVEWINDOW
    };
 
-
 protected:
    HWND m_hWnd;
    Desktop * m_desk;
    bool m_hidden;
    int m_hidingMethod;
    bool m_iconic;
-   bool m_alldesks;
+   char m_name[255];
 
    /** Pointer to the COM taskbar interface.
     * This interface is used for the WHM_MINIMIZE hiding method, to add/remove the icons
