@@ -202,6 +202,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
                             hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
          RepositionCaret(hWnd, hkCtrl->text); 
          InvalidateRect(hWnd, NULL, TRUE);
+         PostMessage(GetParent(hWnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hWnd), HKN_CHANGE), (LPARAM)hWnd);
          break;
       }
 

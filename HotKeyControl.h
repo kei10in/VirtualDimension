@@ -23,4 +23,6 @@
 
 void InitHotkeyControl();
 
+#define HKN_CHANGE 1
+
 #endif
