@@ -105,6 +105,14 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
          }
          break;
+
+		case SC_CLOSE:
+			if (GetKeyState(VK_SHIFT) & 0x8000)
+			{
+				SetForegroundWindow(hVDWnd);
+				res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_KILL, (WPARAM)pData->m_iData);
+			}
+			break;
 			
 		case VDM_SYSBASE+VDM_TOGGLEONTOP:
 			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_TOGGLEONTOP, (WPARAM)pData->m_iData);
@@ -200,6 +208,14 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 					res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
 				break;
 			}
+
+		case SC_CLOSE:
+			if (GetKeyState(VK_SHIFT) & 0x8000)
+			{
+				SetForegroundWindow(hVDWnd);
+				res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_KILL, (WPARAM)pData->m_iData);
+			}
+			break;
 
 		case VDM_SYSBASE+VDM_TOGGLEONTOP:
 			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_TOGGLEONTOP, (WPARAM)pData->m_iData);
