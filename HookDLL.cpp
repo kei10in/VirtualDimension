@@ -409,9 +409,16 @@ void CleanupMenu(HWND hWnd, HMENU hSubMenu)
 {
 	HMENU hMenu = GetSystemMenu(hWnd, FALSE);
 
-	RemoveMenu(hMenu, 1, MF_BYPOSITION);
-	RemoveMenu(hMenu, 0, MF_BYPOSITION);
+   //Remove the menu from the system menu of the window
+   for(int i = 0; i<GetMenuItemCount(hMenu); i++)
+      if (GetSubMenu(hMenu, i) == hSubMenu)
+      {
+         RemoveMenu(hMenu, i, MF_BYPOSITION);   //delete the menu
+         RemoveMenu(hMenu, i, MF_BYPOSITION);   //delete the following separator
+         break;
+      }
 
+   //Release resources associated with the menu
 	DestroyMenu(hSubMenu);
 }
 
