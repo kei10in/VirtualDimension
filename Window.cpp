@@ -174,7 +174,7 @@ HICON Window::GetIcon(void)
 	if ( !hIcon )
 		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 50, (LPDWORD) &hIcon );
    if ( !hIcon )
-      hIcon = (HICON) LoadImage(0, MAKEINTRESOURCE(IDI_APPLICATION), IMAGE_ICON, 16, 16, LR_SHARED);
+      hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
 
    return hIcon;
 }
