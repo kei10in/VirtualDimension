@@ -34,6 +34,8 @@ void (*PlatformHelper::AlphaBlend)(HDC hdcDest, int nXOriginDest, int nYOriginDe
 HMODULE PlatformHelper::hMSImg32Lib = NULL;
 PlatformHelper::AlphaBlend_t * PlatformHelper::pAlphaBlend = NULL;
 
+BOOL (WINAPI *PlatformHelper::SetMenuInfo)(HMENU hMenu, LPCMENUINFO lpcmi) = NULL;
+
 PlatformHelper::PlatformHelper(void)
 {
    hPSAPILib = LoadLibrary("psapi.dll");
@@ -51,6 +53,10 @@ PlatformHelper::PlatformHelper(void)
       AlphaBlend = AlphaBlendMSImg32;
    else
       AlphaBlend = AlphaBlendEmul;
+
+   SetMenuInfo = (SetMenuInfo_t*)GetProcAddress(GetModuleHandle("User32.dll"), "SetMenuInfo");
+   if (SetMenuInfo == NULL)
+      SetMenuInfo = SetMenuInfoDummy;
 }
 
 PlatformHelper::~PlatformHelper(void)

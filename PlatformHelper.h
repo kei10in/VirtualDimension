@@ -40,6 +40,8 @@ public:
    static IPicture * OpenImage(LPTSTR fileName);
    static bool SaveAsBitmap(IPicture * picture, LPTSTR fileName);
 
+   static BOOL (WINAPI *SetMenuInfo)(HMENU hMenu, LPCMENUINFO lpcmi);
+
 protected:
    typedef DWORD WINAPI GetModuleFileNameEx_t(HANDLE,HMODULE,LPTSTR,DWORD);
 
@@ -50,9 +52,7 @@ protected:
    static DWORD GetWindowFileName9x(HWND hWnd, LPTSTR lpFileName, int iBufLen);
 
 
-   typedef BOOL WINAPI AlphaBlend_t(HDC hdcDest, int nXOriginDest, int nYOriginDest, int nWidthDest, 
-                                    int nHeightDest, HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
-                                    int nWidthSrc, int nHeightSrc, BLENDFUNCTION blendFunction);
+   typedef BOOL WINAPI AlphaBlend_t(HDC, int, int, int, int, HDC, int, int, int, int, BLENDFUNCTION);
 
    static HMODULE hMSImg32Lib;
    static AlphaBlend_t * pAlphaBlend;
@@ -63,6 +63,11 @@ protected:
    static void AlphaBlendEmul(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
                               HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
                               int nWidth, int nHeight, BYTE sourceAlpha);
+
+
+   typedef BOOL WINAPI SetMenuInfo_t(HMENU, LPCMENUINFO);
+
+   static BOOL WINAPI SetMenuInfoDummy(HMENU /*hmenu*/, LPCMENUINFO /*lpcmi*/)    { return 0; }
 };
 
 #endif /*__PLATFORMHELPER_H__*/
