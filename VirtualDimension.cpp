@@ -795,7 +795,7 @@ LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPar
    //Do not shrink and let the timer run if the mouse is over the window -> it will be hidden later, when
    //mouse is not on window anymore.
    GetCursorPos(&pt);
-   if (!IsPointInWindow(pt) && GetForegroundWindow() != *this)
+   if (!IsPointInWindow(pt) && GetWindowThreadProcessId(GetForegroundWindow(),NULL) != GetCurrentThreadId())
    {
       KillTimer(m_autoHideTimerId); //already auto-hidden -> do not need to 
 	   Shrink();
@@ -954,7 +954,7 @@ void VirtualDimension::Shrink(void)
 	SetWindowPos(m_hWnd, NULL, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, SWP_NOZORDER | SWP_FRAMECHANGED);
 
 	//Disable tooltips
-	tooltip->EnableTooltips(false);
+	tooltip->ShowTooltips(false);
 
 	//Refresh the display
 	Refresh();
@@ -994,7 +994,7 @@ void VirtualDimension::UnShrink(void)
 	SetWindowPos(m_hWnd, NULL, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, SWP_DRAWFRAME | SWP_NOZORDER | SWP_FRAMECHANGED);
 
 	//Enable tooltips
-	tooltip->EnableTooltips(true);
+	tooltip->ShowTooltips(true);
 
 	//Refresh the display
 	Refresh();
