@@ -176,7 +176,10 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
          win->MoveToDesktop(deskMan->GetCurrentDesktop());
    }
    else
+   {
+      deskMan->UpdateLayout();
       vdWindow.Refresh();
+   }
 }
 
 void WindowsManager::OnGetMinRect(HWND /*hWnd*/)
