@@ -17,6 +17,8 @@ using namespace std;
 
 HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data);
 HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd);
+HMENU SetupMenu(HWND hWnd);
+void CleanupMenu(HWND hWnd, HMENU hMenu);
 
 class HWNDHookData
 {
@@ -26,6 +28,7 @@ public:
    HANDLE m_hMutex;
    HANDLE m_hMinToTrayEvent;
    bool m_bHookWndProcCalled;
+	HMENU m_hSubMenu;
 };
 
 enum MenuItems {
@@ -47,6 +50,8 @@ enum MenuItems {
 
    VDM_PROPERTIES
 };
+
+#define VDM_SYSBASE 0xBA55-WM_USER-1
 
 LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -70,7 +75,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    case WM_SYSCOMMAND:
       switch(wParam)
       {
-      case SC_MINIMIZE:
+		case SC_MINIMIZE:
          //Minimize using VD
          if (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0)
             res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MINIMIZE, (WPARAM)pData->m_iData);
@@ -89,6 +94,28 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
          }
          break;
+			
+		case VDM_SYSBASE+VDM_TOGGLEONTOP:
+			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_TOGGLEONTOP, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY:
+			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_TOGGLEMINIMIZETOTRAY, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_TOGGLETRANSPARENCY:
+			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_TOGGLETRANSPARENCY, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_MOVEWINDOW:
+			SetForegroundWindow(hVDWnd);
+			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_MOVEWINDOW, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_PROPERTIES:
+			SetForegroundWindow(hVDWnd);
+			res = PostMessageW(hVDWnd, WM_APP+0x100, VDM_PROPERTIES, (WPARAM)pData->m_iData);
+			break;
       }
       break;   
 
@@ -103,6 +130,9 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
 			CloseHandle(pData->m_hMutex);
 			CloseHandle(pData->m_hMinToTrayEvent);
+
+			CleanupMenu(hWnd, pData->m_hSubMenu);
+
 			RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
 			delete pData;
 
@@ -164,6 +194,28 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 					res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MAXIMIZEHEIGHT, (WPARAM)pData->m_iData);
 				break;
 			}
+
+		case VDM_SYSBASE+VDM_TOGGLEONTOP:
+			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_TOGGLEONTOP, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY:
+			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_TOGGLEMINIMIZETOTRAY, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_TOGGLETRANSPARENCY:
+			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_TOGGLETRANSPARENCY, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_MOVEWINDOW:
+			SetForegroundWindow(hVDWnd);
+			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_MOVEWINDOW, (WPARAM)pData->m_iData);
+			break;
+
+		case VDM_SYSBASE+VDM_PROPERTIES:
+			SetForegroundWindow(hVDWnd);
+			res = PostMessageA(hVDWnd, WM_APP+0x100, VDM_PROPERTIES, (WPARAM)pData->m_iData);
+			break;
       }
       break;   
 
@@ -178,6 +230,9 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
 			CloseHandle(pData->m_hMutex);
 			CloseHandle(pData->m_hMinToTrayEvent);
+
+			CleanupMenu(hWnd, pData->m_hSubMenu);
+
 			RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEW(g_aPropName));
 			delete pData;
 			
@@ -223,6 +278,8 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    pHookData->m_iData = data;
    pHookData->m_hMinToTrayEvent = minToTrayEvent;
    pHookData->m_bHookWndProcCalled = false;
+
+	pHookData->m_hSubMenu = SetupMenu(hWnd);
 
    if (unicode)
    {
@@ -285,6 +342,9 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 		//Cleanup the hook inforations related to this window
 		CloseHandle(pData->m_hMutex);
 		CloseHandle(pData->m_hMinToTrayEvent);
+
+		CleanupMenu(hWnd, pData->m_hSubMenu);
+
 		if (unicode)
 			RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
 		else
@@ -299,6 +359,43 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
    }
    else
       return TRUE;
+}
+
+HMENU SetupMenu(HWND hWnd)
+{
+	HMENU hSubMenu;
+	HMENU hMenu;
+
+	hSubMenu = CreatePopupMenu();
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
+				  VDM_SYSBASE+VDM_TOGGLEONTOP, "Always on top");	
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
+				  VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray");
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
+				  VDM_SYSBASE+VDM_TOGGLETRANSPARENCY, "Transparent");
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
+				  VDM_SYSBASE+VDM_MOVEWINDOW, "Change desktop...");
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING,
+				  VDM_SYSBASE+VDM_PROPERTIES, "Properties");
+
+	hMenu = GetSystemMenu(hWnd, FALSE);
+	InsertMenu(hMenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING, (unsigned int)hSubMenu, "Virtual Dimension");
+	InsertMenu(hMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+
+	return hSubMenu;
+}
+
+void CleanupMenu(HWND hWnd, HMENU hSubMenu)
+{
+	HMENU hMenu = GetSystemMenu(hWnd, FALSE);
+	MENUITEMINFO mii;
+
+	RemoveMenu(hMenu, 1, MF_BYPOSITION);
+	RemoveMenu(hMenu, 0, MF_BYPOSITION);
+
+	DestroyMenu(hSubMenu);
 }
 
 extern "C"
