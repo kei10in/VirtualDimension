@@ -32,7 +32,8 @@
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
+Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
+                           m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
                            m_hIcon(NULL), m_ownIcon(false)
@@ -388,17 +389,6 @@ void Window::SetMinimizeToTray(bool totray)
 void Window::ToggleMinimizeToTray()
 {
    SetMinimizeToTray(!IsMinimizeToTray());
-}
-
-bool Window::IsAlwaysOnTop() const
-{
-   return (GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST;
-}
-
-void Window::SetAlwaysOnTop(bool ontop)
-{
-   SetWindowPos(m_hWnd, ontop ? HWND_TOPMOST : HWND_NOTOPMOST, 
-                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 }
 
 void Window::ToggleOnTop()
