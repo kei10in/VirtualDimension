@@ -116,6 +116,10 @@ LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, L
       m_height = HIWORD(lParam);
 
       UpdateLayout();
+
+      DeleteObject(m_deskBkPicture);
+      DeleteObject(m_selDeskBkPicture);
+      UpdateBackgroundPictureObjects();
    }
 
    return 0;
@@ -160,10 +164,6 @@ void DesktopManager::UpdateLayout()
       else
          x += deltaX;
    }
-
-   DeleteObject(m_deskBkPicture);
-   DeleteObject(m_selDeskBkPicture);
-   UpdateBackgroundPictureObjects();
 }
 
 LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
@@ -397,21 +397,29 @@ void DesktopManager::SetNbColumns(int cols)
 {
    m_nbColumn = cols; 
    UpdateLayout();
+
+   DeleteObject(m_deskBkPicture);
+   DeleteObject(m_selDeskBkPicture);
+   UpdateBackgroundPictureObjects();
 }
 
 void DesktopManager::SelectOtherDesk(int change)
 {
-   vector<Desktop*>::const_iterator it;
+   vector<Desktop*>::iterator it;
+   Desktop * desk;
 
    it = find(m_desks.begin(), m_desks.end(), m_currentDesktop);
    if (it == m_desks.end())
       return;
+   
+   if (it == m_desks.begin() && (change < 0))
+      desk = m_desks.back();
+   else if ( (it += change) == m_desks.end())
+      desk = m_desks.front();
+   else
+         desk = *it;
 
-   it += change;
-   if (it == m_desks.end())
-      return;
-
-   SwitchToDesktop(*it);
+   SwitchToDesktop(desk);
 }
 
 void DesktopManager::SetDisplayMode(DisplayMode dm)
