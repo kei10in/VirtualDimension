@@ -194,24 +194,27 @@ HICON Window::GetIcon(void)
    return m_hDefaulIcon;
 }
 
-void Window::InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str)
+void Window::InsertMenuItem(HMENU menu, bool checked, HANDLE bmp, UINT id, LPSTR str)
 {
-   mii.hbmpItem = bmp;
+   MENUITEMINFO mii;
+   mii.cbSize = sizeof(MENUITEMINFO);
+   mii.fMask = MIIM_DATA | MIIM_BITMAP | MIIM_ID | MIIM_STRING | MIIM_STATE;
+   mii.hbmpItem = (int)bmp <= 11 ? (HBITMAP)bmp : HBMMENU_CALLBACK;
+   mii.dwItemData = (ULONG_PTR)bmp;
    mii.wID = id;
    mii.dwTypeData = str;
+   mii.fState = checked ? MFS_CHECKED : MFS_UNCHECKED;
    ::InsertMenuItem(menu, (UINT)-1, TRUE, &mii);
 }
 
-HBITMAP Window::LoadBmpRes(int id)
+HANDLE Window::LoadBmpRes(int id)
 {
-   return (HBITMAP)LoadImage(vdWindow, MAKEINTRESOURCE(id), IMAGE_BITMAP, 
-                             16, 16, LR_SHARED|LR_LOADTRANSPARENT|LR_LOADMAP3DCOLORS);
+   return LoadImage(vdWindow, MAKEINTRESOURCE(id), IMAGE_ICON, 16, 16, LR_SHARED);
 }
 
 HMENU Window::BuildMenu()
 {
    HMENU hMenu;
-   MENUITEMINFO mii;
    MENUINFO mi;
 
    //Create the menu
@@ -224,42 +227,32 @@ HMENU Window::BuildMenu()
    PlatformHelper::SetMenuInfo(hMenu, &mi);
 
    //Now add the items
-   mii.cbSize = sizeof(MENUITEMINFO);
-   mii.fMask = MIIM_BITMAP | MIIM_ID | MIIM_STRING | MIIM_STATE;
-
-   mii.fState = IsAlwaysOnTop() ? MFS_CHECKED : MFS_UNCHECKED;
-   InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEONTOP, "Always on top");
-   mii.fState = IsMinimizeToTray() ? MFS_CHECKED : MFS_UNCHECKED;
-   InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray");
+   InsertMenuItem(hMenu, IsAlwaysOnTop(), NULL, VDM_TOGGLEONTOP, "Always on top");
+   InsertMenuItem(hMenu, IsMinimizeToTray(), NULL, VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray");
    if (m_transp.IsTransparencySupported())
-   {
-      mii.fState = m_transp.GetTransparencyLevel() == 255 ? MFS_UNCHECKED : MFS_CHECKED;
-      InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLETRANSPARENCY, "Transparent");
-   }
-
+      InsertMenuItem(hMenu, m_transp.GetTransparencyLevel() != 255, NULL, VDM_TOGGLETRANSPARENCY, "Transparent");
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
-   mii.fState = (m_desk==NULL) ? MFS_CHECKED : MFS_UNCHECKED;
-   InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEALLDESKTOPS, "All desktops");
-   mii.fState = MFS_UNCHECKED;
+
+   InsertMenuItem(hMenu, m_desk==NULL, NULL, VDM_TOGGLEALLDESKTOPS, "All desktops");
    AppendMenu(hMenu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
-
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
-   InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Activate");
-   if (IsIconic() || IsZoomed(m_hWnd) )
-      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_RESTORE, "Restore");
+
+   InsertMenuItem(hMenu, false, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Activate");
+   if (IsIconic() || IsZoomed(m_hWnd))
+      InsertMenuItem(hMenu, false, HBMMENU_POPUP_RESTORE, VDM_RESTORE, "Restore");
    if (!IsIconic())
-      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_MINIMIZE, VDM_MINIMIZE, "Minimize");
+      InsertMenuItem(hMenu, false, HBMMENU_POPUP_MINIMIZE, VDM_MINIMIZE, "Minimize");
    if (!IsZoomed(m_hWnd))
    {
-      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_MAXIMIZE, VDM_MAXIMIZE, "Maximize");
-      InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_MAXIMIZE_VERT), VDM_MAXIMIZEHEIGHT, "Maximize Height");
-      InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_MAXIMIZE_HORIZ), VDM_MAXIMIZEWIDTH, "Maximize Width");
+      InsertMenuItem(hMenu, false, HBMMENU_POPUP_MAXIMIZE, VDM_MAXIMIZE, "Maximize");
+      InsertMenuItem(hMenu, false, LoadBmpRes(IDI_MAXIMIZE_VERT), VDM_MAXIMIZEHEIGHT, "Maximize Height");
+      InsertMenuItem(hMenu, false, LoadBmpRes(IDI_MAXIMIZE_HORIZ), VDM_MAXIMIZEWIDTH, "Maximize Width");
    }
-   InsertMenuItem(hMenu, mii, HBMMENU_POPUP_CLOSE, VDM_CLOSE, "Close");
-   InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_KILL), VDM_KILL, "Kill");
-
+   InsertMenuItem(hMenu, false, HBMMENU_POPUP_CLOSE, VDM_CLOSE, "Close");
+   InsertMenuItem(hMenu, false, LoadBmpRes(IDI_KILL), VDM_KILL, "Kill");
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
-   InsertMenuItem(hMenu, mii, NULL, VDM_PROPERTIES, "Properties");
+
+   InsertMenuItem(hMenu, false, NULL, VDM_PROPERTIES, "Properties");
 
    return hMenu;
 }

@@ -632,14 +632,11 @@ LRESULT VirtualDimension::OnMeasureItem(HWND hWnd, UINT message, WPARAM wParam, 
 LRESULT VirtualDimension::OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
-   Window * window;
 
    if (wParam != 0)
       return DefWindowProc(hWnd, message, wParam, lParam);
 
-   window = (Window*)lpdis->itemData;
-
-   DrawIconEx(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, window->GetIcon(), 16, 16, 0, NULL, DI_NORMAL);
+   DrawIconEx(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, (HICON)lpdis->itemData, 16, 16, 0, NULL, DI_NORMAL);
 
    return TRUE;
 }

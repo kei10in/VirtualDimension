@@ -169,8 +169,8 @@ public:
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnContextMenu();
-   inline void InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str);
-   inline HBITMAP LoadBmpRes(int id);
+   void InsertMenuItem(HMENU menu, bool checked, HANDLE bmp, UINT id, LPSTR str);
+   HANDLE LoadBmpRes(int id);
 
    enum AutoSettingsModes {
       ASS_DISABLED,
