@@ -181,6 +181,9 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    WindowsList::Iterator wIt(&m_windows, node);
    Window * win = *node;
    
+   if (win->IsSwitching())
+      return;  //Ignore switching windows
+
    wIt.MoveToBegin();
 
    if (!win->IsOnCurrentDesk())
