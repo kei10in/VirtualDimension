@@ -98,6 +98,10 @@ void WallPaper::InitActiveDesktop()
       {
          *m_defaultWallpaper = 0;
       }
+
+      //If we could not get the defaut wallpaper properly from active desktop, try to get it from system parameters...
+      if (*m_defaultWallpaper == 0)
+         SystemParametersInfo(SPI_GETDESKWALLPAPER, sizeof(m_defaultWallpaper)/sizeof(TCHAR), m_defaultWallpaper, 0);
    }
 }
 
