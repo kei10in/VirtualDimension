@@ -22,20 +22,23 @@
 #include "MouseWarp.h"
 #include "VirtualDimension.h"
 #include "DesktopManager.h"
+#include "Settings.h"
 
 MouseWarp * mousewarp;
 
 MouseWarp::MouseWarp()
 {
+   Settings settings;
+
    //Create synchronization objects
    m_hTerminateThreadEvt = CreateEvent(NULL, TRUE, FALSE, NULL);
    m_hDataMutex = CreateMutex(NULL, FALSE, NULL);
 
-   //Init settings
-   m_enableWarp = true;
-   m_sensibility = 3;
-   m_minDuration = 500;
-   m_reWarpDelay = 3000;
+   //Load settings
+   m_enableWarp = settings.LoadSetting(Settings::WarpEnable);
+   m_sensibility = settings.LoadSetting(Settings::WarpSensibility);
+   m_minDuration = settings.LoadSetting(Settings::WarpMinDuration);
+   m_reWarpDelay = settings.LoadSetting(Settings::WarpRewarpDelay);
 
    //Compute size of center rect
    RefreshDesktopSize();
@@ -50,10 +53,22 @@ MouseWarp::MouseWarp()
 
 MouseWarp::~MouseWarp(void)
 {
+   Settings settings;
+
+   //Terminate mouse watch thread
    SignalObjectAndWait(m_hTerminateThreadEvt, m_hThread, INFINITE, FALSE);
 
+   //Release resources
    CloseHandle(m_hTerminateThreadEvt);
    CloseHandle(m_hDataMutex);
+   vdWindow.DestroyTimer(m_timerId);
+
+   //Save settings
+   settings.SaveSetting(Settings::WarpEnable, m_enableWarp);
+   settings.SaveSetting(Settings::WarpSensibility, m_sensibility);
+   settings.SaveSetting(Settings::WarpMinDuration, m_minDuration);
+   settings.SaveSetting(Settings::WarpRewarpDelay, m_reWarpDelay);
+
 }
 
 /** Mouse wrap detect thread.
