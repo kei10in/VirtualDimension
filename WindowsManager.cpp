@@ -24,6 +24,9 @@
 
 WindowsManager::WindowsManager(HWND hWnd): m_hWnd(hWnd), m_shellhook(hWnd)
 {
+   UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
+
+   vdWindow.SetMessageHandler(uiShellHookMsg, this, &WindowsManager::OnShellHookMessage);
 }
 
 WindowsManager::~WindowsManager(void)
@@ -58,6 +61,26 @@ Window* WindowsManager::GetWindow(HWND hWnd)
       return NULL;
    else
       return (*it).second;
+}
+
+LRESULT WindowsManager::OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+{
+   switch(wParam)
+   {
+      case ShellHook::WINDOWACTIVATED: OnWindowActivated((HWND)lParam); break;
+      case ShellHook::RUDEAPPACTIVATEED: OnRudeAppActivated((HWND)lParam); break;
+      case ShellHook::WINDOWREPLACING: OnWindowReplacing((HWND)lParam); break;
+      case ShellHook::WINDOWREPLACED: OnWindowReplaced((HWND)lParam); break;
+      case ShellHook::WINDOWCREATED: OnWindowCreated((HWND)lParam); break;
+      case ShellHook::WINDOWDESTROYED: OnWindowDestroyed((HWND)lParam); break;
+      //case ShellHook::ACTIVATESHELLWINDOW: break;
+      //case ShellHook::TASKMAN: break;
+      case ShellHook::REDRAW: OnRedraw((HWND)lParam); break;
+      //case ShellHook::FLASH: break;
+      //case ShellHook::ENDTASK: break;
+   }
+
+   return 0;
 }
 
 void WindowsManager::OnWindowCreated(HWND hWnd)
