@@ -339,9 +339,19 @@ void Desktop::Activate(void)
       Window * win = it;
 
       if (win->IsOnDesk(this))
-         win->ShowWindow();
+      {
+         if (win->IsInTray())
+            trayManager->AddIcon(win);
+         else
+            win->ShowWindow();
+      }
       else
-         win->HideWindow();
+      {
+         if (win->IsInTray())
+            trayManager->DelIcon(win);
+         else
+            win->HideWindow();
+      }
    }
 }
 
