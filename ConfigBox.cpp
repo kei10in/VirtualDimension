@@ -23,9 +23,9 @@
 #include "settings.h"
 #include "desktopmanager.h"
 #include "transparency.h"
-
 #include <string.h>
 #include <prsht.h>
+#include <assert.h>
 
 #ifndef TBM_SETBUDDY
 #define TBM_SETBUDDY (WM_USER+32)
@@ -165,8 +165,10 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             SendMessage(hWnd, LB_SETITEMDATA, index, (LPARAM)desk);
          }
 
-         //Disable the desktop order spin button
+         //Disable the desktop order spin buttons, as well as remove and setup buttons
          EnableWindow(GetDlgItem(hDlg, IDC_DESK_SPIN), FALSE);
+         EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), FALSE);
+         EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), FALSE);
 
          //Setup the column number controls
          hWnd = GetDlgItem(hDlg, IDC_COLUMN_NUMBER);
@@ -188,6 +190,9 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             Desktop * desk = deskMan->AddDesktop();
             LRESULT index = SendMessage(listBox, LB_ADDSTRING, 0, (LPARAM)desk->m_name);
             SendMessage(listBox, LB_SETITEMDATA, index, (LPARAM)desk);
+            bool result = (SendMessage(listBox, LB_SETCURSEL, index, 0) != LB_ERR);
+            EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), result);
+            EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), result);
             InvalidateRect(mainWnd, NULL, TRUE);
          }
          break;
@@ -201,6 +206,12 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             {
                deskMan->RemoveDesktop((Desktop*)SendMessage(listBox, LB_GETITEMDATA, index, 0));
                SendMessage(listBox, LB_DELETESTRING, index, 0);
+               if ( (SendMessage(listBox, LB_SETCURSEL, index, 0) == LB_ERR) &&  //Try to activate the next one
+                    (SendMessage(listBox, LB_SETCURSEL, index-1, 0) == LB_ERR) ) //Else, activate the previous one
+               {
+                  EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), FALSE);
+                  EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), FALSE);
+               }
                InvalidateRect(mainWnd, NULL, TRUE);
             }
             else
@@ -244,6 +255,8 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          {
          case LBN_SELCANCEL:
             EnableWindow(GetDlgItem(hDlg, IDC_DESK_SPIN), FALSE);
+            EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), FALSE);
+            EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), FALSE);
             break;
 
          case LBN_SELCHANGE:
@@ -258,6 +271,9 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                EnableWindow(hWnd, TRUE);
                SendMessage(hWnd, UDM_SETRANGE, 0, (LPARAM) MAKELONG((short) max, (short) 0));
                SendMessage(hWnd, UDM_SETPOS, 0, (LPARAM) MAKELONG((short) pos, 0));
+
+               EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), TRUE);
+               EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), TRUE);
             }
             break;
 
@@ -303,6 +319,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
    
    case WM_NOTIFY:
       LPNMHDR pnmh = (LPNMHDR) lParam;
+      assert(wParam == pnmh->idFrom);
       switch(pnmh->idFrom)
       {
       case IDC_DESK_SPIN:
@@ -390,5 +407,6 @@ HWND CreateConfigBox()
    propsheet.pszCaption = "Settings";
    propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
    propsheet.ppsp = pages;
+
    return (HWND)PropertySheet(&propsheet);
 }
