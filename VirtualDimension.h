@@ -67,6 +67,7 @@ protected:
    static const int MAX_LOADSTRING = 100;
    TCHAR m_szTitle[MAX_LOADSTRING];
    TCHAR m_szWindowClass[MAX_LOADSTRING];
+   POINT m_location;
 
    bool m_lockPreviewWindow;
 
@@ -86,9 +87,12 @@ protected:
    LRESULT OnRightButtonDown(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnDestroy(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnEndSession(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnMeasureItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+   LRESULT OnMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnHookWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

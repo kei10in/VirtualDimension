@@ -129,6 +129,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetSysCommandHandler(IDM_LOCKPREVIEWWND, this, &VirtualDimension::OnCmdLockPreviewWindow);
 
    SetMessageHandler(WM_DESTROY, this, &VirtualDimension::OnDestroy);
+   SetMessageHandler(WM_MOVE, this, &VirtualDimension::OnMove);
+   SetMessageHandler(WM_ENDSESSION, this, &VirtualDimension::OnEndSession);
+
    SetMessageHandler(WM_LBUTTONDOWN, this, &VirtualDimension::OnLeftButtonDown);
    SetMessageHandler(WM_LBUTTONUP, this, &VirtualDimension::OnLeftButtonUp);
    SetMessageHandler(WM_LBUTTONDBLCLK, this, &VirtualDimension::OnLeftButtonDblClk);
@@ -141,8 +144,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // Create the main window
    settings.LoadPosition(&pos);
+   AdjustWindowRectEx(&pos, WS_POPUPWINDOW | WS_CAPTION, FALSE, WS_EX_TOOLWINDOW);
    Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, 
-           WS_OVERLAPPED | WS_SYSMENU ,
+           WS_POPUPWINDOW | WS_CAPTION,
            pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, 
            NULL, NULL, hInstance);
    if (!IsValid())
@@ -424,13 +428,16 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    return 0;
 }
 
-LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+LRESULT VirtualDimension::OnDestroy(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {  
    RECT pos;
    Settings settings;
    
    // Before exiting, save the window position and visibility
-   GetWindowRect(hWnd, &pos);
+   pos.left = m_location.x;
+   pos.top = m_location.y;
+   pos.right = m_location.x + deskMan->GetWindowWidth();
+   pos.bottom = m_location.y + deskMan->GetWindowHeight();
    settings.SavePosition(&pos);
 
    //Save the locking state of the window
@@ -501,6 +508,23 @@ LRESULT VirtualDimension::OnHookWindowMessage(HWND /*hWnd*/, UINT /*message*/, W
       SetForegroundWindow(win->GetOwnedWindow());
 
    return TRUE;
+}
+
+LRESULT VirtualDimension::OnEndSession(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
+{
+   if (wParam)
+      //The session is ending -> destroy the window
+      DestroyWindow(m_hWnd);
+
+   return 0;
+}
+
+LRESULT VirtualDimension::OnMove(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   m_location.x = (int)(short) LOWORD(lParam);
+   m_location.y = (int)(short) HIWORD(lParam);
+
+   return 0;
 }
 
 // Message handler for about box.
