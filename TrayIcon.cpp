@@ -118,7 +118,7 @@ LRESULT TrayIcon::OnTrayIconMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wP
    return 0;
 }
 
-void TrayIcon::OnLeftButtonDown()
+void TrayIcon::OnContextMenu()
 {
    HMENU hMenu, hmenuTrackPopup;
    POINT pt;
@@ -181,7 +181,7 @@ void TrayIcon::OnLeftButtonDown()
    DestroyMenu(hMenu);
 }
 
-void TrayIcon::OnContextMenu()
+void TrayIcon::OnLeftButtonDown()
 {
    if (IsWindowVisible(m_hWnd))
       ShowWindow(m_hWnd, SW_HIDE);
