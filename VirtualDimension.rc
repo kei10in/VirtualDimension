@@ -128,7 +128,7 @@ BEGIN
     LTEXT           "Number of columns",IDC_STATIC,7,97,65,8,NOT WS_GROUP
     EDITTEXT        IDC_COLUMN_NUMBER,73,94,26,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_COLUMN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS |
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,92,94,11,14
 END
 
@@ -143,8 +143,8 @@ BEGIN
     PUSHBUTTON      "Apply",IDC_APPLY,196,64,50,14
     EDITTEXT        IDC_NAME,43,7,136,14,ES_AUTOHSCROLL
     RTEXT           "Name",IDC_STATIC,7,10,33,8
-    CONTROL         "",IDC_PREVIEW,"Static", SS_OWNERDRAW | SS_SUNKEN,
-                    182,7,64,45
+    CONTROL         "",IDC_PREVIEW,"Static",SS_OWNERDRAW | SS_SUNKEN,182,7,
+                    64,45
     EDITTEXT        IDC_WALLPAPER,43,26,117,14,ES_AUTOHSCROLL
     RTEXT           "Wallpaper",IDC_STATIC,7,29,33,8
     PUSHBUTTON      "...",IDC_BROWSE_WALLPAPER,163,26,16,14
@@ -165,10 +165,11 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,30,80,10
     CONTROL         "Enable tooltips",IDC_TOOLTIPS_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,43,80,10
-    CONTROL         "Integrate with shell",IDC_INTEGRATEWTHSHELL_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,18,56,80,10
-    CONTROL         "All windows in task list",IDC_ALLWINDOWSINTASKLIST_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,69,90,10
+    CONTROL         "Integrate with shell",IDC_INTEGRATEWTHSHELL_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,56,80,10
+    CONTROL         "All windows in task list",
+                    IDC_ALLWINDOWSINTASKLIST_CHECK,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,18,69,90,10
     CONTROL         "Confirm before killing",IDC_CONFIRMKILL_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,17,80,10
     CONTROL         "Close To Tray",IDC_CLOSETOTRAY_CHECK,"Button",
@@ -193,6 +194,14 @@ BEGIN
     RTEXT           "0",IDC_TRANSP_STATIC1,14,79,9,12
     CTEXT           "255",IDC_TRANSP_DISP,9,94,195,8
     GROUPBOX        "Appearance",IDC_STATIC,7,7,200,52
+    CONTROL         "Plain color",IDC_PLAINCOLOR_RATIO,"Button",
+                    BS_AUTORADIOBUTTON,16,19,48,10
+    CONTROL         "Image",IDC_IMAGE_RATIO,"Button",BS_AUTORADIOBUTTON,16,
+                    31,36,10
+    CONTROL         "Screenshot",IDC_SCREENSHOT_RATIO,"Button",
+                    BS_AUTORADIOBUTTON,16,43,52,10
+    PUSHBUTTON      "Color",IDC_EXTRAPARAM_BTN,148,17,50,14
+    PUSHBUTTON      "Font",IDC_FONT_BTN,148,38,50,14
 END
 
 IDD_OSD_SETTINGS DIALOGEX 0, 0, 214, 114
@@ -207,7 +216,7 @@ BEGIN
     LTEXT           "Hide Timeout (ms):",IDC_TIMEOUT_STATIC,19,54,62,8
     EDITTEXT        IDC_TIMEOUT_EDIT,85,51,47,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_TIMEOUT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS |
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
                     UDS_NOTHOUSANDS,117,51,11,14
     PUSHBUTTON      "Font...",IDC_FONT_BTN,142,15,60,14
     PUSHBUTTON      "Background...",IDC_BGCOLOR_BTN,142,33,60,14
