@@ -25,12 +25,12 @@ BUILDDIR = mingw-release
 endif
 endif
 
-TARGET = VirtualDimension.exe
+TARGET = VirtualDimension.exe HookDLL.dll
 SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp \
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
 FastWindow.cpp TrayIconsManager.cpp WindowDialogs.cpp HotKeyControl.cpp \
-OnScreenDisplay.cpp PlatformHelper.cpp guids.c
+OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp guids.c
 RES_FILE = VirtualDimension.res
 OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
@@ -43,7 +43,7 @@ CXXFLAGS = -fexpensive-optimizations -O3
 CFLAGS = -fexpensive-optimizations -O3
 endif
 
-MAKEDEPEND = gcc -MM $(CPPFLAGS) -o $*.d $<
+MAKEDEPEND = g++ -MM $(CPPFLAGS) -o $*.d $<
 
 
 .PHONY: all recall clean pre_comp
@@ -75,6 +75,12 @@ pre_comp:
 
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 $(CXXFLAGS)
+ifndef DEBUG
+	strip $@
+endif
+
+HookDLL.dll: HookDLL.o
+	g++ -shared -o $@ $^ $(CXXFLAGS)
 ifndef DEBUG
 	strip $@
 endif
