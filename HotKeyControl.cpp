@@ -24,7 +24,7 @@
 
 static ATOM RegisterHotkeyClass(HINSTANCE hInstance);
 static LRESULT CALLBACK	HotKeyWndProc(HWND, UINT, WPARAM, LPARAM);
-static void BuildDisplayString(char mods, char vk, char* str, int bufLen);
+static void BuildDisplayString(char mods, char vk, short scancode, char* str, int bufLen);
 static void RepositionCaret(HWND hWnd, char * str);
 
 void InitHotkeyControl()
@@ -33,7 +33,7 @@ void InitHotkeyControl()
 }
 
 typedef struct HKControl {
-   short key;
+   int key;
    char  flags;
    TCHAR text[40];
    DWORD dwCharY;
@@ -62,10 +62,10 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 
 void GetShortcutName(int shortcut, char* str, int bufLen)
 {
-   BuildDisplayString((char)((shortcut>>8)&0xff), (char)(shortcut&0xff), str, bufLen);
+   BuildDisplayString((char)((shortcut>>8)&0xff), (char)(shortcut&0xff), (short)(shortcut>>16), str, bufLen);
 }
 
-static void BuildDisplayString(char mods, char vk, char* str, int bufLen)
+static void BuildDisplayString(char mods, char vk, short scancode, char* str, int bufLen)
 {
    strncpy(str, " ", bufLen);
    if (mods & MOD_CONTROL)
@@ -77,7 +77,8 @@ static void BuildDisplayString(char mods, char vk, char* str, int bufLen)
    if (mods & MOD_WIN)
       strncat(str, "WIN+", bufLen);
    
-   UINT scancode = MapVirtualKey(vk, 0);
+   if (scancode == 0)
+      scancode = (short)MapVirtualKey(vk, 0);
    char keyName[20];
    GetKeyNameText((scancode << 16) | (1<<25), keyName, 20);
    strncat(str, keyName, bufLen);
@@ -150,8 +151,8 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
    case HKM_SETHOTKEY:
       hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
-      hkCtrl->key = (short)(wParam & 0xffff);
-      BuildDisplayString((char)(hkCtrl->key>>8), (char)(hkCtrl->key&0xff), 
+      hkCtrl->key = (short)(wParam);
+      BuildDisplayString((char)(hkCtrl->key>>8), (char)(hkCtrl->key&0xff), (short)(hkCtrl->key>>16),
                          hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
       if (GetFocus() == hWnd)
          RepositionCaret(hWnd, hkCtrl->text);
@@ -223,10 +224,10 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             break;
 
          default:
-            hkCtrl->key = ((short)hkCtrl->flags << 8) | (short)(0xff & wParam);
+            hkCtrl->key = ((int)(lParam & 0x01ff0000)) | ((int)hkCtrl->flags << 8) | ((int)(0xff & wParam));
          }
 
-         BuildDisplayString(hkCtrl->flags, (char)(hkCtrl->key&0xff), 
+         BuildDisplayString(hkCtrl->flags, (char)(hkCtrl->key&0xff), (short)(hkCtrl->key>>16),
                             hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
          RepositionCaret(hWnd, hkCtrl->text); 
          InvalidateRect(hWnd, NULL, TRUE);
@@ -261,7 +262,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
          if (hkCtrl->key == 0)
          {
-            BuildDisplayString(hkCtrl->flags, 0, hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
+            BuildDisplayString(hkCtrl->flags, 0, 0, hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
             RepositionCaret(hWnd, hkCtrl->text); 
             InvalidateRect(hWnd, NULL, TRUE);
          }
