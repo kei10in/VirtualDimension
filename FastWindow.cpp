@@ -19,7 +19,6 @@
  
 #include "StdAfx.h"
 #include "fastwindow.h"
-#include <assert.h>
 
 FastWindow::FastWindow()
 {

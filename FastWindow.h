@@ -21,6 +21,7 @@
 #define __FASTWINDOW_H__
 
 #include <map>
+#include <assert.h>
 
 #define FASTWINDOW_NB_TIMER_MAX 50
 
