@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "desktopmanager.h"
 #include "transparency.h"
+#include "OnScreenDisplay.h"
 #include <string.h>
 #include <prsht.h>
 #include <assert.h>
@@ -429,10 +430,161 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
 	return FALSE;
 }
 
+// Message handler for the OSD settings page.
+LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_INITDIALOG:
+      {
+         HWND hWnd;
+         bool supportTransparency;   //is transparency supported on the platform ?
+         OnScreenDisplayWnd * osd = deskMan->GetOSDWindow();
+         bool osdEnabled;
+         
+         supportTransparency = Transparency::IsTransparencySupported();
+         osdEnabled = deskMan->IsOSDEnabled();
+
+         //Setup display OSD
+         hWnd = GetDlgItem(hDlg, IDC_ENABLEOSD_CHECK);
+         SendMessage(hWnd, BM_SETCHECK, osdEnabled ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         //Setup the transparency slider and associated controls
+         hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
+         SendMessage(hWnd, TBM_SETRANGE, FALSE, MAKELONG(0,255));
+         SendMessage(hWnd, TBM_SETTICFREQ, 16, 0);
+         SendMessage(hWnd, TBM_SETBUDDY, TRUE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC1));
+         SendMessage(hWnd, TBM_SETBUDDY, FALSE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC2));
+         SendMessage(hWnd, TBM_SETPOS, TRUE, osd->GetTransparencyLevel());
+         EnableWindow(hWnd, supportTransparency && osdEnabled);
+
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC), supportTransparency && osdEnabled);
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC1), supportTransparency && osdEnabled);
+         EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC2), supportTransparency && osdEnabled);
+
+         //Setup disable mouse input
+         hWnd = GetDlgItem(hDlg, IDC_TRANSPARENT_CHK);
+         SendMessage(hWnd, BM_SETCHECK, osd->IsTransparent() ? BST_CHECKED : BST_UNCHECKED, 0);
+         EnableWindow(hWnd, osdEnabled);
+
+         //Setup shade background
+         hWnd = GetDlgItem(hDlg, IDC_BACKGROUND_CHK);
+         SendMessage(hWnd, BM_SETCHECK, osd->HasBackground() ? BST_CHECKED : BST_UNCHECKED, 0);
+         EnableWindow(hWnd, osdEnabled);
+
+         //Setup timeout controls
+         hWnd = GetDlgItem(hDlg, IDC_TIMEOUT_EDIT);
+         SendMessage(hWnd, WM_SETTEXT, 0, osd->GetDefaultTimeout());
+         EnableWindow(hWnd, osdEnabled);
+
+         hWnd = GetDlgItem(hDlg, IDC_TIMEOUT_SPIN);
+         SendMessage(hWnd, UDM_SETRANGE, 0, MAKELPARAM(UD_MAXVAL, 0));
+         SendMessage(hWnd, UDM_SETPOS, 0, MAKELPARAM((short)osd->GetDefaultTimeout(), 0));
+         EnableWindow(hWnd, osdEnabled);
+
+         EnableWindow(GetDlgItem(hDlg, IDC_TIMEOUT_STATIC), osdEnabled);
+
+         //Setup font button
+         hWnd = GetDlgItem(hDlg, IDC_FONT_BTN);
+         EnableWindow(hWnd, osdEnabled);
+
+         //Setup background color button
+         hWnd = GetDlgItem(hDlg, IDC_BGCOLOR_BTN);
+         EnableWindow(hWnd, osdEnabled);
+
+         //Setup position button
+         hWnd = GetDlgItem(hDlg, IDC_POSITION_BTN);
+         EnableWindow(hWnd, false && osdEnabled);
+      }
+		return TRUE;
+
+   case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+      case IDC_FONT_BTN:
+         deskMan->GetOSDWindow()->SelectFont();
+         break;
+
+      case IDC_BGCOLOR_BTN:
+         deskMan->GetOSDWindow()->SelectBgColor();
+         break;
+
+      case IDC_POSITION_BTN:
+         break;
+
+      case IDC_ENABLEOSD_CHECK:
+         {
+            bool supportTransparency = Transparency::IsTransparencySupported();
+            bool osdEnabled = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+
+            EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_SLIDER), supportTransparency && osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC), supportTransparency && osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC1), supportTransparency && osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC2), supportTransparency && osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_TRANSPARENT_CHK), osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_BACKGROUND_CHK), osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_TIMEOUT_EDIT), osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_TIMEOUT_SPIN), osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_TIMEOUT_STATIC), osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_FONT_BTN), osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_BGCOLOR_BTN), osdEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_POSITION_BTN), false && osdEnabled);
+         }
+         break;
+      }
+      break;
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      switch (pnmh->code)
+      {
+      case PSN_KILLACTIVE:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         return TRUE;
+
+      case PSN_APPLY:
+         {
+            HWND hWnd;
+            OnScreenDisplayWnd * osd = deskMan->GetOSDWindow();
+
+            //Apply enable OSD
+            hWnd = GetDlgItem(hDlg, IDC_ENABLEOSD_CHECK);
+            deskMan->EnableOSD(SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
+
+            //Apply the transparency slider and associated controls
+            hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
+            osd->SetTransparencyLevel((unsigned char)SendMessage(hWnd, TBM_GETPOS, 0, 0));
+
+            //Apply disable mouse input
+            hWnd = GetDlgItem(hDlg, IDC_TRANSPARENT_CHK);
+            osd->MakeTransparent(SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
+
+            //Apply shade background
+            hWnd = GetDlgItem(hDlg, IDC_BACKGROUND_CHK);
+            osd->EnableBackground(SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ?  true : false);
+
+            //Apply timeout
+            hWnd = GetDlgItem(hDlg, IDC_TIMEOUT_EDIT);
+            TCHAR buffer[10];
+            int timeout;
+            SendMessage(hWnd, WM_GETTEXT, sizeof(buffer)/sizeof(TCHAR), (LPARAM)buffer);
+            sscanf(buffer, "%i", &timeout);
+            osd->SetDefaultTimeout(timeout);
+
+            //Apply succeeded
+            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         }
+         return TRUE; 
+      }
+      break;
+	}
+	return FALSE;
+}
+
 //Property Sheet initialization
 HWND CreateConfigBox()
 {
-   PROPSHEETPAGE pages[2];
+   PROPSHEETPAGE pages[3];
    PROPSHEETHEADER propsheet;
 
    memset(&pages, 0, sizeof(pages));
@@ -450,6 +602,13 @@ HWND CreateConfigBox()
    pages[1].pfnDlgProc = (DLGPROC)DeskConfiguration;
    pages[1].pszTitle = "Desktops";
    pages[1].pszTemplate = MAKEINTRESOURCE(IDD_DESKS_SETTINGS);
+
+   pages[2].dwSize = sizeof(PROPSHEETPAGE);
+   pages[2].hInstance = vdWindow;
+   pages[2].dwFlags = PSP_USETITLE ;
+   pages[2].pfnDlgProc = (DLGPROC)OSDConfiguration;
+   pages[2].pszTitle = "OSD";
+   pages[2].pszTemplate = MAKEINTRESOURCE(IDD_OSD_SETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
