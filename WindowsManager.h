@@ -54,7 +54,7 @@ public:
    bool IsShowAllWindowsInTaskList() const  { return m_allWindowsInTaskList; }
    void ShowAllWindowsInTaskList(bool all)  { m_allWindowsInTaskList = all; }
    bool IsIntegrateWithShell() const        { return m_integrateWithShell; }
-   void SetIntegrateWithShell(bool integ)   { m_integrateWithShell = integ; }
+   void SetIntegrateWithShell(bool integ);
 
 protected:
    map<HWND, WindowsList::Node*> m_HWNDMap;

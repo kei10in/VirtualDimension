@@ -166,6 +166,10 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
 
 void WindowsManager::OnWindowActivated(HWND hWnd)
 {
+   //Ignore iconic windows
+   if (IsIconic(hWnd))
+      return;
+
    //Try to see if some window that should not be on this desktop has
    //been activated. If so, move it to the current desktop
    HWNDMapIterator it = m_HWNDMap.find(hWnd);
@@ -246,4 +250,22 @@ HWND WindowsManager::GetActiveWindow()
    }
 
    return NULL;
+}
+
+void WindowsManager::SetIntegrateWithShell(bool integ)
+{
+   WindowsList::Iterator it;
+
+   if (m_integrateWithShell == integ)
+      return;
+
+   m_integrateWithShell = integ;
+
+   for(it = m_windows.begin(); it; it++)
+   {
+      if (integ)
+         (*it).Hook();
+      else
+         (*it).UnHook();
+   }
 }
