@@ -529,13 +529,19 @@ void Window::Hook()
    if (m_HookDllHandle)
       return;
 
-   GetWindowThreadProcessId(m_hOwnedWnd, &m_dwProcessId);
-   m_HookDllHandle = HookWindow(m_hOwnedWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
+   GetWindowThreadProcessId(m_hWnd, &m_dwProcessId);
+   m_HookDllHandle = HookWindow(m_hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
+   if (m_hWnd != m_hOwnedWnd)
+      HookWindow(m_hOwnedWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
 }
 
 void Window::UnHook()
 {
    if (m_HookDllHandle)
-      UnHookWindow(m_HookDllHandle, m_dwProcessId, m_hOwnedWnd);
+   {
+      UnHookWindow(m_HookDllHandle, m_dwProcessId, m_hWnd);
+      if (m_hWnd != m_hOwnedWnd)
+         UnHookWindow(m_HookDllHandle, m_dwProcessId, m_hOwnedWnd);
+   }
    m_HookDllHandle = NULL;
 }
