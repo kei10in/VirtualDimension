@@ -76,7 +76,7 @@ void Window::MoveToDesktop(Desktop * desk)
    oldDesk = m_desk;
    m_desk = desk;
 
-   if (IsOnDesk(deskMan->GetCurrentDesktop()))
+   if (IsOnDesk(deskMan->GetCurrentDesktop()) && !IsInTray())
       ShowWindow();
    else
       HideWindow();
