@@ -23,7 +23,7 @@
 #include "VirtualDimension.h"
 #include "movewindow.h"
 #include <Shellapi.h>
-#include <psapi.h>
+#include "PlatformHelper.h"
 
 #ifdef __GNUC__
 #define MIM_STYLE 0x10
@@ -205,16 +205,9 @@ HICON Window::GetIcon(void)
       if ( !m_hIcon )
       {
          TCHAR lpFileName[256];
-         DWORD pId;
-         HINSTANCE hInstance;
-         HANDLE hProcess;
 
          //Get the file name of the module
-         hInstance = (HINSTANCE)GetWindowLong(m_hWnd, GWL_HINSTANCE);
-         GetWindowThreadProcessId(m_hWnd, &pId);
-         hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pId);
-         GetModuleFileNameEx(hProcess, hInstance, lpFileName, 256);
-         CloseHandle(hProcess);
+         PlatformHelper::GetWindowFileName(m_hWnd, lpFileName, 256);
 
          //Get default small icon
          ExtractIconEx(lpFileName, 0, NULL, &m_hIcon, 1);
