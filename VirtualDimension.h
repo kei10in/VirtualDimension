@@ -69,6 +69,14 @@ protected:
    TCHAR m_szWindowClass[MAX_LOADSTRING];
    POINT m_location;
 
+	enum DockPosition {
+		DOCK_LEFT	= 1,
+		DOCK_RIGHT	= 2,
+		DOCK_TOP		= 4,
+		DOCK_BOTTOM	= 8,
+	};
+	int m_dockedBorders;
+
    bool m_lockPreviewWindow;
    bool m_hasCaption;
 
