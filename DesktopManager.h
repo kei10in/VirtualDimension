@@ -48,6 +48,8 @@ public:
    int GetNbColumns() const { return m_nbColumn; }
    void SetNbColumns(int cols);
 
+   Desktop * GetDesktop(int index) const;
+
    void LoadDesktops();
    void SaveDesktops();
 

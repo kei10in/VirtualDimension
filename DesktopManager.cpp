@@ -506,3 +506,17 @@ void DesktopManager::PrevDesktopEventHandler::OnHotkey()
 {
    deskMan->SwitchToDesktop(deskMan->GetOtherDesk(-1)); 
 }
+
+Desktop * DesktopManager::GetDesktop(int index) const
+{
+   vector<Desktop*>::const_iterator it;
+
+   for(it = m_desks.begin(); it != m_desks.end(); it++)
+   {
+      Desktop * desk = *it;
+      if (desk->GetIndex() == index)
+         return desk;
+   }
+
+   return NULL;
+}
