@@ -22,6 +22,7 @@
 #include "desktopmanager.h"
 #include "settings.h"
 #include "hotkeymanager.h"
+#include "VirtualDimension.h"
 #include <algorithm>
 
 bool deskOrder(Desktop * first, Desktop * second)
@@ -36,6 +37,17 @@ DesktopManager::DesktopManager(void)
    //Load the number of columns
    m_nbColumn = settings.LoadNbCols();
 
+   //Get the size
+   RECT rect;
+   GetClientRect(vdWindow, &rect);
+   m_width = rect.right - rect.left;
+   m_height = rect.bottom - rect.top;
+
+   //Bind the message handlers
+   vdWindow.SetMessageHandler(WM_SIZE, this, &DesktopManager::OnSize);
+   vdWindow.SetMessageHandler(WM_PAINT, this, &DesktopManager::OnPaint);
+
+   //Load the desktops
    LoadDesktops();
 }
 
@@ -66,12 +78,17 @@ DesktopManager::~DesktopManager(void)
    settings.SaveNbCols(m_nbColumn);
 }
 
-void DesktopManager::resize(int width, int height)
+LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
-   m_width = width; 
-   m_height = height;
+   if (wParam == SIZE_RESTORED)
+   {
+      m_width = LOWORD(lParam); 
+      m_height = HIWORD(lParam);
 
-   UpdateLayout();
+      UpdateLayout();
+   }
+
+   return 0;
 }
 
 void DesktopManager::UpdateLayout()
@@ -115,15 +132,21 @@ void DesktopManager::UpdateLayout()
    }
 }
 
-void DesktopManager::paint(HDC hDc)
+LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
+	PAINTSTRUCT ps;
+	HDC hdc;
    vector<Desktop*>::const_iterator it;
 
+   hdc = BeginPaint(hWnd, &ps);
    for(it = m_desks.begin(); it != m_desks.end(); it ++)
    {
       // Draw the desktop
-      (*it)->Draw(hDc);
+      (*it)->Draw(hdc);
    }
+   EndPaint(hWnd, &ps);
+
+   return 0;
 }
 
 Desktop * DesktopManager::AddDesktop(Desktop * desk)

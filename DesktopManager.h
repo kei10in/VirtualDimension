@@ -32,8 +32,6 @@ public:
    DesktopManager(void);
    ~DesktopManager(void);
 
-   void paint(HDC hDC);
-   void resize(int width, int height);
    void UpdateLayout();
 
    inline Desktop * AddDesktop();
@@ -54,6 +52,8 @@ public:
 
 protected:
    Desktop * AddDesktop(Desktop * desk);
+   LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    int m_nbColumn;
 
