@@ -20,6 +20,8 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#include <assert.h>
+
 namespace Config {
 
 class BinarySetting  { };
@@ -27,7 +29,7 @@ class DWordSetting { };
 class StringSetting  { };
 
 template <class T> class SettingType: public BinarySetting { };
-#define DECLARE_SETTINGTYPE(clas, typ)    template <> class Config::SettingType<clas>: public typ { };
+#define DECLARE_SETTINGTYPE(clas, typ)    template <> class SettingType<clas>: public typ { };
 
 template <class T> class Setting: public SettingType<T>
 {
@@ -182,6 +184,6 @@ protected:
    HKEY m_regKey;
 };
 
-};
+};	/*namespace Config*/
 
 #endif /*__CONFIG_H__*/
