@@ -26,11 +26,12 @@
 #include "tooltip.h"
 #include <wininet.h>
 #include <shlobj.h>
+#include "HotKeyManager.h"
 
 using namespace std;
 class Window;
 
-class Desktop: public ToolTip::Tool
+class Desktop: public ToolTip::Tool, HotKeyManager::EventHandler
 {
 public:
    Desktop(void);
@@ -56,6 +57,9 @@ public:
 
    char * GetText()           { return m_name; }
    void GetRect(LPRECT rect)  { *rect = m_rect; }
+
+protected:
+   void OnHotkey();   
 
 public:
    bool m_active;

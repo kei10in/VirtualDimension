@@ -62,7 +62,7 @@ Desktop::Desktop(Settings::Desktop * desktop)
    m_active = false;
 
    if (m_hotkey != 0)
-      HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, (int)this);
+      HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, this);
 
 #ifdef USE_IACTIVEDESKTOP
    if (m_ActiveDesktop)
@@ -87,7 +87,7 @@ Desktop::~Desktop(void)
 
    //Unregister the hotkey
    if (m_hotkey != 0)
-      HotKeyManager::GetInstance()->UnregisterHotkey((int)this);
+      HotKeyManager::GetInstance()->UnregisterHotkey(this);
 
    //Remove the tooltip tool
    tooltip->UnsetTool(this);
@@ -394,11 +394,15 @@ void Desktop::Desactivate(void)
 void Desktop::SetHotkey(int hotkey)
 {
    if (m_hotkey != 0)
-      HotKeyManager::GetInstance()->UnregisterHotkey((int)this);
+      HotKeyManager::GetInstance()->UnregisterHotkey(this);
 
    m_hotkey = hotkey;
 
    if (m_hotkey != 0)
-      HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, (int)this);
+      HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, this);
 }
 
+void Desktop::OnHotkey()
+{
+   deskMan->SwitchToDesktop(this);
+}
