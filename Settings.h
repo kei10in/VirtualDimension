@@ -61,6 +61,12 @@ public:
    void SaveSwitchToNextDesktopHotkey(int hotkey);
    int LoadSwitchToPreviousDesktopHotkey();
    void SaveSwitchToPreviousDesktopHotkey(int hotkey);
+   int LoadMoveWindowToNextDesktopHotkey();
+   void SaveMoveWindowToNextDesktopHotkey(int hotkey);
+   int LoadMoveWindowToPreviousDesktopHotkey();
+   void SaveMoveWindowToPreviousDesktopHotkey(int hotkey);
+   int LoadMoveWindowToDesktopHotkey();
+   void SaveMoveWindowToDesktopHotkey(int hotkey);
 
    int LoadDisplayMode();
    void SaveDisplayMode(int mode);
@@ -218,6 +224,9 @@ protected:
    static const char regValIntegrateWithShell[];
    static const char regValSwitchToNextDesktopHotkey[];
    static const char regValSwitchToPreviousDesktopHotkey[];
+   static const char regValMoveWindowToNextDesktopHotkey[];
+   static const char regValMoveWindowToPreviousDesktopHotkey[];
+   static const char regValMoveWindowToDesktopHotkey[];
    static const char regValDisplayMode[];
    static const char regValBackgroundColor[];
    static const char regValBackgroundImage[];

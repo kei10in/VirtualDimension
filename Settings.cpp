@@ -38,6 +38,9 @@ const char Settings::regValAllWindowsInTaskList[] = "AllWindowsInTaskList";
 const char Settings::regValIntegrateWithShell[] = "IntegrateWithShell";
 const char Settings::regValSwitchToNextDesktopHotkey[] = "SwitchToNextDesktopHotkey";
 const char Settings::regValSwitchToPreviousDesktopHotkey[] = "SwitchToPreviousDesktopHotkey";
+const char Settings::regValMoveWindowToNextDesktopHotkey[] = "MoveWindowToNextDesktopHotkey";
+const char Settings::regValMoveWindowToPreviousDesktopHotkey[] = "MoveWindowToPreviousDesktopHotkey";
+const char Settings::regValMoveWindowToDesktopHotkey[] = "MoveWindowToDesktopHotkey";
 const char Settings::regValDisplayMode[] = "DisplayMode";
 const char Settings::regValBackgroundColor[] = "BackgroundColor";
 const char Settings::regValBackgroundImage[] = "BackgroundPicture";
@@ -275,6 +278,36 @@ int Settings::LoadSwitchToPreviousDesktopHotkey()
 void Settings::SaveSwitchToPreviousDesktopHotkey(int hotkey)
 {
    SaveDWord(m_regKey, m_keyOpened, regValSwitchToPreviousDesktopHotkey, hotkey);
+}
+
+int Settings::LoadMoveWindowToNextDesktopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValMoveWindowToNextDesktopHotkey, 0);
+}
+
+void Settings::SaveMoveWindowToNextDesktopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValMoveWindowToNextDesktopHotkey, hotkey);
+}
+
+int Settings::LoadMoveWindowToPreviousDesktopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValMoveWindowToPreviousDesktopHotkey, 0);
+}
+
+void Settings::SaveMoveWindowToPreviousDesktopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValMoveWindowToPreviousDesktopHotkey, hotkey);
+}
+
+int Settings::LoadMoveWindowToDesktopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValMoveWindowToDesktopHotkey, 0);
+}
+
+void Settings::SaveMoveWindowToDesktopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValMoveWindowToDesktopHotkey, hotkey);
 }
 
 int Settings::LoadDisplayMode()
