@@ -115,12 +115,6 @@ protected:
    inline void InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str);
    inline HBITMAP LoadBmpRes(int id);
 
-   enum HidingMethods {
-      WHM_HIDE,
-      WHM_MINIMIZE, 
-      WHM_MOVE
-   };
-
    enum MenuItems {
       VDM_TOGGLEONTOP = WM_USER+1,
       VDM_TOGGLEMINIMIZETOTRAY,
@@ -142,7 +136,6 @@ protected:
    Desktop * m_desk;
    bool m_hidden;
    bool m_MinToTray;
-   int m_hidingMethod;
    bool m_iconic;
    char m_name[255];
 

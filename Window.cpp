@@ -35,44 +35,23 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false)
    //Find out on which desktop the window is
    m_desk = deskMan->GetCurrentDesktop();
 
-   //Find hiding method to use for this window
-   m_hidingMethod = WHM_MINIMIZE;
-
-   //mode specific initialization
-   switch(m_hidingMethod)
+   if (m_tasklist == NULL)
    {
-   case WHM_MINIMIZE:
-      if (m_tasklist == NULL)
-      {
-         CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist);
-         if (m_tasklist != NULL)
-            m_tasklist->HrInit();
-      }
-      else
-         m_tasklist->AddRef();
-      break;
-
-   default:
-      break;
+      CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist);
+      if (m_tasklist != NULL)
+         m_tasklist->HrInit();
    }
+   else
+      m_tasklist->AddRef();
 }
 
 Window::~Window(void)
 {
    ULONG count;
 
-   //Mode specific cleanup
-   switch(m_hidingMethod)
-   {
-   case WHM_MINIMIZE:
-      count = m_tasklist->Release();
-      if (count == 0)
-         m_tasklist = NULL;
-      break;
-
-   default:
-      break;
-   }
+   count = m_tasklist->Release();
+   if (count == 0)
+      m_tasklist = NULL;
 }
 
 void Window::MoveToDesktop(Desktop * desk)
@@ -119,26 +98,12 @@ void Window::ShowWindow()
    if (!m_hidden)
       return;
 
-   switch(m_hidingMethod)
-   {
-   default:
-   case WHM_HIDE:
-      //Show the window
-      ::ShowWindow(m_hWnd, SW_SHOW); 
+   //Restore the application if needed
+   if (!m_iconic)
+      ::ShowWindow(m_hWnd, SW_RESTORE);
 
-      //Show it's popups
-      ::ShowOwnedPopups(m_hWnd, TRUE);
-      break;
-
-   case WHM_MINIMIZE:
-      //Restore the application if needed
-      if (!m_iconic)
-         ::ShowWindow(m_hWnd, SW_RESTORE);
-
-      //Show the icon
-      m_tasklist->AddTab(m_hWnd);
-      break;
-   }
+   //Show the icon
+   m_tasklist->AddTab(m_hWnd);
 
    m_hidden = false;
 }
@@ -148,27 +113,13 @@ void Window::HideWindow()
    if (m_hidden)
       return;
 
-   switch(m_hidingMethod)
-   {
-   default:
-   case WHM_HIDE:
-      //Hide it's popups
-      ::ShowOwnedPopups(m_hWnd, FALSE);
+   //Minimize the application
+   m_iconic = IsIconic();
+   if (!m_iconic)
+      ::ShowWindow(m_hWnd, SW_MINIMIZE);
 
-      //Hide the window
-      ::ShowWindow(m_hWnd, SW_HIDE); 
-      break;
-
-   case WHM_MINIMIZE:
-      //Minimize the application
-      m_iconic = IsIconic();
-      if (!m_iconic)
-         ::ShowWindow(m_hWnd, SW_MINIMIZE);
-
-      //Hide the icon
-      m_tasklist->DeleteTab(m_hWnd);
-      break;
-   }
+   //Hide the icon
+   m_tasklist->DeleteTab(m_hWnd);
 
    m_hidden = true;
 }
