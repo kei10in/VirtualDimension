@@ -26,6 +26,7 @@
 #include "Window.h"
 #include "ShellHook.h"
 #include "WindowsList.h"
+#include "HotkeyConfig.h"
 
 using namespace std;
 
@@ -48,10 +49,7 @@ public:
    Iterator FirstWindow()                   { return m_windows.first(); }
    Iterator LastWindow()                    { return m_windows.last(); }
 
-   //Return the predecessor in the Z-order (ie, the windows that is right in front of it)
-   Window* GetPredecessor(Window* win);
-
-   HWND GetActiveWindow();
+   Window * GetForegroundWindow();
    bool IsAutoSwitchDesktop() const         { return m_autoSwitch; }
    void SetAutoSwitchDesktop(bool autoSw)   { m_autoSwitch = autoSw; }
    bool IsShowAllWindowsInTaskList() const  { return m_allWindowsInTaskList; }
@@ -93,6 +91,37 @@ protected:
    void OnWindowReplaced(HWND)            { return; } //window has been replaced
    void OnWindowReplacing(HWND)           { return; } //window is being replaced
    void OnWindowFlash(HWND hWnd);         //window is flashing
+
+   class MoveWindowToNextDesktopEventHandler: public ConfigurableHotkey
+   {
+   public:
+      MoveWindowToNextDesktopEventHandler();
+      virtual ~MoveWindowToNextDesktopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Move window to next desk"; }
+   };
+
+   class MoveWindowToPrevDesktopEventHandler: public ConfigurableHotkey
+   {
+   public:
+      MoveWindowToPrevDesktopEventHandler();
+      virtual ~MoveWindowToPrevDesktopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Move window to previous desk"; }
+   };
+
+   class MoveWindowToDesktopEventHandler: public ConfigurableHotkey
+   {
+   public:
+      MoveWindowToDesktopEventHandler();
+      virtual ~MoveWindowToDesktopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Move window to some desk"; }
+   };
+
+   MoveWindowToNextDesktopEventHandler m_moveToNextDeskEH;
+   MoveWindowToPrevDesktopEventHandler m_moveToPrevDeskEH;
+   MoveWindowToDesktopEventHandler m_moveToDesktopEH;
 
    static BOOL CALLBACK ListWindowsProc( HWND hWnd, LPARAM lParam );
 };

@@ -21,6 +21,7 @@
 #include "StdAfx.h"
 #include "windowsmanager.h"
 #include "VirtualDimension.h"
+#include "movewindow.h"
 
 WindowsManager::WindowsManager(): m_shellhook(vdWindow)
 {
@@ -261,21 +262,6 @@ bool WindowsManager::ConfirmKillWindow()
                       "Warning! Killing is bad", MB_OKCANCEL|MB_ICONWARNING) == IDOK);
 }
 
-HWND WindowsManager::GetActiveWindow()
-{ 
-   WindowsList::Iterator it;
-   
-   for(it = m_windows.begin(); it; it++)\
-   {
-      Window * win = it;
-    
-      if (win->IsOnCurrentDesk())
-         return *win;
-   }
-
-   return NULL;
-}
-
 void WindowsManager::SetIntegrateWithShell(bool integ)
 {
    WindowsList::Iterator it;
@@ -292,27 +278,6 @@ void WindowsManager::SetIntegrateWithShell(bool integ)
       else
          (*it).UnHook();
    }
-}
-
-Window* WindowsManager::GetPredecessor(Window* win)
-{
-   HWNDMapIterator it = m_HWNDMap.find(*win);
-   
-   if (it == m_HWNDMap.end())
-      return NULL;
-
-   WindowsList::Node* node = (*it).second;
-   
-   for(node = node->prev(); node != NULL; node = node->prev())
-   {
-      Window * prev = *node;
-
-      if (!prev->IsHidden() &&
-          !prev->IsIconic())
-         return prev;
-   }
-
-   return NULL;
 }
 
 void WindowsManager::SetTopWindow(Window * top)
@@ -384,5 +349,75 @@ void WindowsManager::EnableAnimations()
       info.iMinAnimate = m_iAnimate;
 
       SystemParametersInfo(SPI_SETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
+   }
+}
+
+Window * WindowsManager::GetForegroundWindow()
+{
+   HWND hwnd = ::GetForegroundWindow();
+   HWND hwnd2 = ::GetWindow(hwnd, GW_OWNER);
+   hwnd = (hwnd2 == NULL ? hwnd : hwnd2);
+   return winMan->GetWindow(hwnd);
+}
+
+WindowsManager::MoveWindowToNextDesktopEventHandler::MoveWindowToNextDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadMoveWindowToNextDesktopHotkey());
+}
+
+WindowsManager::MoveWindowToNextDesktopEventHandler::~MoveWindowToNextDesktopEventHandler()
+{
+   Settings s;
+   s.SaveMoveWindowToNextDesktopHotkey(GetHotkey());
+}
+
+void WindowsManager::MoveWindowToNextDesktopEventHandler::OnHotkey()
+{
+   Window * window = winMan->GetForegroundWindow();
+   Desktop * desk = deskMan->GetOtherDesk(1);
+   if ((window != NULL) && (window->GetDesk() == deskMan->GetCurrentDesktop()) && (desk != NULL))
+      window->MoveToDesktop(desk);
+}
+
+WindowsManager::MoveWindowToPrevDesktopEventHandler::MoveWindowToPrevDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadMoveWindowToPreviousDesktopHotkey());
+}
+
+WindowsManager::MoveWindowToPrevDesktopEventHandler::~MoveWindowToPrevDesktopEventHandler()
+{
+   Settings s;
+   s.SaveMoveWindowToPreviousDesktopHotkey(GetHotkey());
+}
+
+void WindowsManager::MoveWindowToPrevDesktopEventHandler::OnHotkey()
+{
+   Window * window = winMan->GetForegroundWindow();
+   Desktop * desk = deskMan->GetOtherDesk(-1);
+   if ((window != NULL) && (window->GetDesk() == deskMan->GetCurrentDesktop()) && (desk != NULL))
+      window->MoveToDesktop(desk);
+}
+
+WindowsManager::MoveWindowToDesktopEventHandler::MoveWindowToDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadMoveWindowToDesktopHotkey());
+}
+
+WindowsManager::MoveWindowToDesktopEventHandler::~MoveWindowToDesktopEventHandler()
+{
+   Settings s;
+   s.SaveMoveWindowToDesktopHotkey(GetHotkey());
+}
+
+void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
+{
+   Window * window = winMan->GetForegroundWindow();
+   if (window != NULL)
+   {
+      SetForegroundWindow(vdWindow);
+      SelectDesktopForWindow(window);
    }
 }
