@@ -21,6 +21,10 @@
 #ifndef __PLATFORMHELPER_H__
 #define __PLATFORMHELPER_H__
 
+#include <objbase.h>
+#include <oaidl.h>
+#include <olectl.h>
+
 class PlatformHelper
 {
 public:
@@ -28,6 +32,9 @@ public:
    ~PlatformHelper(void);
 
    static DWORD (*GetWindowFileName)(HWND hWnd, LPTSTR lpFileName, int iBufLen);
+   
+   static IPicture * OpenImage(LPTSTR fileName);
+   static bool SaveAsBitmap(IPicture * picture, LPTSTR fileName);
 
 protected:
    typedef DWORD WINAPI GetModuleFileNameEx_t(HANDLE,HMODULE,LPTSTR,DWORD);
