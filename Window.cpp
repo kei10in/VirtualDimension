@@ -24,6 +24,7 @@
 #include "movewindow.h"
 #include <Shellapi.h>
 #include "PlatformHelper.h"
+#include "window.h"
 
 #ifdef __GNUC__
 #define MIM_STYLE 0x10
@@ -155,7 +156,7 @@ void Window::ShowWindow()
 
    //Restore the window's style
    if (m_enabled)
-      EnableWindow(m_hWnd, TRUE);
+      Enable(true);
 
    //Restore the application if needed
    if (!m_iconic)
@@ -182,7 +183,7 @@ void Window::HideWindow()
 
    //disable the window so that it does not appear in task list
    if (!winMan->IsShowAllWindowsInTaskList())
-      m_enabled = !EnableWindow(m_hWnd, FALSE);
+      m_enabled = !Enable(false);
    else
       m_enabled = FALSE;
 
@@ -563,4 +564,22 @@ void Window::OnContextMenu()
       PostMessage(vdWindow, WM_COMMAND, res, 0);
 
    DestroyMenu(hMenu);
+}
+
+bool Window::Enable(bool enable)
+{
+   LONG_PTR dwStyle;
+
+   if (enable)
+      PostMessage(m_hWnd, WM_CANCELMODE, 0, 0);
+
+   dwStyle = GetWindowLongPtr(m_hWnd, GWL_STYLE);
+   if (enable)
+      SetWindowLongPtr(m_hWnd, GWL_STYLE, dwStyle & ~WS_DISABLED);
+   else
+      SetWindowLongPtr(m_hWnd, GWL_STYLE, dwStyle | WS_DISABLED);
+
+   PostMessage(m_hWnd, WM_ENABLE, enable?TRUE:FALSE, 0);
+
+   return dwStyle & WS_DISABLED ? true : false;
 }

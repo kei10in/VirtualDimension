@@ -113,6 +113,8 @@ public:
    unsigned char GetTransparencyLevel() const { return m_transpLevel; }
    void SetTransparencyLevel(unsigned char level);
 
+   bool Enable(bool enable);
+
    operator HWND()                            { return m_hWnd; }
    
    HICON GetIcon(void);
