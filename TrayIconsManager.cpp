@@ -92,10 +92,7 @@ bool TrayIconsManager::DelIcon(TrayIconHandler* handler)
    data.cbSize = sizeof(data);
    data.hWnd = vdWindow;
    data.uID = (UINT)handler;
-   data.uFlags = 0; /*NIF_ICON | NIF_MESSAGE | NIF_TIP;
-   data.uCallbackMessage = handler->m_callbackMessage;
-   data.hIcon = handler->GetIcon();
-   data.szTip = handler->GetText();*/
+   data.uFlags = 0;
 
    res = Shell_NotifyIcon(NIM_DELETE, &data);
 
