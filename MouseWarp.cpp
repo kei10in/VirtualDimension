@@ -29,6 +29,7 @@ MouseWarp::MouseWarp()
 {
    vdWindow.SetMessageHandler(WM_VD_MOUSEWARP, this, &MouseWarp::OnMouseWarp);
    m_hThread = CreateThread(NULL, 0, MouseCheckThread, this, 0/*CREATE_SUSPENDED*/, NULL);
+   m_timerId = vdWindow.CreateTimer(this, &MouseWarp::OnTimer);
 }
 
 MouseWarp::~MouseWarp(void)
@@ -40,17 +41,16 @@ MouseWarp::~MouseWarp(void)
  * This thread checks the mouse position every 50ms, to detect if it is near the screen
  * border.
  */
-DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID lpParameter)
+DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID /*lpParameter*/)
 {
    POINT pt;
-   MouseWarp * self = (MouseWarp*)lpParameter;
    WarpLocation warpLoc = WARP_NONE;
    RECT screenRect;
    DWORD duration = 0;
 
    GetWindowRect(GetDesktopWindow(), &screenRect);
 
-   while(1)
+   for(;;)
    {
       WarpLocation newWarpLoc;
 
@@ -76,46 +76,44 @@ DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID lpParameter)
          warpLoc = newWarpLoc;
          PostMessage(vdWindow, WM_VD_MOUSEWARP, 0, warpLoc);
       }
-      else
+      else if (warpLoc != WARP_NONE)   //do not generate multiple WARP_NONE events
          duration += MOUSE_WRAP_DELAY_CHECK;
    }
 
    return TRUE;
 }
 
-void CALLBACK MouseWarp::OnTimer(HWND /*hwnd*/, UINT /*uMsg*/, UINT_PTR /*idEvent*/, DWORD /*dwTime*/)
+LRESULT MouseWarp::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-   KillTimer(vdWindow, TIMERID_MOUSEWARP);
-   PostMessage(vdWindow, WM_VD_MOUSEWARP, 1, 0);
+   Desktop * desk;
+
+   vdWindow.KillTimer(m_timerId);
+
+   switch(m_warpLocation)
+   {
+   case WARP_LEFT:   desk = deskMan->GetOtherDesk(-1); break;
+   case WARP_RIGHT:  desk = deskMan->GetOtherDesk(1); break;
+   case WARP_TOP:    desk = deskMan->GetOtherDesk(-deskMan->GetNbColumns()); break;
+   case WARP_BOTTOM: desk = deskMan->GetOtherDesk(deskMan->GetNbColumns()); break;
+   default:          desk = NULL; break;
+   }
+
+   if (desk)
+      deskMan->SwitchToDesktop(desk);
+
+   return TRUE;
 }
 
 /** Mouse warp message handler.
  */
-LRESULT MouseWarp::OnMouseWarp(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+LRESULT MouseWarp::OnMouseWarp(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
-   if (wParam == 0)
-   {
-      m_warpLocation = (WarpLocation)lParam;
-      if (m_warpLocation == WARP_NONE)
-         KillTimer(vdWindow, TIMERID_MOUSEWARP);
-      else
-         SetTimer(vdWindow, TIMERID_MOUSEWARP, 500, OnTimer);
-   }
-   else
-   {
-      Desktop * desk;
+   m_warpLocation = (WarpLocation)lParam;
 
-      switch(m_warpLocation)
-      {
-      case WARP_LEFT:   desk = deskMan->GetOtherDesk(-1); break;
-      case WARP_RIGHT:  desk = deskMan->GetOtherDesk(1); break;
-      case WARP_TOP:    desk = deskMan->GetOtherDesk(-deskMan->GetNbColumns()); break;
-      case WARP_BOTTOM: desk = deskMan->GetOtherDesk(deskMan->GetNbColumns()); break;
-      default:          desk = NULL; break;
-      }
+   if (m_warpLocation == WARP_NONE)
+      vdWindow.KillTimer(m_timerId);
+   else 
+      vdWindow.SetTimer(m_timerId, 500);
 
-      if (desk)
-         deskMan->SwitchToDesktop(desk);
-   }
    return TRUE;
 }

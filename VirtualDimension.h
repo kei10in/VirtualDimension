@@ -43,8 +43,6 @@ enum {
    WM_VD_MOUSEWARP,
 };
 
-#define TIMERID_AUTOHIDE	1
-
 class VirtualDimension: public FastWindow
 {
 public:
@@ -96,6 +94,7 @@ protected:
    bool m_lockPreviewWindow;
    bool m_hasCaption;
 	int m_autoHideDelay;
+   UINT_PTR m_autoHideTimerId;
 
    bool IsPreviewWindowLocked() const     { return m_lockPreviewWindow; }
    void LockPreviewWindow(bool lock);

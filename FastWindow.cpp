@@ -19,10 +19,12 @@
  
 #include "StdAfx.h"
 #include "fastwindow.h"
+#include <assert.h>
 
 FastWindow::FastWindow()
 {
    m_hWnd = NULL;
+   m_freeTimerId = 0;
 }
 
 FastWindow::~FastWindow(void)
@@ -147,4 +149,32 @@ LRESULT FastWindow::NotifyHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lP
       return DefWindowProc(hWnd, code, wParam, lParam);
    else
       return (*it).second(hWnd, code, wParam, lParam);
+}
+
+LRESULT FastWindow::TimersHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam)
+{
+   MessageMap::iterator it;
+   it = m_timersMap.find(wParam);
+   if (it == m_timersMap.end())
+      return DefWindowProc(hWnd, code, wParam, lParam);
+   else
+      return (*it).second(hWnd, code, wParam, lParam);
+}
+
+UINT_PTR FastWindow::FindFreeTimerId()
+{
+   int nbiter = 0;
+
+   do
+   {
+      m_freeTimerId++;
+      if (m_freeTimerId > FASTWINDOW_NB_TIMER_MAX)
+         m_freeTimerId = 1;
+   }
+   while(m_timersMap.find(m_freeTimerId) != m_timersMap.end() && ++nbiter<FASTWINDOW_NB_TIMER_MAX);
+
+   if (nbiter == FASTWINDOW_NB_TIMER_MAX)
+      m_freeTimerId = 0;   //no more available timers !
+
+   return m_freeTimerId;
 }

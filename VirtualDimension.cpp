@@ -143,7 +143,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetMessageHandler(WM_MEASUREITEM, this, &VirtualDimension::OnMeasureItem);
    SetMessageHandler(WM_DRAWITEM, this, &VirtualDimension::OnDrawItem);
 
-	SetMessageHandler(WM_TIMER, this, &VirtualDimension::OnTimer);
+   m_autoHideTimerId = CreateTimer(this, &VirtualDimension::OnTimer);
 	SetMessageHandler(WM_ACTIVATEAPP, this, &VirtualDimension::OnActivateApp);
 
 	SetMessageHandler(WM_MOUSEMOVE, this, &VirtualDimension::OnMouseMove);
@@ -426,7 +426,7 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
 	else
 	{
 		//Stop the hide timer, to ensure the window does not get hidden
-		KillTimer(hWnd, TIMERID_AUTOHIDE);
+      KillTimer(m_autoHideTimerId);
 
 		//Find the item under the mouse, and check if it's being dragged
 		Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
@@ -527,7 +527,7 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    pt.y = GET_Y_LPARAM(lParam);
 
 	//Stop the hide timer, to ensure the window does not get hidden
-	KillTimer(hWnd, TIMERID_AUTOHIDE);
+	KillTimer(m_autoHideTimerId);
 
    //Get the context menu
    Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
@@ -788,12 +788,12 @@ LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPar
 	return 0;
 }
 
-LRESULT VirtualDimension::OnActivateApp(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnActivateApp(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
 	if (wParam == TRUE)
-		KillTimer(hWnd, TIMERID_AUTOHIDE);
+      KillTimer(m_autoHideTimerId);
 	else if (m_autoHideDelay > 0 && ((DWORD)lParam != GetCurrentThreadId()))
-		SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
+		SetTimer(m_autoHideTimerId, m_autoHideDelay);
 	return 0;
 }
 
@@ -821,16 +821,16 @@ LRESULT VirtualDimension::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam,
 	return 0;
 }
 
-LRESULT VirtualDimension::OnMouseMove(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+LRESULT VirtualDimension::OnMouseMove(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
    //Reset auto-hide timer
-   if (!m_shrinked && m_autoHideDelay > 0 && KillTimer(hWnd, TIMERID_AUTOHIDE))
-      SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
+   if (!m_shrinked && m_autoHideDelay > 0)
+      SetTimer(m_autoHideTimerId, m_autoHideDelay);
 
 	return 0;
 }
 
-LRESULT VirtualDimension::OnMouseHover(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+LRESULT VirtualDimension::OnMouseHover(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	if (!m_shrinked || !m_tracking)
 		return 0;
@@ -840,7 +840,7 @@ LRESULT VirtualDimension::OnMouseHover(HWND hWnd, UINT /*message*/, WPARAM /*wPa
 
 	//Prepare to auto-hide
 	if (m_autoHideDelay > 0)
-		SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
+		SetTimer(m_autoHideTimerId, m_autoHideDelay);
 
 	m_tracking = false;
 	return 0;

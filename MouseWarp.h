@@ -27,8 +27,6 @@
  */
 #define MOUSE_WRAP_DELAY_CHECK   50
 
-#define TIMERID_MOUSEWARP        2
-
 class MouseWarp
 {
 public:
@@ -38,7 +36,7 @@ public:
 protected:
    static DWORD WINAPI MouseCheckThread(LPVOID lpParameter);
 
-   static void CALLBACK OnTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+   LRESULT OnTimer(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnMouseWarp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    enum WarpLocation {
@@ -51,6 +49,7 @@ protected:
 
    WarpLocation m_warpLocation;
    HANDLE m_hThread;
+   UINT_PTR m_timerId;
 };
 
 #endif /*__MOUSEWARP_H__*/

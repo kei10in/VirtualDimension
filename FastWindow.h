@@ -22,6 +22,8 @@
 
 #include <map>
 
+#define FASTWINDOW_NB_TIMER_MAX 50
+
 class FastWindow
 {
 public:
@@ -89,6 +91,35 @@ public:
          UnSetMessageHandler(WM_NOTIFY);
    }
 
+   template <class T> UINT_PTR CreateTimer(T * object, LRESULT (T::*method)(HWND, UINT, WPARAM, LPARAM))
+   {
+      UINT_PTR timerId;
+      if (m_timersMap.empty())
+         SetMessageHandler(WM_TIMER, this, &FastWindow::TimersHandler);
+      timerId = FindFreeTimerId();
+      if (timerId)
+         m_timersMap[timerId]((EventHandlerImp*)object, (EventHandlerImp::HandlerMethod)method);
+      return timerId;
+   }
+   void DestroyTimer(UINT_PTR timerId)
+   {
+      assert(m_timersMap.find(timerId) != m_timersMap.end());
+      KillTimer(timerId);
+      m_timersMap.erase(timerId);
+      if (m_timersMap.empty())
+         UnSetMessageHandler(WM_TIMER);
+   }
+   void SetTimer(UINT_PTR timerId, UINT elapse)
+   {
+      assert(m_timersMap.find(timerId) != m_timersMap.end());
+      ::SetTimer(*this, timerId, elapse, NULL);
+   }
+   void KillTimer(UINT_PTR timerId)
+   {
+      assert(m_timersMap.find(timerId) != m_timersMap.end());
+      ::KillTimer(*this, timerId);
+   }
+
    operator HWND()               { return m_hWnd; }
 
 protected:
@@ -118,11 +149,16 @@ protected:
    MessageMap m_commandMap;
    MessageMap m_syscommandMap;
    MessageMap m_notifyMap;
+   MessageMap m_timersMap;
+   UINT_PTR m_freeTimerId;
 
    LRESULT CommandHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam);
    LRESULT SysCommandHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam);
    LRESULT NotifyHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam);
+   LRESULT TimersHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam);
    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam); 
+
+   UINT_PTR FindFreeTimerId();
 };
 
 #endif /*__FASTWINDOW_H__*/
