@@ -21,11 +21,13 @@ TARGET = VirtualDimension.exe
 BUILDDIR = mingw
 SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp \
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
-TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp
+TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp guids.c
 RES_FILE = VirtualDimension.res
-OBJ_FILE = $(SRC_FILE:cpp=o) libtransp.a
+OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
+OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
 
 CXXFLAGS = -fexpensive-optimizations -O3
+CFLAGS = -fexpensive-optimizations -O3
 
 
 .PHONY: all clean precomp
@@ -45,7 +47,7 @@ pre_comp:
 	-mkdir ${BUILDDIR}
 
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
-	g++ $^ -o $@ -mwindows -lcomctl32 $(CXXFLAGS)
+	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 $(CXXFLAGS)
 	strip $@
 
 libtransp.a: transp.def
@@ -56,3 +58,6 @@ VirtualDimension.res: VirtualDimension.rc
 
 %.o: %.cpp
 	g++ -c -o ${BUILDDIR}/$@ $< $(CXXFLAGS)
+
+%.o: %.c
+	gcc -c -o ${BUILDDIR}/$@ $< $(CFLAGS)
