@@ -26,6 +26,7 @@
 #include "desktopmanager.h"
 #include "Windowsx.h"
 #include "hotkeymanager.h"
+#include "shellhook.h"
 
 #define MAX_LOADSTRING 100
 
@@ -37,6 +38,7 @@ TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 HWND configBox = NULL;
 HWND mainWnd = NULL;
 DesktopManager * deskMan;
+WindowsManager * winMan;
 Transparency * transp;
 TrayIcon * trayIcon;
 AlwaysOnTop * ontop;
@@ -389,6 +391,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
          //Destroy the desktop manager
          delete deskMan;
+
+         //Destroy the windows manager
+         delete winMan;
       }
 		PostQuitMessage(0);
 		break;
@@ -416,14 +421,65 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          // Initialize always on top state
          ontop = new AlwaysOnTop(hWnd);
 
+         // Create the windows manager
+         winMan = new WindowsManager(hWnd);
+
          // Create the desk manager
          deskMan = new DesktopManager;
+
+         // Retrieve the initial list of windows
+         winMan->PopulateInitialWindowsSet();
       }
       break;
 
 	default:
       if(message == s_uTaskbarRestart)
          trayIcon->RefreshIcon();
+      else if (message == ShellHook::WM_SHELLHOOK)
+      {
+         switch(wParam)
+         {
+            case ShellHook::WINDOWACTIVATED:
+               winMan->OnWindowActivated((HWND)lParam);
+               break;
+
+            case ShellHook::RUDEAPPACTIVATEED: 
+               winMan->OnRudeAppActivated((HWND)lParam);
+               break;
+
+            case ShellHook::WINDOWREPLACING: 
+               winMan->OnWindowReplacing((HWND)lParam);
+               break;
+
+            case ShellHook::WINDOWREPLACED: 
+               winMan->OnWindowReplaced((HWND)lParam);
+               break;
+
+            case ShellHook::WINDOWCREATED: 
+               winMan->OnWindowCreated((HWND)lParam);
+               break;
+
+            case ShellHook::WINDOWDESTROYED: 
+               winMan->OnWindowDestroyed((HWND)lParam);
+               break;
+
+            case ShellHook::ACTIVATESHELLWINDOW: 
+               break;
+
+            case ShellHook::TASKMAN: 
+               break;
+
+            case ShellHook::REDRAW: 
+               winMan->OnRedraw((HWND)lParam);
+               break;
+
+            case ShellHook::FLASH: 
+               break;
+
+            case ShellHook::ENDTASK: 
+               break;
+         }
+      }
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
