@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE Code::Blocks_project_file>
 <Code::Blocks_project_file>
+	<FileVersion major="1" minor="1"/>
 	<Project>
 		<Option title="Win32 Application"/>
 		<Option makefile="Makefile"/>
@@ -23,23 +24,23 @@
 			</Target>
 		</Build>
 		<Linker>
-			<Add option="-lstdc++"/>
-			<Add option="-lgcc"/>
-			<Add option="-lgdi32"/>
-			<Add option="-lcomdlg32"/>
-			<Add option="-lodbc32"/>
-			<Add option="-lwsock32"/>
-			<Add option="-lwinspool"/>
-			<Add option="-lwinmm"/>
-			<Add option="-lshell32"/>
-			<Add option="-lcomctl32"/>
-			<Add option="-lctl3d32"/>
-			<Add option="-ladvapi32"/>
-			<Add option="-lopengl32"/>
-			<Add option="-lglu32"/>
-			<Add option="-lole32"/>
-			<Add option="-loleaut32"/>
-			<Add option="-luuid"/>
+			<Add library="libstdc++.a"/>
+			<Add library="libgcc.a"/>
+			<Add library="libgdi32.a"/>
+			<Add library="libcomdlg32.a"/>
+			<Add library="libodbc32.a"/>
+			<Add library="libwsock32.a"/>
+			<Add library="libwinspool.a"/>
+			<Add library="libwinmm.a"/>
+			<Add library="libshell32.a"/>
+			<Add library="libcomctl32.a"/>
+			<Add library="libctl3d32.a"/>
+			<Add library="libadvapi32.a"/>
+			<Add library="libopengl32.a"/>
+			<Add library="libglu32.a"/>
+			<Add library="libole32.a"/>
+			<Add library="liboleaut32.a"/>
+			<Add library="libuuid.a"/>
 		</Linker>
 		<Unit filename="AlwaysOnTop.cpp">
 			<Option compilerVar="CPP"/>
