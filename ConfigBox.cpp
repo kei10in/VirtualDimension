@@ -83,17 +83,6 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
       }
 		return TRUE;
 
-	case WM_COMMAND:
-      switch(LOWORD(wParam))
-      {
-      case IDC_ONTOP_CHECK:
-         break;
-
-      case IDC_TRAYICON_CHECK:
-         break;
-      }
-      break;
-
    case WM_HSCROLL:
       {
          int pos;
@@ -124,38 +113,32 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 
    case WM_NOTIFY:
       LPNMHDR pnmh = (LPNMHDR) lParam;
-      switch(pnmh->idFrom)
+      switch (pnmh->code)
       {
+      case PSN_KILLACTIVE:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         return TRUE;
 
-
-      default:
-         switch (pnmh->code)
+      case PSN_APPLY:
          {
-         case PSN_KILLACTIVE:
-            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
-            return TRUE;
+            Settings settings;
+            bool res;
+            HWND hWnd;
 
-         case PSN_APPLY:
-            {
-               Settings settings;
-               bool res;
-               HWND hWnd;
+            //Apply always on top
+            hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
+            res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+            ontop->SetAlwaysOnTop(res);
 
-               //Apply always on top
-               hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
-               res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
-               ontop->SetAlwaysOnTop(res);
+            //Apply tray icon
+            hWnd = GetDlgItem(hDlg, IDC_TRAYICON_CHECK);
+            res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+            trayIcon->SetIcon(res);
 
-               //Apply tray icon
-               hWnd = GetDlgItem(hDlg, IDC_TRAYICON_CHECK);
-               res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
-               trayIcon->SetIcon(res);
-
-               //Apply succeeded
-               SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
-            }
-            return TRUE; 
+            //Apply succeeded
+            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
          }
+         return TRUE; 
       }
       break;
 	}
