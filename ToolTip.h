@@ -34,14 +34,16 @@ public:
    ToolTip(HWND hwnd);
    ~ToolTip(void);
 
-   void SetTool(Tool * tool);
+   void SetTool(Tool * tool, LPRECT rect=NULL);
    void UnsetTool(Tool * tool);
 
-   void OnGetDispInfo(LPNMTTDISPINFO lpnmtdi);
+   void EnableTooltips(bool enable);
+   bool IsEnabled() const { return m_enabled; }
 
 protected:
    HWND m_hWnd;
    HWND m_hOwnerWnd;
+   bool m_enabled;
 };
 
 #endif /*__TOOLTIP_H__*/
