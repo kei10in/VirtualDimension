@@ -25,16 +25,13 @@
 
 #define MAX_NAME_LENGTH 255
 
+//Settings framework
 class BinarySetting  { };
 class DWordSetting   { };
 class StringSetting  { };
 
 template <class T> class SettingType: public BinarySetting { };
-template <> class SettingType<int>: public DWordSetting { };
-template <> class SettingType<unsigned long>: public DWordSetting { };
-template <> class SettingType<unsigned char>: public DWordSetting { };
-template <> class SettingType<bool>: public DWordSetting { };
-template <> class SettingType<LPTSTR>: public StringSetting { };
+#define DECLARE_SETTINGTYPE(clas, typ)    template <> class SettingType<clas>: public typ { };
 
 template <class T> class Setting: public SettingType<T>
 {
@@ -45,8 +42,19 @@ public:
    char * m_name;
 };
 
-#define DECLARE_SETTING(name, type)          const Setting<type> name
+#define DECLARE_SETTING(name, type)                const Setting<type> name
 #define DEFINE_SETTING(clas, name, type, defval)   const Setting<type> clas::name(defval, #name)
+
+
+//Actual settings
+DECLARE_SETTINGTYPE(int, DWordSetting);
+DECLARE_SETTINGTYPE(unsigned int, DWordSetting);
+DECLARE_SETTINGTYPE(long, DWordSetting);
+DECLARE_SETTINGTYPE(unsigned long, DWordSetting);
+DECLARE_SETTINGTYPE(char, DWordSetting);
+DECLARE_SETTINGTYPE(unsigned char, DWordSetting);
+DECLARE_SETTINGTYPE(bool, DWordSetting);
+DECLARE_SETTINGTYPE(LPTSTR, StringSetting);
 
 class Settings
 {
@@ -280,6 +288,11 @@ template<class T> T Settings::LoadSetting(const Setting<T> &setting, const DWord
 {
    assert(sizeof(T)<=sizeof(DWORD));
    return (T)LoadDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)setting.m_default);
+}
+
+template<> inline bool Settings::LoadSetting(const Setting<bool> &setting, const DWordSetting& /*type*/)
+{
+   return LoadDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)setting.m_default) ? true : false;
 }
 
 template<class T> void Settings::SaveSetting(const Setting<T> &setting, T data, const DWordSetting& /*type*/)
