@@ -61,6 +61,9 @@ public:
 
    void SetTopWindow(Window * top);
 
+   void EnableAnimations();
+   void DisableAnimations();
+
 protected:
    map<HWND, WindowsList::Node*> m_HWNDMap;
    WindowsList m_windows;
@@ -73,7 +76,11 @@ protected:
    bool m_allWindowsInTaskList;
    bool m_integrateWithShell;
 
-   LRESULT OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam);
+   int m_iAnimate;
+   LONG m_nbDisabledAnimations;
+
+   LRESULT OnSettingsChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnShellHookMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnWindowCreated(HWND hWnd);       //window has just been created
    void OnWindowDestroyed(HWND hWnd);     //window is going to be destroyed
    void OnWindowActivated(HWND hWnd);     //activation changed to another window

@@ -32,7 +32,19 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow)
    m_allWindowsInTaskList = settings.LoadAllWindowsInTaskList();
    m_integrateWithShell = settings.LoadIntegrateWithShell();
 
+   m_nbDisabledAnimations = 0;
+   { 
+      ANIMATIONINFO info;
+      info.cbSize = sizeof(ANIMATIONINFO);
+      info.iMinAnimate = 0;
+
+      SystemParametersInfo(SPI_GETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
+
+      m_iAnimate = info.iMinAnimate;
+   }
+
    vdWindow.SetMessageHandler(uiShellHookMsg, this, &WindowsManager::OnShellHookMessage);
+   vdWindow.SetMessageHandler(WM_SETTINGCHANGE, this, &WindowsManager::OnSettingsChange);
 }
 
 WindowsManager::~WindowsManager(void)
@@ -51,6 +63,15 @@ WindowsManager::~WindowsManager(void)
    settings.SaveAutoSwitchDesktop(m_autoSwitch);
    settings.SaveAllWindowsInTaskList(m_allWindowsInTaskList);
    settings.SaveIntegrateWithShell(m_integrateWithShell);
+
+   //Restore the animations
+   {
+      ANIMATIONINFO info;
+      info.cbSize = sizeof(ANIMATIONINFO);
+      info.iMinAnimate = m_iAnimate;
+
+      SystemParametersInfo(SPI_SETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
+   }
 }
 
 void WindowsManager::PopulateInitialWindowsSet()
@@ -312,4 +333,56 @@ void WindowsManager::SetTopWindow(Window * top)
    else
       deskMan->GetCurrentDesktop()->UpdateLayout();
    vdWindow.Refresh();
+}
+
+LRESULT WindowsManager::OnSettingsChange(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
+{
+   if (wParam == SPI_SETANIMATION)
+   {
+      ANIMATIONINFO info;
+      info.cbSize = sizeof(ANIMATIONINFO);
+      info.iMinAnimate = 0;
+
+      SystemParametersInfo(SPI_GETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
+
+      m_iAnimate = info.iMinAnimate;
+
+      if ((m_nbDisabledAnimations > 0) && (m_iAnimate != 0))
+      {
+         info.iMinAnimate = 0;
+         SystemParametersInfo(SPI_SETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
+      }
+   }
+
+   return 0;
+}
+
+void WindowsManager::DisableAnimations()
+{
+   //Increment number of time animation has been disabled
+   if ((InterlockedIncrement(&m_nbDisabledAnimations) == 1) && 
+       (m_iAnimate != 0))
+   {
+      //If this is the first time, disable animations
+      ANIMATIONINFO info;
+      info.cbSize = sizeof(ANIMATIONINFO);
+      info.iMinAnimate = 0;
+
+      SystemParametersInfo(SPI_SETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
+   }
+}
+
+void WindowsManager::EnableAnimations()
+{
+   //Decrement number of time animation has been disabled
+   if ((InterlockedDecrement(&m_nbDisabledAnimations) == 0) &&
+       (m_iAnimate != 0))
+   {
+      //If this is the last time (ie, nobody else wants the animations to be disabled), reenable them
+      ANIMATIONINFO info;
+      info.cbSize = sizeof(ANIMATIONINFO);
+      info.iMinAnimate = m_iAnimate;
+
+      SystemParametersInfo(SPI_SETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
+   }
 }
