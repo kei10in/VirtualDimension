@@ -23,12 +23,72 @@
 #include "settings.h"
 #include "desktopmanager.h"
 #include "Commdlg.h"
+#include <olectl.h>
 
 char desk_name[80] = "";
 char desk_wallpaper[256] = "";
 int  desk_hotkey = 0;
 
-HANDLE image_handle;
+//static HANDLE image_handle;
+static WNDPROC wpOrigEditProc;
+static IPicture * picture;
+
+void FreePicture()
+{
+   if (picture)
+      picture->Release();
+   picture = NULL;
+}
+
+void LoadPicture(char * filename)
+{
+   int size = strlen(filename);
+   WCHAR unicodeFileName[512];
+   MultiByteToWideChar(CP_OEMCP, 0, filename, size, unicodeFileName, 512);  
+   unicodeFileName[size] = 0;
+   OleLoadPicturePath( (LPOLESTR)unicodeFileName, NULL, 0, 0, IID_IPicture, (void**)&picture);
+}
+
+LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{ 
+   switch(uMsg) 
+   { 
+   case WM_PAINT:
+      {
+         PAINTSTRUCT ps;
+         RECT rect;
+         HDC hdc;
+
+         //Display the image, or a text if there is no image
+         hdc = BeginPaint(hwnd, &ps);
+         GetClientRect(hwnd, &rect);
+         if (picture)
+         {
+            OLE_XSIZE_HIMETRIC width;
+            OLE_YSIZE_HIMETRIC height;
+            picture->get_Width(&width);
+            picture->get_Height(&height);
+            
+            picture->Render( hdc, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
+               0, height, width, -height, NULL);
+         }
+         else
+            DrawText(hdc, "No image", -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+         EndPaint(hwnd, &ps);
+      }
+      break; 
+
+   case STM_SETIMAGE:
+      {
+         return FALSE;
+      }
+      break;
+
+   default:
+      return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
+   } 
+   return FALSE;
+} 
 
 // Message handler for the desktop properties dialog box.
 LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -39,7 +99,7 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
       {
          HWND hWnd;
 
-         image_handle = NULL;
+         picture = NULL;
 
          hWnd = GetDlgItem(hDlg, IDC_WALLPAPER);
          SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)sizeof(desk_wallpaper), (LPARAM)0);
@@ -51,6 +111,9 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 
          hWnd = GetDlgItem(hDlg, IDC_HOTKEY);
          SendMessage(hWnd, HKM_SETHOTKEY, (WPARAM)desk_hotkey, 0);
+
+         hWnd = GetDlgItem(hDlg, IDC_PREVIEW);
+         wpOrigEditProc = (WNDPROC)SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)ImageCtrlProc);
       }
 		return TRUE;
 
@@ -64,12 +127,20 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
          desk_hotkey = (int)SendMessage(GetDlgItem(hDlg, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0);
 
       case IDCANCEL:
-         if (image_handle != NULL)
-            DeleteObject(image_handle);
+         {
+            //Unsubclass the image control
+            HWND hWnd = GetDlgItem(hDlg, IDC_PREVIEW);
+            SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)wpOrigEditProc);
+            
+            //Free the image, if any
+            if (picture != NULL)
+               FreePicture();
 
-         //Close the dialog
-			EndDialog(hDlg, LOWORD(wParam)); //Return the last pressed button
-			return TRUE;
+            //Close the dialog
+			   EndDialog(hDlg, LOWORD(wParam)); //Return the last pressed button
+			   return TRUE;
+         }
+         break;
 
       case IDC_BROWSE_WALLPAPER:
          {
@@ -81,7 +152,7 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
             ofn.hwndOwner = hDlg;
             ofn.lpstrFile = desk_wallpaper;
             ofn.nMaxFile = sizeof(desk_wallpaper);
-            ofn.lpstrFilter = "Image\0*.BMP\0All\0*.*\0";
+            ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
             ofn.nFilterIndex = 1;
             ofn.lpstrFileTitle = NULL;
             ofn.nMaxFileTitle = 0;
@@ -100,10 +171,10 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
          case EN_CHANGE:
             {
                SendMessage((HWND)lParam, WM_GETTEXT, sizeof(desk_wallpaper), (LPARAM)desk_wallpaper);
-               if (image_handle != NULL)
-                  DeleteObject(image_handle);
-               image_handle = LoadImage(vdWindow, desk_wallpaper, IMAGE_BITMAP, 96, 72, LR_LOADFROMFILE);
-               SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)image_handle);
+               if (picture != NULL)
+                  FreePicture();
+               LoadPicture(desk_wallpaper);
+               //SendMessage(GetDlgItem(hDlg, IDC_PREVIEW), STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)image_handle);
                InvalidateRect(hDlg, NULL, TRUE);
             }
             break;
