@@ -309,9 +309,6 @@ void Desktop::Activate(void)
    /* Set the wallpaper */
    m_wallpaper.Activate();
 
-   // Activate the Virtual Dimension window (to make the window which has the focus lose it)
-   SetForegroundWindow(vdWindow);
-
    // Show the windows
    for(it = winMan->GetIterator(); it; it++)
    {
