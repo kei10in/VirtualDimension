@@ -87,6 +87,9 @@ protected:
 
    LRESULT OnDestroy(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+   LRESULT OnMeasureItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
    static LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/);
 };
 
