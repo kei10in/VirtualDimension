@@ -196,8 +196,56 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
          EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC), supportTransparency);
          EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC1), supportTransparency);
          EnableWindow(GetDlgItem(hDlg, IDC_TRANSP_STATIC2), supportTransparency);
+
+         //Setup display mode
+         UINT ratioItem;
+         switch(deskMan->GetDisplayMode())
+         {
+         default:
+         case DesktopManager::DM_PLAINCOLOR: ratioItem = IDC_PLAINCOLOR_RATIO; break;         
+         case DesktopManager::DM_PICTURE:    ratioItem = IDC_IMAGE_RATIO;      break;         
+         case DesktopManager::DM_SCREENSHOT: ratioItem = IDC_SCREENSHOT_RATIO; break;
+         }
+         CheckRadioButton(hDlg, IDC_PLAINCOLOR_RATIO, IDC_SCREENSHOT_RATIO, ratioItem);
+
+         //Setup display mode options, by simulating a click
+         SendMessage(hDlg, WM_COMMAND, MAKEWPARAM(ratioItem,BN_CLICKED), (LPARAM)GetDlgItem(hDlg, ratioItem));
       }
 		return TRUE;
+
+   case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+      case IDC_PLAINCOLOR_RATIO:
+         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, "Color");
+         EnableWindow(GetDlgItem(hDlg, IDC_EXTRAPARAM_BTN), TRUE);
+         deskMan->SetDisplayMode(DesktopManager::DM_PLAINCOLOR);
+         break;
+
+      case IDC_IMAGE_RATIO:
+         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, "Image");
+         EnableWindow(GetDlgItem(hDlg, IDC_EXTRAPARAM_BTN), TRUE);
+         deskMan->SetDisplayMode(DesktopManager::DM_PICTURE);
+         break;
+
+      case IDC_SCREENSHOT_RATIO:
+         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, "No option");
+         EnableWindow(GetDlgItem(hDlg, IDC_EXTRAPARAM_BTN), FALSE);
+         deskMan->SetDisplayMode(DesktopManager::DM_SCREENSHOT);
+         break;
+
+      case IDC_EXTRAPARAM_BTN:
+         switch(deskMan->GetDisplayMode())
+         {
+         case DesktopManager::DM_PLAINCOLOR: deskMan->ChooseBackgroundColor(hDlg); break;         
+         case DesktopManager::DM_PICTURE: deskMan->ChooseBackgroundPicture(hDlg); break;  
+         }
+         break;
+
+      case IDC_FONT_BTN:
+         break;
+      }
+      break;
 
    case WM_HSCROLL:
       {
