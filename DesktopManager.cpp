@@ -59,8 +59,9 @@ DesktopManager::DesktopManager(void)
    m_prevDeskEventHandler = new DeskChangeEventHandler(this, -1);
    keyMan->RegisterHotkey( (MOD_ALT|MOD_CONTROL|MOD_SHIFT)<<8 | VK_TAB, m_prevDeskEventHandler);
 
-   //Create the OSD window
+   //Initialize the OSD
    m_osd.Create();
+   m_useOSD = settings.LoadDesktopNameOSD();
 }
 
 DesktopManager::~DesktopManager(void)
@@ -90,6 +91,7 @@ DesktopManager::~DesktopManager(void)
    m_desks.clear();
 
    settings.SaveNbCols(m_nbColumn);
+   settings.SaveDesktopNameOSD(m_useOSD);
 }
 
 LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
@@ -266,7 +268,8 @@ void DesktopManager::SwitchToDesktop(Desktop * desk)
    m_currentDesktop = desk;
    m_currentDesktop->Activate();
 
-   m_osd.Display(desk->GetText());
+   if (m_useOSD)
+      m_osd.Display(desk->GetText());
 
    InvalidateRect(vdWindow, NULL, FALSE);
 }

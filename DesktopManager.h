@@ -78,6 +78,7 @@ protected:
    int m_width, m_height;
 
    OnScreenDisplayWnd m_osd;
+   bool m_useOSD;
 };
 
 inline Desktop * DesktopManager::AddDesktop()
