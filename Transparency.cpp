@@ -22,7 +22,16 @@
 #include "transparency.h"
 #include "settings.h"
 
-#ifdef LWA_ALPHA
+#ifndef LWA_ALPHA
+
+extern "C" {
+__declspec(dllimport) BOOL SetLayeredWindowAttributes(HWND hwnd,COLORREF crKey,BYTE bAlpha,DWORD dwFlags);
+}
+
+#define LWA_COLORKEY            0x00000001
+#define LWA_ALPHA               0x00000002
+
+#endif
 
 /* m_level gets an initial value of 0xff, so that we do not do anything anyway
  * if the level is not set to some other value in the registry
@@ -91,24 +100,3 @@ bool Transparency::IsTransparencySupported()
 
    return transparency_supported;
 }
-
-#else
-//Transparency is not supported for this compiler/platform
-Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(0xff)
-{}
-
-void Transparency::SetTransparencyLevel(unsigned char)
-{}
-
-Transparency::~Transparency()
-{}
-
-bool Transparency::transparency_supported = false;
-bool Transparency::transparency_supported_valid = false;
-
-bool Transparency::IsTransparencySupported()
-{
-   return false;
-}
-
-#endif
