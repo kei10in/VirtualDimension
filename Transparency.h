@@ -28,6 +28,7 @@ public:
    ~Transparency();
 
    void SetTransparencyLevel(unsigned char level);
+   unsigned char GetTransparencyLevel() const;
 
    static bool IsTransparencySupported();
 

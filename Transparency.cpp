@@ -64,10 +64,11 @@ void Transparency::SetTransparencyLevel(unsigned char level)
    }
    else
    {
-      // Make sur transparency is enabled, and set level
+      // Make sur transparency is enabled
       style |= WS_EX_LAYERED;
       SetWindowLong(m_hWnd, GWL_EXSTYLE, style);
 
+      // Set the actual transparency level
       SetLayeredWindowAttributes(m_hWnd, 0, m_level, LWA_ALPHA);
    }
 }
@@ -99,4 +100,12 @@ bool Transparency::IsTransparencySupported()
    }
 
    return transparency_supported;
+}
+
+unsigned char Transparency::GetTransparencyLevel() const
+{
+   if (IsTransparencySupported())
+      return m_level;
+   else
+      return 255;
 }
