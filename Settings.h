@@ -41,6 +41,8 @@ public:
    void SaveAlwaysOnTop(bool val);
    unsigned char LoadTransparencyLevel();
    void SaveTransparencyLevel(unsigned char level);
+   bool LoadEnableTooltips();
+   void SaveEnableTooltips(bool enable);
 
    class Desktop 
    {
@@ -85,6 +87,7 @@ protected:
    static const char regValHasTrayIcon[];
    static const char regValAlwaysOnTop[];
    static const char regValTransparencyLevel[];
+   static const char regValEnableTooltips[];
 
    HKEY regKey;
    bool keyOpened;

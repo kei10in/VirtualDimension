@@ -28,6 +28,7 @@ const char Settings::regValShowWindow[] = "ShowWindow";
 const char Settings::regValHasTrayIcon[] = "HasTrayIcon";
 const char Settings::regValAlwaysOnTop[] = "AlwaysOnTop";
 const char Settings::regValTransparencyLevel[] = "TransparencyLevel";
+const char Settings::regValEnableTooltips[] = "EnableToolTips";
 
 const char Settings::Desktop::regValIndex[] = "DeskIndex";
 const char Settings::Desktop::regValWallpaper[] = "DeskWallpaper";
@@ -205,6 +206,33 @@ void Settings::SaveTransparencyLevel(unsigned char level)
    wLevel = level;
    if (keyOpened)
       RegSetValueEx(regKey, regValTransparencyLevel, 0, REG_DWORD, (LPBYTE)&wLevel, sizeof(wLevel));
+}
+
+bool Settings::LoadEnableTooltips()
+{
+   DWORD size;
+   DWORD enable;
+
+   if ( (!keyOpened) || 
+        (RegQueryValueEx(regKey, regValEnableTooltips, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
+        (size != sizeof(enable)) || 
+        (RegQueryValueEx(regKey, regValEnableTooltips, NULL, NULL, (LPBYTE)&enable, &size) != ERROR_SUCCESS) )
+   {  
+      // Cannot load the enabling of tool tips from registry
+      // --> set default values
+
+      enable = 1;
+   }
+
+   return (enable ? true : false);
+}
+
+void Settings::SaveEnableTooltips(bool enable)
+{
+   DWORD wEnable;
+   wEnable = enable;
+   if (keyOpened)
+      RegSetValueEx(regKey, regValEnableTooltips, 0, REG_DWORD, (LPBYTE)&wEnable, sizeof(wEnable));
 }
 
 
