@@ -26,7 +26,7 @@
 #include "OnScreenDisplay.h"
 #include <algorithm>
 #include "BackgroundDisplayMode.h"
-#include ".\desktopmanager.h"
+#include "DesktopManager.h"
 #include <Commdlg.h>
 
 DesktopManager::DesktopManager(void)
