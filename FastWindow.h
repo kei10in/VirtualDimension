@@ -45,12 +45,22 @@ public:
    {
       m_messageMap[message]((EventHandlerImp*)object, (EventHandlerImp::HandlerMethod)method); 
    }
+   void UnSetMessageHandler(UINT message)
+   {
+      m_messageMap.erase(message);
+   }
 
    template <class T> void SetCommandHandler(UINT message, T * object, LRESULT (T::*method)(HWND, UINT, WPARAM, LPARAM))
    {
       if (m_commandMap.empty())
          SetMessageHandler(WM_COMMAND, this, &FastWindow::CommandHandler);
       m_commandMap[message]((EventHandlerImp*)object, (EventHandlerImp::HandlerMethod)method); 
+   }
+   void UnSetCommandHandler(UINT message)
+   {
+      m_commandMap.erase(message);
+      if (m_commandMap.empty())
+         UnSetMessageHandler(WM_COMMAND);
    }
 
    template <class T> void SetSysCommandHandler(UINT message, T * object, LRESULT (T::*method)(HWND, UINT, WPARAM, LPARAM))
@@ -59,12 +69,24 @@ public:
          SetMessageHandler(WM_SYSCOMMAND, this, &FastWindow::SysCommandHandler);
       m_syscommandMap[message]((EventHandlerImp*)object, (EventHandlerImp::HandlerMethod)method); 
    }
+   void UnSetSysCommandHandler(UINT message)
+   {
+      m_syscommandMap.erase(message);
+      if (m_syscommandMap.empty())
+         UnSetMessageHandler(WM_SYSCOMMAND);
+   }
 
    template <class T> void SetNotifyHandler(UINT message, T * object, LRESULT (T::*method)(HWND, UINT, WPARAM, LPARAM))
    {
       if (m_notifyMap.empty())
          SetMessageHandler(WM_NOTIFY, this, &FastWindow::NotifyHandler);
       m_notifyMap[message]((EventHandlerImp*)object, (EventHandlerImp::HandlerMethod)method); 
+   }
+   void UnSetNotifyHandler(UINT message)
+   {
+      m_notifyMap.erase(message);
+      if (m_notifyMap.empty())
+         UnSetMessageHandler(WM_NOTIFY);
    }
 
    operator HWND()               { return m_hWnd; }
