@@ -45,6 +45,7 @@ DesktopManager::DesktopManager(void)
    
    //Initialize the display mode
    m_bkDisplayMode = NULL;
+   m_displayMode = (DisplayMode)-1;
    SetDisplayMode((DisplayMode)settings.LoadDisplayMode());
 
    //Bind the message handlers
