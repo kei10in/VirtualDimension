@@ -340,7 +340,7 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       break;
 
    default:
-      if (cmdId >= VDM_MOVETODESK)
+      if (cmdId >= VDM_MOVETODESK && cmdId < VDM_MOVETODESK+deskMan->GetNbDesktops())
          MoveToDesktop(deskMan->GetDesktop(cmdId-VDM_MOVETODESK));
       break;
    }
