@@ -303,6 +303,8 @@ void Desktop::Activate(void)
 {
    WindowsManager::Iterator it;
    Window * topmost = NULL;
+   HDWP hWinPosInfo;
+   HWND prev = HWND_TOP;
 
    m_active = true;
 
@@ -310,6 +312,7 @@ void Desktop::Activate(void)
    m_wallpaper.Activate();
 
    // Show the windows
+   hWinPosInfo = BeginDeferWindowPos(0);
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
@@ -322,7 +325,12 @@ void Desktop::Activate(void)
          {
             win->ShowWindow();
 
-            if (!topmost)
+            DeferWindowPos(hWinPosInfo, *win, prev, 0, 0, 0, 0, 
+                           SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+
+            if (topmost)
+               prev = *win;
+            else
                topmost = win;
          }
       }
@@ -334,6 +342,7 @@ void Desktop::Activate(void)
             win->HideWindow();
       }
    }
+   EndDeferWindowPos(hWinPosInfo);
 
    // Restore the foreground window
    if (topmost)
