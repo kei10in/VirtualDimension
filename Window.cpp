@@ -45,7 +45,8 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(m_hOwnedWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
-                           m_hIcon(NULL), m_hDefaulIcon(NULL), m_style(0), m_HookDllHandle(NULL)
+                           m_hIcon(NULL), m_hDefaulIcon(NULL), m_style(0), m_HookDllHandle(NULL),
+                           m_switching(false)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -109,6 +110,8 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
       m_desk = deskMan->GetCurrentDesktop();
 
    m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
+
+   m_hOwnedWnd = GetOwnedWindow(hWnd);
    if (winMan->IsIntegrateWithShell())
       Hook();
 }

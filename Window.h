@@ -178,6 +178,11 @@ public:
    inline HWND GetOwnedWindow() const         { return m_hOwnedWnd; }
    inline static HWND GetOwnedWindow(HWND hWnd);
 
+   inline bool IsSwitching() const            { return m_switching; }
+   inline void SetSwitching(bool on)          { m_switching = on; }
+
+   inline bool CheckExists() const            { return IsWindow(m_hWnd) != 0; }
+
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnContextMenu();
@@ -250,6 +255,7 @@ protected:
    DWORD m_dwProcessId;
 
    CRITICAL_SECTION m_CriticalSection;
+   bool m_switching;
 
 #ifdef HIDEWINDOW_COMINTERFACE
    /** Pointer to the COM taskbar interface.
