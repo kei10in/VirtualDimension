@@ -199,6 +199,7 @@ void Desktop::Draw(HDC hDc)
 
    //Draw icons for each window
    WindowsManager::Iterator it;
+   list<Window*> obsoleteWindowsList;
    int x, y;
 
    x = m_rect.left;
@@ -207,10 +208,19 @@ void Desktop::Draw(HDC hDc)
    {
       Window * win = it;
       HICON hIcon;
-      
+
+      //Mark obsolete windows for removal
+      if (!win->CheckExists())
+      {
+         obsoleteWindowsList.push_front(win);
+         continue;
+      }
+
+      //Skip windows not present on this desk
       if (!win->IsOnDesk(this))
          continue;
 
+      //Draw the window's icon
       hIcon = win->GetIcon();
       DrawIconEx(hDc, x, y, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 
@@ -221,6 +231,13 @@ void Desktop::Draw(HDC hDc)
          y += 16;
       }
    }
+
+   //Remove windows flagged as obsolete
+   for(list<Window*>::iterator i = obsoleteWindowsList.begin();
+       i != obsoleteWindowsList.end();
+       i++)
+      winMan->RemoveWindow(*i);
+   obsoleteWindowsList.clear();
 }
 
 /** Get a pointer to the window represented at some position.
@@ -344,6 +361,10 @@ void Desktop::Activate(void)
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
+
+      //Ignore obsolete windows
+      if (!win->CheckExists())
+         continue;
 
       if (win->IsOnDesk(this))
       {
