@@ -41,6 +41,8 @@ const char Settings::regValSwitchToPreviousDesktopHotkey[] = "SwitchToPreviousDe
 const char Settings::regValMoveWindowToNextDesktopHotkey[] = "MoveWindowToNextDesktopHotkey";
 const char Settings::regValMoveWindowToPreviousDesktopHotkey[] = "MoveWindowToPreviousDesktopHotkey";
 const char Settings::regValMoveWindowToDesktopHotkey[] = "MoveWindowToDesktopHotkey";
+const char Settings::regValMaximizeHeightHotkey[] = "MaximizeHeightHotkey";
+const char Settings::regValMaximizeWidthHotkey[] = "MaximizeWidthHotkey";
 const char Settings::regValDisplayMode[] = "DisplayMode";
 const char Settings::regValBackgroundColor[] = "BackgroundColor";
 const char Settings::regValBackgroundImage[] = "BackgroundPicture";
@@ -308,6 +310,26 @@ int Settings::LoadMoveWindowToDesktopHotkey()
 void Settings::SaveMoveWindowToDesktopHotkey(int hotkey)
 {
    SaveDWord(m_regKey, m_keyOpened, regValMoveWindowToDesktopHotkey, hotkey);
+}
+
+int Settings::LoadMaximizeHeightHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValMaximizeHeightHotkey, 0);
+}
+
+void Settings::SaveMaximizeHeightHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValMaximizeHeightHotkey, hotkey);
+}
+
+int Settings::LoadMaximizeWidthHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValMaximizeWidthHotkey, 0);
+}
+
+void Settings::SaveMaximizeWidthHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValMaximizeWidthHotkey, hotkey);
 }
 
 int Settings::LoadDisplayMode()

@@ -67,6 +67,10 @@ public:
    void SaveMoveWindowToPreviousDesktopHotkey(int hotkey);
    int LoadMoveWindowToDesktopHotkey();
    void SaveMoveWindowToDesktopHotkey(int hotkey);
+   int LoadMaximizeHeightHotkey();
+   void SaveMaximizeHeightHotkey(int hotkey);
+   int LoadMaximizeWidthHotkey();
+   void SaveMaximizeWidthHotkey(int hotkey);
 
    int LoadDisplayMode();
    void SaveDisplayMode(int mode);
@@ -227,6 +231,8 @@ protected:
    static const char regValMoveWindowToNextDesktopHotkey[];
    static const char regValMoveWindowToPreviousDesktopHotkey[];
    static const char regValMoveWindowToDesktopHotkey[];
+   static const char regValMaximizeHeightHotkey[];
+   static const char regValMaximizeWidthHotkey[];
    static const char regValDisplayMode[];
    static const char regValBackgroundColor[];
    static const char regValBackgroundImage[];
