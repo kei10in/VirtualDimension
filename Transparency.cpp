@@ -38,11 +38,7 @@ int Transparency::nbInstance = 0;
  */
 Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(0xff)
 {
-   Settings settings;
-
    nbInstance ++;
-
-   SetTransparencyLevel(settings.LoadTransparencyLevel());
 }
 
 void Transparency::SetTransparencyLevel(unsigned char level)
@@ -77,11 +73,6 @@ void Transparency::SetTransparencyLevel(unsigned char level)
 
 Transparency::~Transparency()
 {
-   Settings settings;
-
-   if (IsTransparencySupported())
-      settings.SaveTransparencyLevel(m_level);
-
    nbInstance --;
    if (nbInstance == 0)
    {
