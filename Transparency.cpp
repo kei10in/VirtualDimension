@@ -68,7 +68,7 @@ void Transparency::SetTransparencyLevel(unsigned char level)
       style |= WS_EX_LAYERED;
       SetWindowLong(m_hWnd, GWL_EXSTYLE, style);
 
-      SetLayeredWindowAttributes(m_hWnd, NULL, m_level, LWA_ALPHA);
+      SetLayeredWindowAttributes(m_hWnd, 0, m_level, LWA_ALPHA);
    }
 }
 
