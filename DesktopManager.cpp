@@ -43,7 +43,7 @@ DesktopManager::DesktopManager(void)
    GetClientRect(vdWindow, &rect);
    m_width = rect.right - rect.left;
    m_height = rect.bottom - rect.top;
-   
+
    //Initialize the display mode
    m_bkDisplayMode = NULL;
    m_displayMode = (DisplayMode)-1;
@@ -52,10 +52,6 @@ DesktopManager::DesktopManager(void)
    settings.LoadPreviewWindowFont(&m_lfPreviewWindowFontInfo);
    m_hPreviewWindowFont = CreateFontIndirect(&m_lfPreviewWindowFontInfo); 
    m_crPreviewWindowFontColor = settings.LoadPreviewWindowFontColor();
-
-   //Bind the message handlers
-   vdWindow.SetMessageHandler(WM_SIZE, this, &DesktopManager::OnSize);
-   vdWindow.SetMessageHandler(WM_PAINT, this, &DesktopManager::OnPaint);
 
    //Load the desktops
    LoadDesktops();

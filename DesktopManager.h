@@ -80,10 +80,11 @@ public:
    LONG GetWindowWidth() const                { return m_width; }
    LONG GetWindowHeight() const               { return m_height; }
 
-protected:
-   Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+protected:
+   Desktop * AddDesktop(Desktop * desk);
 
    class NextDesktopEventHandler: public ConfigurableHotkey
    {
