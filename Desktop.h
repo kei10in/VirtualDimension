@@ -69,8 +69,13 @@ public:
 
    static bool deskOrder(Desktop * first, Desktop * second);
 
+   bool Configure(HWND hDlg);
+
 protected:
-   void OnHotkey();   
+   void OnHotkey();
+
+   static LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+   static LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
    bool m_active;
 
@@ -79,7 +84,14 @@ protected:
    int m_hotkey;
    RECT m_rect;
    WallPaper m_wallpaper;
-   TCHAR m_wallpaperFile[256];
+   TCHAR m_wallpaperFile[MAX_PATH];
+
+   struct DesktopProperties
+   {
+      Desktop * desk;
+      IPicture * m_picture;
+      TCHAR m_wallpaper[MAX_PATH];
+   };
 };
 
 #endif /*__DESKTOP_H__*/
