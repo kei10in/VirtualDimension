@@ -29,6 +29,49 @@
 
 void FormatTransparencyLevel(HWND hWnd, int level);
 
+void Window::OpenSettings(Settings::Window &settings, bool create)
+{
+   TCHAR classname[50];
+
+   GetClassName(m_hWnd, classname, sizeof(classname)/sizeof(TCHAR));
+   settings.Open(classname, create);
+}
+
+LRESULT CALLBACK Window::PropertiesProc(HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM lParam)
+{
+   Window * self;
+
+	switch (message)
+	{
+	case WM_INITDIALOG:
+      {
+         LPPROPSHEETPAGE lpPage = (LPPROPSHEETPAGE)lParam;
+         self = (Window*)lpPage->lParam;
+
+         //Store the pointer to the window, for futur use
+         SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR)self);
+
+         //Perform initialization
+         return TRUE;
+      }
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      switch (pnmh->code)
+      {
+      case PSN_KILLACTIVE:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         return TRUE;
+
+      case PSN_APPLY:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         return TRUE; 
+      }
+      break;
+	}
+	return FALSE;
+}
+
 void Window::OnInitSettingsDlg(HWND hDlg)
 {
    HWND hWnd;
@@ -69,80 +112,43 @@ void Window::OnInitSettingsDlg(HWND hDlg)
    //Setup on all desktops
    hWnd = GetDlgItem(hDlg, IDC_ALLDESKS_CHECK);
    SendMessage(hWnd, BM_SETCHECK, IsOnAllDesktops() ? BST_CHECKED : BST_UNCHECKED, 0);
-
-   //Setup erase auto settings
-   {
-      Settings s;
-      Settings::Window settings(&s);
-      TCHAR classname[50];
-
-      hWnd = GetDlgItem(hDlg, IDC_ERASESETTINGS_BTN);
-      GetClassName(m_hWnd, classname, sizeof(classname)/sizeof(TCHAR));
-      settings.Open(classname, false);
-      EnableWindow(hWnd, settings.IsValid());
-   }
 }
 
-void Window::OnEraseSettingsBtn(HWND hDlg)
+void Window::EraseSettings()
 {
    Settings s;
    Settings::Window settings(&s);
-   TCHAR classname[50];
 
-   GetClassName(m_hWnd, classname, sizeof(classname)/sizeof(TCHAR));
-   settings.Open(classname, false);
-
+   OpenSettings(settings, false);
    if (settings.IsValid())
       settings.Destroy();
-
-   //Now disable the "Erase" button
-   EnableWindow(GetDlgItem(hDlg, IDC_ERASESETTINGS_BTN), true);
 }
 
-void Window::OnSaveSettingsBtn(HWND hDlg)
+void Window::SaveSettings()
 {
-   bool res;
-   HWND hWnd;
    Settings s;
    Settings::Window settings(&s);
-   TCHAR classname[50];
 
-   GetClassName(m_hWnd, classname, sizeof(classname)/sizeof(TCHAR));
-   settings.Open(classname, true);
-
+   OpenSettings(settings, true);
    if (!settings.IsValid())
    {
-      MessageBox( hDlg, "Access to the registry failed. Auto-settings will not be saved.",
+      MessageBox( vdWindow, "Access to the registry failed. Auto-settings will not be saved.",
                   "Unexpected registry error", MB_OK|MB_ICONERROR);
       return;
    }
 
-   //Apply always on top
-   hWnd = GetDlgItem(hDlg, IDC_ONTOP_CHECK);
-   res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
-   settings.SaveAlwaysOnTop(res);
+   settings.SaveAlwaysOnTop(IsAlwaysOnTop());
+   settings.SaveMinimizeToTray(IsMinimizeToTray());
+   settings.SaveOnAllDesktops(IsOnAllDesktops());
+   settings.SaveEnableTransparency(IsTransparent());
+   settings.SaveTransparencyLevel(GetTransparencyLevel());
 
-   //Apply minimize to tray
-   hWnd = GetDlgItem(hDlg, IDC_MINTOTRAY_CHECK);
-   res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
-   settings.SaveMinimizeToTray(res);
-
-   //Apply on all desktops
-   hWnd = GetDlgItem(hDlg, IDC_ALLDESKS_CHECK);         
-   res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
-   settings.SaveOnAllDesktops(res);
-
-   //Apply enable transparency
-   hWnd = GetDlgItem(hDlg, IDC_ENABLETRANSP_CHECK);
-   res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
-   settings.SaveEnableTransparency(res);
-
-   //Apply transparency level
-   hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
-   settings.SaveTransparencyLevel((unsigned char)SendMessage(hWnd, TBM_GETPOS, 0, 0));
-
-   //Now enable the "Erase" button
-   EnableWindow(GetDlgItem(hDlg, IDC_ERASESETTINGS_BTN), true);
+   if (m_autopos || m_autosize)
+   {
+      RECT rect;
+      GetWindowRect(m_hWnd, &rect);
+      settings.SavePosition(&rect);
+   }
 }
 
 void Window::OnApplySettingsBtn(HWND hDlg)
@@ -195,21 +201,7 @@ LRESULT CALLBACK Window::SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LP
       }
 
    case WM_COMMAND:
-      switch(LOWORD(wParam))
-      {
-      case IDC_ERASESETTINGS_BTN:
-         self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
-         self->OnEraseSettingsBtn(hDlg);
-         break;
-
-      case IDC_SAVESETTINGS_BTN:
-         self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
-         self->OnSaveSettingsBtn(hDlg);
-         break;
-
-      default:
-         PropSheet_Changed(GetParent(hDlg), hDlg);
-      }
+      PropSheet_Changed(GetParent(hDlg), hDlg);
       break;
 
    case WM_HSCROLL:
@@ -256,14 +248,170 @@ LRESULT CALLBACK Window::SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LP
 	return FALSE;
 }
 
-LRESULT CALLBACK Window::PropertiesProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+void Window::OnInitAutoSettingsDlg(HWND hDlg)
 {
-   return FALSE;
+   Settings s;
+   Settings::Window settings(&s);
+   HWND hWnd;
+   AutoSettingsModes mode;
+
+   //Find out which mode is used
+   OpenSettings(settings, false);
+   if (!settings.IsValid())
+   {
+      mode = ASS_DISABLED;
+      hWnd = GetDlgItem(hDlg, IDC_DISABLE_RATIO);
+   }
+   else if (m_autoSaveSettings)
+   {
+      mode = ASS_AUTOSAVE;
+      hWnd = GetDlgItem(hDlg, IDC_LASTSESSION_RATIO);
+   }
+   else
+   {
+      mode = ASS_SAVED;
+      hWnd = GetDlgItem(hDlg, IDC_SAVED_RATIO);
+   }
+
+   //Check the appropriate button
+   SendMessage(hWnd, BM_SETCHECK, BST_CHECKED, 0);
+
+   //Update the UI
+   OnUpdateAutoSettingsUI(hDlg, mode);
+}
+
+void Window::OnApplyAutoSettingsBtn(HWND hDlg)
+{
+   HWND hWnd;
+   Settings s;
+   Settings::Window settings(&s);
+
+   m_autoSaveSettings = false;
+
+   //If auto-settings are disabled, remove the settings from registry
+   if (SendMessage(GetDlgItem(hDlg, IDC_DISABLE_RATIO), BM_GETCHECK, 0, 0) == BST_CHECKED)
+   {
+      EraseSettings();
+      return;
+   }
+
+   //Auto-set size ?
+   hWnd = GetDlgItem(hDlg, IDC_AUTOSIZE_CHECK);
+   m_autosize = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+
+   //Auto-set position ?
+   hWnd = GetDlgItem(hDlg, IDC_AUTOPOS_CHECK);
+   m_autopos = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+
+   //If loading last saved settings, and no settings already saved, do a save right now
+   if (SendMessage(GetDlgItem(hDlg, IDC_SAVED_RATIO), BM_GETCHECK, 0, 0) == BST_CHECKED)
+   {
+      OpenSettings(settings, false);
+      if (!settings.IsValid())
+         SaveSettings();
+   }
+   else
+      m_autoSaveSettings = true;
+
+   //If not already open, try to open the Window's settings
+   if (!settings.IsValid())
+   {
+      OpenSettings(settings, false);
+
+      if (!settings.IsValid())
+      {
+         MessageBox( hDlg, "Access to the registry failed. Auto-settings may not be saved.",
+                     "Unexpected registry error", MB_OK|MB_ICONERROR);
+         return;
+      }
+   }
+
+   //Save the auto-settings configuration to the registry
+   settings.SaveAutoSaveSettings(m_autoSaveSettings);
+   settings.SaveAutoSetSize(m_autosize);
+   settings.SaveAutoSetPos(m_autopos);
+}
+
+void Window::OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode)
+{
+   EnableWindow(GetDlgItem(hDlg, IDC_SAVESETTINGS_BTN), mode == ASS_SAVED);
+
+   EnableWindow(GetDlgItem(hDlg, IDC_AUTOSIZE_CHECK), mode != ASS_DISABLED);
+   EnableWindow(GetDlgItem(hDlg, IDC_AUTOPOS_CHECK), mode != ASS_DISABLED);
+}
+
+LRESULT CALLBACK Window::AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   Window * self;
+
+	switch (message)
+	{
+	case WM_INITDIALOG:
+      {
+         LPPROPSHEETPAGE lpPage = (LPPROPSHEETPAGE)lParam;
+         self = (Window*)lpPage->lParam;
+
+         //Store the pointer to the window, for futur use
+         SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR)self);
+
+         //Perform initialization
+         self->OnInitAutoSettingsDlg(hDlg);
+		   return TRUE;
+      }
+
+   case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+      case IDC_DISABLE_RATIO:
+         self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
+         self->OnUpdateAutoSettingsUI(hDlg, ASS_DISABLED);
+         PropSheet_Changed(GetParent(hDlg), hDlg);
+         break;
+
+      case IDC_LASTSESSION_RATIO:
+         self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
+         self->OnUpdateAutoSettingsUI(hDlg, ASS_AUTOSAVE);
+         PropSheet_Changed(GetParent(hDlg), hDlg);
+         break;
+
+      case IDC_SAVED_RATIO:
+         self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
+         self->OnUpdateAutoSettingsUI(hDlg, ASS_SAVED);
+         PropSheet_Changed(GetParent(hDlg), hDlg);
+         break;
+
+      case IDC_SAVESETTINGS_BTN:
+         self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
+         self->SaveSettings();
+         break;
+
+      default:
+         PropSheet_Changed(GetParent(hDlg), hDlg);
+      }
+      break;
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      switch (pnmh->code)
+      {
+      case PSN_KILLACTIVE:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         return TRUE;
+
+      case PSN_APPLY:
+         self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
+         self->OnApplyAutoSettingsBtn(hDlg);
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         return TRUE; 
+      }
+      break;
+	}
+	return FALSE;
 }
 
 void Window::DisplayWindowProperties()
 {
-   PROPSHEETPAGE pages[2];
+   PROPSHEETPAGE pages[3];
    PROPSHEETHEADER propsheet;
 
    memset(&pages, 0, sizeof(pages));
@@ -284,13 +432,21 @@ void Window::DisplayWindowProperties()
    pages[1].pszTitle = "Settings";
    pages[1].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_SETTINGS);
 
+   pages[2].dwSize = sizeof(PROPSHEETPAGE);
+   pages[2].hInstance = vdWindow;
+   pages[2].dwFlags = PSP_USETITLE ;
+   pages[2].pfnDlgProc = (DLGPROC)AutoSettingsProc;
+   pages[2].lParam = (LPARAM)this;
+   pages[2].pszTitle = "Auto-Settings";
+   pages[2].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_AUTOSETTINGS);
+
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
    propsheet.dwFlags = PSH_PROPSHEETPAGE;
    propsheet.hwndParent = vdWindow;
    propsheet.hInstance = vdWindow;
    propsheet.pszCaption = "Window Properties";
-   propsheet.nPages = 1;//sizeof(pages)/sizeof(PROPSHEETPAGE);
+   propsheet.nPages = 2;//sizeof(pages)/sizeof(PROPSHEETPAGE);
    propsheet.ppsp = &pages[1];
 
    PropertySheet(&propsheet);
