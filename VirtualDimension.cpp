@@ -460,7 +460,7 @@ LRESULT VirtualDimension::OnMeasureItem(HWND hWnd, UINT message, WPARAM wParam, 
 {
    LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT)lParam;
 
-   if (wParam != NULL)
+   if (wParam != 0)
       return DefWindowProc(hWnd, message, wParam, lParam);
 
    lpmis->itemHeight = 16;
@@ -474,7 +474,7 @@ LRESULT VirtualDimension::OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPA
    LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT)lParam;
    Window * window;
 
-   if (wParam != NULL)
+   if (wParam != 0)
       return DefWindowProc(hWnd, message, wParam, lParam);
 
    window = (Window*)lpdis->itemData;
