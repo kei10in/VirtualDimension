@@ -413,6 +413,10 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
 	}
 	else
 	{
+		//Stop the hide timer, to ensure the window does not get hidden
+		KillTimer(hWnd, TIMERID_AUTOHIDE);
+
+		//Find the item under the mouse, and check if it's being dragged
 		Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
 		if ( (desk) &&
 			((m_draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
@@ -748,6 +752,9 @@ LRESULT VirtualDimension::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam,
 
 LRESULT VirtualDimension::OnMouseHover(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
+	if (!m_shrinked || !m_tracking)
+		return 0;
+
 	//Un-shring the window
 	UnShrink();
 
@@ -795,7 +802,8 @@ void VirtualDimension::Shrink(void)
 	//Compute the position where to display the handle
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
 	GetWindowRect(m_hWnd, &pos);
-	switch(m_dockedBorders)
+
+	switch(m_dockedBorders & (DOCK_LEFT|DOCK_RIGHT))
 	{
 	case DOCK_LEFT:
 		pos.right = deskRect.left + 10;
@@ -807,6 +815,17 @@ void VirtualDimension::Shrink(void)
 		pos.right = pos.left + 10;
 		break;
 
+	case DOCK_LEFT|DOCK_RIGHT:
+		pos.left = deskRect.left;
+		pos.right = deskRect.right;
+		break;
+
+	default:
+		break;
+	}
+
+	switch(m_dockedBorders & (DOCK_TOP|DOCK_BOTTOM))
+	{
 	case DOCK_TOP:
 		pos.bottom = deskRect.top + 10;
 		pos.top = pos.bottom - 10;
@@ -817,65 +836,13 @@ void VirtualDimension::Shrink(void)
 		pos.bottom = pos.top + 10;
 		break;
 
-	case DOCK_TOP|DOCK_LEFT:
-		pos.right = deskRect.left + 10;
-		pos.left = pos.right - 10;
-		pos.bottom = deskRect.top + 10;
-		pos.top = pos.bottom - 10;
-		break;
-
-	case DOCK_TOP|DOCK_RIGHT:	
-		pos.left = deskRect.right - 10;
-		pos.right = pos.left + 10;
-		pos.bottom = deskRect.top + 10;
-		pos.top = pos.bottom - 10;
-		break;
-
-	case DOCK_BOTTOM|DOCK_LEFT:
-		pos.right = deskRect.left + 10;
-		pos.left = pos.right - 10;
-		pos.top = deskRect.bottom - 10;
-		pos.bottom = pos.top + 10;
-		break;
-
-	case DOCK_BOTTOM|DOCK_RIGHT:
-		pos.left = deskRect.right - 10;
-		pos.right = pos.left + 10;
-		pos.top = deskRect.bottom - 10;
-		pos.bottom = pos.top + 10;
-		break;
-
-	case DOCK_TOP|DOCK_LEFT|DOCK_RIGHT:
-		pos.left = deskRect.left;
-		pos.right = deskRect.right;
-		pos.bottom = deskRect.top + 10;
-		pos.top = pos.bottom - 10;
-		break;
-
-	case DOCK_BOTTOM|DOCK_LEFT|DOCK_RIGHT:
-		pos.left = deskRect.left;
-		pos.right = deskRect.right;
-		pos.top = deskRect.bottom - 10;
-		pos.bottom = pos.top + 10;
-		break;
-
-	case DOCK_TOP|DOCK_BOTTOM|DOCK_LEFT:
-		pos.right = deskRect.left + 10;
-		pos.left = pos.right - 10;
-		pos.top = deskRect.top;
-		pos.bottom = deskRect.bottom;
-		break;
-
-	case DOCK_TOP|DOCK_BOTTOM|DOCK_RIGHT:
-		pos.left = deskRect.right - 10;
-		pos.right = pos.left + 10;
+	case DOCK_TOP|DOCK_BOTTOM:
 		pos.top = deskRect.top;
 		pos.bottom = deskRect.bottom;
 		break;
 
 	default:
-		m_shrinked = false;
-		return;
+		break;
 	}
 
 	//Change the method to use for painting the window
