@@ -76,7 +76,7 @@ public:
 
    Desktop * GetDesk() const { return m_desk; }
 
-   void BuildMenu(HMENU menu);
+   HMENU BuildMenu();
    void OnMenuItemSelected(HMENU menu, int cmdId);
 
    void ShowWindow();
@@ -86,6 +86,15 @@ public:
    void MinimizeToTray();
    bool IsInTray() const         { return m_intray; }
    void Restore();
+
+   void ToggleOnTop();
+   void ToggleAllDesktops();
+   void Activate();
+   void Minimize();
+   void Maximize();
+   void MaximizeHeight();
+   void MaximizeWidth();
+   void Kill();
 
    operator HWND()               { return m_hWnd; }
    
@@ -97,6 +106,12 @@ public:
    }
    void GetRect(LPRECT /*rect*/)  { return; }
 
+protected:
+   LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   void OnContextMenu();
+   inline void InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str);
+   inline HBITMAP LoadBmpRes(int id);
+
    enum HidingMethods {
       WHM_HIDE,
       WHM_MINIMIZE, 
@@ -104,16 +119,20 @@ public:
    };
 
    enum MenuItems {
-      VDM_ACTIVATEWINDOW = WM_USER+1,
-      VDM_TOGGLEONTOP,
+      VDM_TOGGLEONTOP = WM_USER+1,
+      
       VDM_TOGGLEALLDESKTOPS,
-      VDM_MINIMIZETOTRAY,
-      VDM_MOVEWINDOW
-   };
+      VDM_MOVEWINDOW,
 
-protected:
-   LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-   void OnContextMenu();
+      VDM_ACTIVATEWINDOW,
+      VDM_MINIMIZE,
+      VDM_MINIMIZETOTRAY,
+      VDM_MAXIMIZE,
+      VDM_MAXIMIZEHEIGHT,
+      VDM_MAXIMIZEWIDTH,
+      VDM_CLOSE,
+      VDM_KILL
+   };
 
    HWND m_hWnd;
    Desktop * m_desk;
