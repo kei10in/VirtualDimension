@@ -38,6 +38,8 @@ public:
    void MoveWindow(HWND hWnd, Desktop* desk);
    Window* GetWindow(HWND hWnd);
 
+   bool ConfirmKillWindow();
+
    class Iterator
    {
       friend class WindowsManager;
@@ -65,6 +67,7 @@ protected:
    HWND m_hWnd;
    map<HWND, Window*> m_windows;
    ShellHook m_shellhook;
+   bool m_confirmKill;
 
    LRESULT OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam);
    void OnWindowCreated(HWND hWnd);       //window has just been created
