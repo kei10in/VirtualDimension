@@ -33,7 +33,7 @@
 ITaskbarList* Window::m_tasklist = NULL;
 
 Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
-                           m_transp(hWnd), m_transpLevel(128),
+                           m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
                            m_hIcon(NULL), m_ownIcon(false)
 {
