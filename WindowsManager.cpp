@@ -127,6 +127,7 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
    Window * win;
    Iterator nIt;
    HWNDMapIterator it = m_HWNDMap.find(hWnd);
+   Desktop * desk;
    
    if (it == m_HWNDMap.end())
       return;
@@ -138,16 +139,20 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
 
    //Remove tooltip(s)
    tooltip->UnsetTool(win);
-   if (win->IsOnDesk(NULL))  //on all desktops
-      deskMan->UpdateLayout();
-   else
-      win->GetDesk()->UpdateLayout();
+   desk = win->IsOnDesk(NULL) ? NULL : win->GetDesk();
 
    //Delete the object
    if (win->IsInTray())
       trayManager->DelIcon(win);
    nIt.Erase();
 
+   //Update layout
+   if (desk)
+      desk->UpdateLayout();
+   else
+      deskMan->UpdateLayout();
+
+   //Refresh display
    vdWindow.Refresh();
 }
 
@@ -177,7 +182,7 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    }
    else
    {
-      deskMan->UpdateLayout();
+      deskMan->GetCurrentDesktop()->UpdateLayout();
       vdWindow.Refresh();
    }
 }
