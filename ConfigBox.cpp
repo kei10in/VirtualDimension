@@ -328,17 +328,9 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             if (index != LB_ERR)
             {
                Desktop * desk = (Desktop*)SendMessage(listBox, LB_GETITEMDATA, index, 0);
-               strncpy(desk_name, desk->GetText(), sizeof(desk_name));
-               strncpy(desk_wallpaper, desk->GetWallpaper(), sizeof(desk_wallpaper));
-               desk_hotkey = desk->GetHotkey();
-               if (DialogBox(vdWindow, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties) == IDOK)
+               if (desk->Configure(hDlg))
                {
-                  /* Update the desk informations */
-                  desk->Rename(desk_name);
-                  desk->SetWallpaper(desk_wallpaper);
-                  desk->SetHotkey(desk_hotkey);
-
-                  /* Update the lsit box content */
+                  /* Update the list box content */
                   SendMessage(listBox, LB_DELETESTRING, index, 0);
                   index = SendMessage(listBox, LB_INSERTSTRING, index, (LPARAM)desk->GetText());
                   SendMessage(listBox, LB_SETITEMDATA, index, (LPARAM)desk);
