@@ -36,7 +36,6 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false),
 {
    Settings s;
    Settings::Window settings(&s);
-   TCHAR className[50];
 
    if (m_tasklist == NULL)
    {
@@ -48,8 +47,8 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false),
       m_tasklist->AddRef();
 
    //Try to see if there are some special settings for this window
-   if (GetClassName(hWnd, className, sizeof(className)/sizeof(TCHAR)) != 0)
-      settings.Open(className);
+   GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
+   OpenSettings(settings, false);
 
    if (settings.IsValid())
    {
@@ -68,13 +67,10 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false),
       m_autosize = settings.LoadAutoSetSize();
       m_autopos = settings.LoadAutoSetPos();
 
-      if (m_autosize || m_autopos)
-      {
-         settings.LoadPosition(&rect);
+      if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
          SetWindowPos(m_hWnd, 0, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
                       SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
                       (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
-      }
    }
    else
       //Find out on which desktop the window is
@@ -85,12 +81,12 @@ Window::~Window(void)
 {
    ULONG count;
 
+   if (m_autoSaveSettings)
+      SaveSettings();
+
    count = m_tasklist->Release();
    if (count == 0)
       m_tasklist = NULL;
-
-   if (m_autoSaveSettings)
-      SaveSettings();
 }
 
 void Window::MoveToDesktop(Desktop * desk)
