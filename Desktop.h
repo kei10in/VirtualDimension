@@ -34,6 +34,9 @@
 using namespace std;
 class Window;
 
+#define DESKTOP_WALLPAPER_DEFAULT   "<default>"
+#define DESKTOP_WALLPAPER_NONE      "<none>"
+
 class Desktop: public ToolTip::Tool, HotKeyManager::EventHandler
 {
 public:
@@ -66,6 +69,7 @@ public:
    LPTSTR GetWallpaper()      { return m_wallpaperFile; }
    void SetWallpaper(LPTSTR fileName);
    void RefreshWallpaper()    { m_wallpaper.Activate(); }
+   LPTSTR FormatWallpaper(LPTSTR fileName);
 
    COLORREF GetBackgroundColor() const   { return m_bkColor; }
    void SetBackgroundColor(COLORREF col);
@@ -107,9 +111,11 @@ protected:
       bool Apply(HWND hDlg);
       void OnWallpaperChanged(HWND hDlg, HWND ctrl);
       void OnBrowseWallpaper(HWND hDlg);
+      void OnChooseWallpaper(HWND hDlg);
       void OnPreviewDrawItem(LPDRAWITEMSTRUCT lpDrawItem);
       void OnBgColorDrawItem(LPDRAWITEMSTRUCT lpDrawItem);
       void SelectColor(HWND hDlg);
+      void ResetWallpaper(HWND hDlg);
 
    protected:
       Desktop * m_desk;

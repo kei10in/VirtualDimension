@@ -71,6 +71,19 @@ BEGIN
     END
 END
 
+IDM_WALLPAPER_CTXMENU MENU 
+BEGIN
+    POPUP "PopupMenu"
+    BEGIN
+        MENUITEM "&Default wallpaper",          IDC_DEFAULT_WALLPAPER
+        MENUITEM "&No wallpaper",               IDC_NO_WALLPAPER
+        MENUITEM SEPARATOR
+        MENUITEM "&Reset",                      IDC_PREVIOUS_WALLPAPER
+        MENUITEM SEPARATOR
+        MENUITEM "&Browse...",                  IDC_BROWSE_WALLPAPER
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -144,16 +157,16 @@ BEGIN
     EDITTEXT        IDC_NAME,43,7,136,14,ES_AUTOHSCROLL
     RTEXT           "Name",IDC_STATIC,7,10,33,8
     CONTROL         "",IDC_PREVIEW,"Static",SS_OWNERDRAW | SS_SUNKEN,182,7,
-                    64,45
-    EDITTEXT        IDC_WALLPAPER,43,26,117,14,ES_AUTOHSCROLL
+                    64,48
     RTEXT           "Wallpaper",IDC_STATIC,7,29,33,8
-    PUSHBUTTON      "...",IDC_BROWSE_WALLPAPER,163,26,16,14
+    PUSHBUTTON      "...",IDC_CHOOSE_WALLPAPER,163,26,16,14,BS_NOTIFY
     CONTROL         "",IDC_HOTKEY,"AlternateHotKeyControl",WS_BORDER | 
                     WS_TABSTOP,43,45,136,14
     RTEXT           "Hotkey",IDC_STATIC,7,48,33,8
     CONTROL         "",IDC_BGCOLOR_BTN,"Static",SS_OWNERDRAW | SS_NOTIFY,43,
-                    64,136,13,WS_EX_STATICEDGE
+                    64,136,14,WS_EX_STATICEDGE
     LTEXT           "Color",IDC_STATIC,7,66,33,8,0,WS_EX_RIGHT
+    EDITTEXT        IDC_WALLPAPER,43,26,117,14,ES_AUTOHSCROLL
 END
 
 IDD_SHORTCUT_SETTINGS DIALOGEX 0, 0, 214, 114

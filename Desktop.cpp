@@ -49,7 +49,7 @@ Desktop::Desktop(Settings::Desktop * desktop)
    desktop->GetHotkey(&m_hotkey);
    m_bkColor = desktop->GetColor();
 
-   m_wallpaper.SetImage(m_wallpaperFile);
+   m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));
    m_wallpaper.SetColor(m_bkColor);
 
    m_active = false;
@@ -399,10 +399,29 @@ void Desktop::OnHotkey()
    deskMan->SwitchToDesktop(this);
 }
 
+LPTSTR Desktop::FormatWallpaper(LPTSTR fileName)
+{
+   LPTSTR res;
+
+   if (*fileName == 0)
+   {
+      strcpy(fileName, DESKTOP_WALLPAPER_DEFAULT);
+      res = "";
+   }
+   else if (stricmp(m_wallpaperFile, DESKTOP_WALLPAPER_NONE) == 0)
+      res = NULL;
+   else if (stricmp(m_wallpaperFile, DESKTOP_WALLPAPER_DEFAULT) == 0)
+      res = "";
+   else
+      res = fileName;
+
+   return res;
+}
+
 void Desktop::SetWallpaper(LPTSTR fileName)
 {
    strncpy(m_wallpaperFile, fileName, sizeof(m_wallpaperFile)/sizeof(TCHAR));
-   m_wallpaper.SetImage(m_wallpaperFile);
+   m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));
 }
 
 void Desktop::SetBackgroundColor(COLORREF col)

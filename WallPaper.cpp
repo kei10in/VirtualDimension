@@ -114,6 +114,10 @@ void WallPaper::Activate()
    m_wallPaperLoader.LoadImageAsync(this);
 }
 
+/** Set the wallpaper.
+ * Points to the path of the image to use, or an empty string for default wallpaper (the one set when VD was started),
+ * or NULL to disable the wallpaper.
+ */
 void WallPaper::SetImage(LPTSTR fileName)
 {
    if (m_fileName != m_bmpFileName)
@@ -122,7 +126,7 @@ void WallPaper::SetImage(LPTSTR fileName)
       delete m_bmpFileName;
    }
 
-   if ((fileName != NULL) && (*fileName == 0))
+   if (fileName != NULL && *fileName == 0)
       m_fileName = m_defaultWallpaper;
    else
       m_fileName = fileName;
@@ -222,6 +226,8 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
 			   picture->Release();
 		   }
       }
+      else
+         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, "", 0);
 
       // Set the background color
       BackgroundColor::GetInstance().SetColor(wallpaper->m_bkColor);

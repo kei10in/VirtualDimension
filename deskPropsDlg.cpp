@@ -71,7 +71,7 @@ bool Desktop::DesktopProperties::Apply(HWND hDlg)
 
    //Change wallpaper
    m_desk->SetWallpaper(m_wallpaper);
-   
+
    //Set hotkey
    m_desk->SetHotkey((int)SendDlgItemMessage(hDlg, IDC_HOTKEY, HKM_GETHOTKEY, 0, 0));
 
@@ -100,6 +100,10 @@ void Desktop::DesktopProperties::OnBrowseWallpaper(HWND hDlg)
 {
    OPENFILENAME ofn;
 
+   // Reset text if a special mode is selected, to let the dialog open properly.
+   if (*m_wallpaper == '<')
+      *m_wallpaper = 0;
+
    // Initialize OPENFILENAME
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
@@ -116,6 +120,28 @@ void Desktop::DesktopProperties::OnBrowseWallpaper(HWND hDlg)
 
    if (GetOpenFileName(&ofn) == TRUE)
       SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)m_wallpaper);
+   else
+      SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_GETTEXT, MAX_PATH, (LPARAM)m_wallpaper);
+}
+
+void Desktop::DesktopProperties::OnChooseWallpaper(HWND hDlg)
+{
+   RECT rect;
+   HMENU hMenu = LoadMenu(vdWindow, MAKEINTRESOURCE(IDM_WALLPAPER_CTXMENU));
+   HMENU hPopupMenu = GetSubMenu(hMenu, 0);
+
+   //Prepare the menu
+   if (stricmp(m_wallpaper, DESKTOP_WALLPAPER_DEFAULT)==0)
+      CheckMenuItem(hPopupMenu, IDC_DEFAULT_WALLPAPER, MF_CHECKED|MF_BYCOMMAND);
+   else if (stricmp(m_wallpaper, DESKTOP_WALLPAPER_NONE)==0)
+      CheckMenuItem(hPopupMenu, IDC_NO_WALLPAPER, MF_CHECKED|MF_BYCOMMAND);
+   else
+      CheckMenuItem(hPopupMenu, IDC_BROWSE_WALLPAPER, MF_CHECKED|MF_BYCOMMAND);
+
+   //Display the menu right below the button
+   GetWindowRect(GetDlgItem(hDlg, IDC_CHOOSE_WALLPAPER), &rect);
+   TrackPopupMenu(hPopupMenu, TPM_TOPALIGN | TPM_RIGHTALIGN, rect.right, rect.bottom, 0, hDlg, NULL);
+   DestroyMenu(hMenu);
 }
 
 void Desktop::DesktopProperties::OnPreviewDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
@@ -172,6 +198,11 @@ void Desktop::DesktopProperties::SelectColor(HWND hDlg)
    }
 }
 
+void Desktop::DesktopProperties::ResetWallpaper(HWND hDlg)
+{
+   SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)m_desk->GetWallpaper());
+}
+
 // Message handler for the desktop properties dialog box.
 LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -201,6 +232,25 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
 			EndDialog(hDlg, LOWORD(wParam)); //Return the last pressed button
 			return TRUE;
  
+      case IDC_CHOOSE_WALLPAPER: 
+         if (HIWORD(wParam) == BN_CLICKED)
+            self->OnChooseWallpaper(hDlg);
+         else if (HIWORD(wParam) == BN_DOUBLECLICKED)
+            self->OnBrowseWallpaper(hDlg);
+        break;
+
+      case IDC_DEFAULT_WALLPAPER:
+         SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)DESKTOP_WALLPAPER_DEFAULT);
+         break;
+
+      case IDC_NO_WALLPAPER:
+         SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)DESKTOP_WALLPAPER_NONE);
+         break;
+
+      case IDC_PREVIOUS_WALLPAPER:
+         self->ResetWallpaper(hDlg);
+         break;
+
       case IDC_BROWSE_WALLPAPER:
          self->OnBrowseWallpaper(hDlg);
          break;
@@ -212,6 +262,7 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
             self->OnWallpaperChanged(hDlg, (HWND)lParam);
             break;
          }
+         break;
 
       case IDC_NAME:
          switch(HIWORD(wParam))
@@ -221,6 +272,7 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
             EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
             break;
          }
+         break;
 
       case IDC_HOTKEY:
          switch(HIWORD(wParam))
@@ -230,6 +282,7 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
             EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
             break;
          }
+         break;
 
       case IDC_BGCOLOR_BTN:
          switch(HIWORD(wParam))
@@ -238,7 +291,8 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
             //Enable the APPLY button
             self->SelectColor(hDlg);
             break;
-         }   
+         }
+         break;
       }
 		break;
 
