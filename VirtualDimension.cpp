@@ -260,7 +260,6 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
       m_draggedWindow = NULL;
 
       deskMan->SwitchToDesktop(desk);
-      InvalidateRect(hWnd, NULL, TRUE);
    }
 
    return 0;
