@@ -66,7 +66,9 @@ public:
    int m_hotkey;
    RECT m_rect;
 
+#ifdef USE_IACTIVEDESKTOP
    static IActiveDesktop * m_ActiveDesktop;
+#endif /*USE_IACTIVEDESKTOP*/
 };
 
 #endif /*__DESKTOP_H__*/
