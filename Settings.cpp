@@ -140,7 +140,7 @@ void Settings::SavePosition(LPRECT rect)
 
 int Settings::LoadDockedBorders()
 {
-	return LoadDWord(m_regKey, m_keyOpened, regValDockedBorders, 5 /*LEFT+TOP*/);
+	return LoadDWord(m_regKey, m_keyOpened, regValDockedBorders, 0);
 }
 
 void Settings::SaveDockedBorders(int pos)
