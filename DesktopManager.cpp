@@ -251,6 +251,8 @@ void DesktopManager::SwitchToDesktop(Desktop * desk)
 
    m_currentDesktop = desk;
    m_currentDesktop->Activate();
+
+   InvalidateRect(vdWindow, NULL, FALSE);
 }
 
 void DesktopManager::LoadDesktops()
