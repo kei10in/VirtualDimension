@@ -30,7 +30,9 @@ public:
    ~TrayIcon(void);
 
    void SetIcon(bool res);
-   bool HasIcon() const { return m_iconLoaded; }
+   bool HasIcon() const              { return m_iconLoaded; }
+   bool IsCloseToTray() const        { return m_closeToTray; }
+   void SetCloseToTray(bool totray)  { m_closeToTray = totray; }
 
 protected:
    void AddIcon();
