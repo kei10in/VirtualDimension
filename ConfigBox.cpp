@@ -235,6 +235,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             bool result = (SendMessage(listBox, LB_SETCURSEL, index, 0) != LB_ERR);
             EnableWindow(GetDlgItem(hDlg, IDC_REMOVE_DESK), result);
             EnableWindow(GetDlgItem(hDlg, IDC_SETUP_DESK), result);
+            EnableWindow(GetDlgItem(hDlg, IDC_DESK_SPIN), result);
             InvalidateRect(vdWindow, NULL, TRUE);
          }
          break;
