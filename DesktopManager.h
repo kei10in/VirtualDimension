@@ -88,6 +88,7 @@ protected:
    {
    public:
       DeskChangeEventHandler(): m_hotkey(0)  { return; }
+      virtual ~DeskChangeEventHandler()      { if (m_hotkey) HotKeyManager::GetInstance()->UnregisterHotkey(this); }
       virtual void OnHotkey()                { deskMan->SwitchToDesktop(deskMan->GetOtherDesk(change)); }
       virtual int GetHotkey() const          { return m_hotkey; }
       virtual void SetHotkey(int hotkey);
