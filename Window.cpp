@@ -204,7 +204,11 @@ void Window::ShowWindow()
 
    //Restore the application if needed
    if (!m_iconic)
+   {
+      winMan->DisableAnimations();
       ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
+      winMan->EnableAnimations();
+   }
 
    m_hidden = false;
 
@@ -230,7 +234,11 @@ void Window::HideWindow()
    //Minimize the application
    m_iconic = IsIconic();
    if (!m_iconic)
+   {
+      winMan->DisableAnimations();
       ::ShowWindow(m_hWnd, SW_SHOWMINNOACTIVE);
+      winMan->EnableAnimations();
+   }
 
    //Hide the icon
 #ifdef HIDEWINDOW_COMINTERFACE
