@@ -274,6 +274,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
          if ( (desk) &&
               ((draggedWindow = desk->GetWindowFromPoint(pt.x, pt.y)) != NULL) &&
+              (!draggedWindow->IsOnDesk(NULL)) &&
               (ClientToScreen(hWnd, &pt)) &&
               (DragDetect(hWnd, pt)) )
          {
