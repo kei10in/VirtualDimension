@@ -181,7 +181,7 @@ void Window::HideWindow()
    //Minimize the application
    m_iconic = IsIconic();
    if (!m_iconic)
-      ::ShowWindowAsync(m_hWnd, SW_SHOWMINNOACTIVE);
+      ::ShowWindow(m_hWnd, SW_SHOWMINNOACTIVE);
 
    //Hide the icon
    m_tasklist->DeleteTab(m_hWnd);
@@ -203,33 +203,37 @@ bool Window::IsOnCurrentDesk() const
 
 HICON Window::GetIcon(void)
 {
-   if (!GetObjectType(m_hIcon))
+   if (GetObjectType(m_hIcon))
+      return m_hIcon;
+
+   m_ownIcon = false;
+   m_hIcon = NULL;
+     	
+   //Get normal icon
+	if (SendMessageTimeout(m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD)&m_hIcon) &&
+       m_hIcon)
+      return m_hIcon;
+
+   //Get drag icon
+   if (SendMessageTimeout(m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD)&m_hIcon) &&
+       m_hIcon)
+      return m_hIcon;
+
+   //Get class icon
+   m_hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
+   if (m_hIcon)
+      return m_hIcon;
+
+   //Get default small icon from file
+   TCHAR lpFileName[256];
+   PlatformHelper::GetWindowFileName(m_hWnd, lpFileName, 256);
+   if (ExtractIconEx(lpFileName, 0, NULL, &m_hIcon, 1))
    {
-      m_ownIcon = false;
-
-      m_hIcon = NULL;
-     	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
-	   if ( !m_hIcon )
-		   SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
-      if ( !m_hIcon )
-	 	   m_hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
-      if ( !m_hIcon )
-      {
-         TCHAR lpFileName[256];
-
-         //Get the file name of the module
-         PlatformHelper::GetWindowFileName(m_hWnd, lpFileName, 256);
-
-         //Get default small icon
-         ExtractIconEx(lpFileName, 0, NULL, &m_hIcon, 1);
-         m_ownIcon = true;
-      }
-      if ( !m_hIcon )
-      {
-         m_ownIcon = false;
-         m_hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
-      }
+      m_ownIcon = true;
+      return m_hIcon;
    }
+
+   m_hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
 
    return m_hIcon;
 }
