@@ -21,14 +21,6 @@
 #ifndef __SHELLHOOK_H__
 #define __SHELLHOOK_H__
 
-#ifndef __STDCALL__ 
-#ifdef __GNUG__
-#define __STDCALL__ 
-#else
-#define __STDCALL__ WINAPI
-#endif
-#endif
-
 class ShellHook
 {
 public:
@@ -57,9 +49,11 @@ public:
    };
 
 protected:
+   typedef BOOL WINAPI RegisterShellHookProc(HWND,DWORD);
+
    static HINSTANCE hinstDLL;
    static int nbInstance;
-   static BOOL (__STDCALL__ *RegisterShellHook)(HWND,DWORD);
+   static RegisterShellHookProc *RegisterShellHook;
 
    HWND hWnd;
 };

@@ -24,7 +24,7 @@
 int ShellHook::nbInstance = 0;
 HINSTANCE ShellHook::hinstDLL = NULL;
 
-BOOL (__STDCALL__ *ShellHook::RegisterShellHook)(HWND,DWORD);
+ShellHook::RegisterShellHookProc * ShellHook::RegisterShellHook = NULL;
 /*
   // RegisterShellHook params
   RSH_DEREGISTER       = 0;
@@ -38,7 +38,7 @@ ShellHook::ShellHook(HWND hWnd)
    {
       hinstDLL = LoadLibrary((LPCTSTR) "shell32.dll");
 
-      RegisterShellHook = (BOOL (__STDCALL__ *)(HWND,DWORD) )GetProcAddress(hinstDLL, (LPCSTR)181);
+      RegisterShellHook = (RegisterShellHookProc*)GetProcAddress(hinstDLL, (LPCSTR)181);
       if (RegisterShellHook == NULL)
       {
          MessageBox(NULL, "Unable to find function 'RegisterShellHook' in shell32.dll", "Dynamic link error", MB_OK);
