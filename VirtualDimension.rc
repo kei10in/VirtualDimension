@@ -173,6 +173,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,17,80,10
     CONTROL         "Close To Tray",IDC_CLOSETOTRAY_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,115,30,80,10
+    CONTROL         "Start with Windows",IDC_STARTWITHWINDOWS_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,115,43,80,10
     GROUPBOX        "Options",IDC_STATIC,7,7,200,52
     CTEXT           "255",IDC_TRANSP_DISP,9,94,195,8
 END
