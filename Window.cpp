@@ -21,6 +21,7 @@
 #include "StdAfx.h"
 #include "window.h"
 #include "VirtualDimension.h"
+#include "movewindow.h"
 
 ITaskbarList* Window::m_tasklist = NULL;
 
@@ -85,8 +86,12 @@ void Window::MoveToDesktop(Desktop * desk)
    else
    {
       if (oldDesk != NULL)
+      {
          oldDesk->UpdateLayout();
-      m_desk->UpdateLayout();
+         m_desk->UpdateLayout();
+      }
+      else
+         deskMan->UpdateLayout();
    }
 }
 
@@ -211,7 +216,7 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       break;
 
    case VDM_MOVEWINDOW:
-      PostMessage(mainWnd, WM_VIRTUALDIMENSION, (WPARAM)VD_MOVEWINDOW, (LPARAM)this);
+      SelectDesktopForWindow(this);
       break;
 
    }
