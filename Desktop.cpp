@@ -364,10 +364,6 @@ void Desktop::Activate(void)
    // Activate the Virtual Dimension window (to make the window which has the focus lose it)
    SetForegroundWindow(vdWindow);
 
-   // Lock the foreground window, to prevent other windows from being activated while they
-   // are being displayed
-   LockSetForegroundWindow(LSFW_LOCK);
-
    // Show the windows
    for(it = winMan->GetIterator(); it; it++)
    {
@@ -388,9 +384,6 @@ void Desktop::Activate(void)
             win->HideWindow();
       }
    }
-
-   // Unlock the activation, so that other windows can be activated
-   LockSetForegroundWindow(LSFW_UNLOCK);
 
    // Restore the foreground window
    SetForegroundWindow(Window::GetOwnedWindow(m_foregroundWnd));
