@@ -24,6 +24,8 @@
 class BackgroundDisplayMode
 {
 public:
+   virtual ~BackgroundDisplayMode() { return; }
+
    virtual void BeginPainting(HDC hdc);
    virtual void PaintDesktop(HDC hdc, LPRECT rect, bool active);
    virtual void EndPainting(HDC hdc);
