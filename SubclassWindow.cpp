@@ -31,7 +31,6 @@ typedef struct RemoteStartupArgs {
 } RemoteStartupArgs;
 
 typedef struct RemoteCleanupArgs {
-	BOOL (WINAPI *fnFreeLibrary)(HINSTANCE);
    FARPROC (WINAPI *fnGetProcAddress)(HINSTANCE,LPCSTR);
    int fnIndex;
    HWND hWnd;
@@ -71,13 +70,12 @@ static void AfterRemoteStartup(void)
 
 static DWORD WINAPI RemoteCleanup(RemoteCleanupArgs* args) 
 {
-   DWORD (WINAPI *fnFunc)(HWND);
+   DWORD (WINAPI *fnFunc)(HINSTANCE,HWND);
 
-   fnFunc = (DWORD (WINAPI *)(HWND))args->fnGetProcAddress(args->hInstance, (LPCSTR)MAKEINTRESOURCE(args->fnIndex));
+   fnFunc = (DWORD (WINAPI *)(HINSTANCE,HWND))args->fnGetProcAddress(args->hInstance, (LPCSTR)MAKEINTRESOURCE(args->fnIndex));
 
    return fnFunc &&
-          fnFunc(args->hWnd) &&
-          args->fnFreeLibrary(args->hInstance);
+          fnFunc(args->hInstance, args->hWnd);
 }
 
 static void AfterRemoteCleanup(void)
@@ -278,8 +276,6 @@ bool UnHookWindow(HINSTANCE hInstance, HWND hWnd)
    }
 
    // Initialize the arguments
-   args.fnFreeLibrary = (BOOL (WINAPI *)(HINSTANCE))
-                          GetProcAddress(hinstKrnl, "FreeLibrary");
    args.fnGetProcAddress = (FARPROC (WINAPI *)(HINSTANCE,LPCSTR))GetProcAddress(hinstKrnl, "GetProcAddress");
    args.hWnd = hWnd;
    args.fnIndex = 0x2;
