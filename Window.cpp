@@ -476,7 +476,7 @@ void Window::Minimize()
          HideWindow();
       }
       else
-         CloseWindow(m_hWnd);
+         ::ShowWindow(m_hWnd, SW_MINIMIZE);
    }
    m_iconic = true;
 }
