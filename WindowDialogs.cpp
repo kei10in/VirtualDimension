@@ -316,7 +316,7 @@ void Window::OnApplyAutoSettingsBtn(HWND hDlg)
    //If not already open, try to open the Window's settings
    if (!settings.IsValid())
    {
-      OpenSettings(settings, false);
+      OpenSettings(settings, true); //If it does not exist, create it
 
       if (!settings.IsValid())
       {
