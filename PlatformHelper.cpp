@@ -28,6 +28,12 @@ DWORD (*PlatformHelper::GetWindowFileName)(HWND hWnd, LPTSTR lpFileName, int iBu
 HMODULE PlatformHelper::hPSAPILib = NULL;
 PlatformHelper::GetModuleFileNameEx_t * PlatformHelper::pGetModuleFileNameEx = NULL;
 
+void (*PlatformHelper::AlphaBlend)(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
+                                   HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
+                                   int nWidth, int nHeight, BYTE sourceAlpha) = NULL;
+HMODULE PlatformHelper::hMSImg32Lib = NULL;
+PlatformHelper::AlphaBlend_t * PlatformHelper::pAlphaBlend = NULL;
+
 PlatformHelper::PlatformHelper(void)
 {
    hPSAPILib = LoadLibrary("psapi.dll");
@@ -37,10 +43,19 @@ PlatformHelper::PlatformHelper(void)
       GetWindowFileName = GetWindowFileNameNT;
    else
       GetWindowFileName = GetWindowFileName9x;
+
+   hMSImg32Lib = LoadLibrary("msimg32.dll");
+   pAlphaBlend = (AlphaBlend_t *)GetProcAddress(hMSImg32Lib, "AlphaBlend");
+
+   if (pAlphaBlend)
+      AlphaBlend = AlphaBlendMSImg32;
+   else
+      AlphaBlend = AlphaBlendEmul;
 }
 
 PlatformHelper::~PlatformHelper(void)
 {
+   FreeLibrary(hMSImg32Lib);
    FreeLibrary(hPSAPILib);
 }
 
@@ -192,4 +207,35 @@ bool PlatformHelper::SaveAsBitmap(IPicture * picture, LPTSTR fileName)
 	free(BufferBytes);
 
 	return bResult;
+}
+
+void PlatformHelper::AlphaBlendMSImg32(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
+                                       HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
+                                       int nWidth, int nHeight, BYTE sourceAlpha)
+{
+   BLENDFUNCTION bf;
+   bf.AlphaFormat = 0;
+   bf.BlendFlags = 0;
+   bf.BlendOp = AC_SRC_OVER;
+   bf.SourceConstantAlpha = sourceAlpha;
+
+   pAlphaBlend(hdcDest, nXOriginDest, nYOriginDest, nWidth, nHeight, hdcSrc, 
+               nXOriginSrc, nYOriginSrc, nWidth, nHeight, bf);
+}
+
+void PlatformHelper::AlphaBlendEmul(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
+                                    HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
+                                    int nWidth, int nHeight, BYTE sourceAlpha)
+{
+   const BYTE otherAlpha = 255-sourceAlpha;
+   for(int x = 0; x < nWidth; x++)
+      for(int y = 0; y < nHeight; y++)
+      {
+         COLORREF dst = GetPixel(hdcDest, x+nXOriginDest, y+nYOriginDest);
+         COLORREF src = GetPixel(hdcSrc, x+nXOriginSrc, y+nYOriginSrc);
+         COLORREF res = RGB((GetRValue(dst) * sourceAlpha + GetRValue(src) * otherAlpha) >> 8,
+                            (GetGValue(dst) * sourceAlpha + GetGValue(src) * otherAlpha) >> 8,
+                            (GetBValue(dst) * sourceAlpha + GetBValue(src) * otherAlpha) >> 8);
+         SetPixel(hdcDest, x+nXOriginDest, y+nYOriginDest, res);
+      }
 }

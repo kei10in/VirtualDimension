@@ -33,6 +33,9 @@ public:
    ~PlatformHelper(void);
 
    static DWORD (*GetWindowFileName)(HWND hWnd, LPTSTR lpFileName, int iBufLen);
+   static void (*AlphaBlend)(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
+                             HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
+                             int nWidth, int nHeight, BYTE sourceAlpha);
    
    static IPicture * OpenImage(LPTSTR fileName);
    static bool SaveAsBitmap(IPicture * picture, LPTSTR fileName);
@@ -45,6 +48,21 @@ protected:
 
    static DWORD GetWindowFileNameNT(HWND hWnd, LPTSTR lpFileName, int iBufLen);
    static DWORD GetWindowFileName9x(HWND hWnd, LPTSTR lpFileName, int iBufLen);
+
+
+   typedef BOOL WINAPI AlphaBlend_t(HDC hdcDest, int nXOriginDest, int nYOriginDest, int nWidthDest, 
+                                    int nHeightDest, HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
+                                    int nWidthSrc, int nHeightSrc, BLENDFUNCTION blendFunction);
+
+   static HMODULE hMSImg32Lib;
+   static AlphaBlend_t * pAlphaBlend;
+
+   static void AlphaBlendMSImg32(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
+                                 HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
+                                 int nWidth, int nHeight, BYTE sourceAlpha);
+   static void AlphaBlendEmul(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
+                              HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
+                              int nWidth, int nHeight, BYTE sourceAlpha);
 };
 
 #endif /*__PLATFORMHELPER_H__*/
