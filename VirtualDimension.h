@@ -26,12 +26,14 @@
 #include "transparency.h"
 #include "trayicon.h"
 #include "alwaysontop.h"
+#include "windowsmanager.h"
 
 extern HINSTANCE hInst;
 
 extern HWND configBox;
 extern HWND mainWnd;
 extern DesktopManager * deskMan;
+extern WindowsManager * winMan;
 extern Transparency * transp;
 extern TrayIcon * trayIcon;
 extern AlwaysOnTop * ontop;
