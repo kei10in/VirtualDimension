@@ -378,7 +378,7 @@ LRESULT VirtualDimension::OnLeftButtonDblClk(HWND /*hWnd*/, UINT /*message*/, WP
    return 0;
 }
 
-LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
    HMENU hMenu, hBaseMenu;
    POINT pt;
@@ -390,7 +390,8 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    //Get the context menu
    Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
    Window * window = NULL;
-   if (desk != NULL)
+   if (((wParam & MK_CONTROL) == 0) && 
+       (desk != NULL))
    {
       window = desk->GetWindowFromPoint(pt.x, pt.y);
       if (window)
