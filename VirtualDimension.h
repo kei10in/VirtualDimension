@@ -23,12 +23,18 @@
 
 #include "resource.h"
 #include "desktopmanager.h"
+#include "transparency.h"
+#include "trayicon.h"
+#include "alwaysontop.h"
 
 extern HINSTANCE hInst;
 
 extern HWND configBox;
 extern HWND mainWnd;
 extern DesktopManager * deskMan;
+extern Transparency * transp;
+extern TrayIcon * trayIcon;
+extern AlwaysOnTop * ontop;
 
 extern char desk_name[80];
 extern char desk_wallpaper[256];

@@ -25,9 +25,7 @@
 #include "settings.h"
 #include "desktopmanager.h"
 #include "Windowsx.h"
-#include "Shellapi.h"
 #include "hotkeymanager.h"
-#include "transparency.h"
 
 #define MAX_LOADSTRING 100
 
@@ -40,15 +38,18 @@ HWND configBox = NULL;
 HWND mainWnd = NULL;
 DesktopManager * deskMan;
 Transparency * transp;
+TrayIcon * trayIcon;
+AlwaysOnTop * ontop;
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 HWND				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK Configuration(HWND, UINT, WPARAM, LPARAM);
 void AddTaskbarIcons(HWND hWnd);
 void DelTaskbarIcons(HWND hWnd);
+
+HWND CreateConfigBox();
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE /*hPrevInstance*/,
@@ -77,8 +78,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	// Main message loop:
 	while (GetMessage(&msg, NULL, 0, 0)) 
 	{
-		if ( ((!IsWindow(configBox) || !IsDialogMessage(configBox, &msg))) &&
-           !TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) 
+		if (IsWindow(configBox) && IsDialogMessage(configBox, &msg))
+      {
+         if (NULL == PropSheet_GetCurrentPageHwnd(configBox))
+         {
+            DestroyWindow(configBox);
+            configBox = NULL;
+         }
+      }
+      else if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -149,12 +157,6 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
    if (!hWnd)
       return NULL;
 
-   // Set the window Always On Top if needed
-   if (settings.LoadAlwaysOnTop())
-   {
-      SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-   }
-
    // Show window if needed
    if (settings.LoadShowWindow())
    {
@@ -163,36 +165,6 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
    return hWnd;
-}
-
-void AddTaskbarIcons(HWND hWnd)
-{
-   NOTIFYICONDATA data;
-
-   data.cbSize = sizeof(data);
-   data.hWnd = hWnd;
-   data.uID = 1;
-   data.uFlags = NIF_ICON | NIF_MESSAGE;
-   data.uCallbackMessage = IDC_TRAYICON;
-   data.hIcon = LoadIcon(hInst, (LPCTSTR)IDI_VIRTUALDIMENSION);
-   //data.uVersion = 0;
-
-   Shell_NotifyIcon(NIM_ADD, &data);
-}
-
-void DelTaskbarIcons(HWND hWnd)
-{
-   NOTIFYICONDATA data;
-
-   data.cbSize = sizeof(data);
-   data.hWnd = hWnd;
-   data.uID = 1;
-   data.uFlags = NIF_ICON | NIF_MESSAGE;
-   data.uCallbackMessage = IDC_TRAYICON;
-   data.hIcon = LoadIcon(hInst, (LPCTSTR)IDI_VIRTUALDIMENSION);
-   //data.uVersion = 0;
-
-   Shell_NotifyIcon(NIM_DELETE, &data);
 }
 
 //
@@ -228,10 +200,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
       case IDM_CONFIGURE:
          if (!configBox)
-         {
-            configBox = CreateDialog(hInst, (LPCSTR)IDD_SETTINGS, hWnd, (DLGPROC)Configuration); 
-            ShowWindow(configBox, SW_SHOW);
-         }
+            configBox = CreateConfigBox();
          break;
       case SC_CLOSE:
 		case IDM_EXIT:
@@ -356,10 +325,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          settings.SavePosition(&pos);
 
          // Remove the tray icon
-         DelTaskbarIcons(hWnd);
+         delete trayIcon;
 
          // Cleanup transparency
          delete transp;
+
+         // Cleanup always on top state
+         delete ontop;
 
          //Destroy the desktop manager
          delete deskMan;
@@ -369,6 +341,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
    case WM_CREATE:
       {
+         mainWnd = hWnd;
+
          // Setup the system menu
          HMENU pSysMenu= GetSystemMenu(hWnd, FALSE);
 	      if (pSysMenu != NULL)
@@ -380,20 +354,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          s_uTaskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
 
          // Initialize tray icon
-         AddTaskbarIcons(hWnd);
+         trayIcon = new TrayIcon(hWnd);
 
          // Initialize transparency
          transp = new Transparency(hWnd);
 
+         // Initialize always on top state
+         ontop = new AlwaysOnTop(hWnd);
+
          // Create the desk manager
-         mainWnd = hWnd;
          deskMan = new DesktopManager;
       }
       break;
 
 	default:
       if(message == s_uTaskbarRestart)
-         AddTaskbarIcons(hWnd);
+         trayIcon->RefreshIcon();
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
