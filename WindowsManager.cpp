@@ -180,9 +180,6 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    WindowsList::Node * node = (*it).second;
    WindowsList::Iterator wIt(&m_windows, node);
    Window * win = *node;
-
-   if (win->IsMutexLocked())
-      return;
    
    wIt.MoveToBegin();
 
@@ -286,8 +283,7 @@ Window* WindowsManager::GetPredecessor(Window* win)
    {
       Window * prev = *node;
 
-      if (!prev->IsMutexLocked() &&
-          !prev->IsHidden() &&
+      if (!prev->IsHidden() &&
           !prev->IsIconic())
          return prev;
    }
