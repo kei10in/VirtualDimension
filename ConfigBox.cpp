@@ -225,7 +225,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          //Setup the column number controls
          hWnd = GetDlgItem(hDlg, IDC_COLUMN_NUMBER);
          SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)2, (LPARAM)0);
-         SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)deskMan->GetNbColumns());
+         SetDlgItemInt(hDlg, IDC_COLUMN_NUMBER, deskMan->GetNbColumns(), FALSE);
 
          hWnd = GetDlgItem(hDlg, IDC_COLUMN_SPIN);
          SendMessage(hWnd, UDM_SETRANGE, 0, (LPARAM) MAKELONG((short)99, (short) 1));
@@ -341,21 +341,19 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          {
          case EN_CHANGE:
             {
-               TCHAR buf[3];
                int nbCols=0;
                
                if (!IsWindowVisible(hDlg))
                   break;
 
                /* Get the current value */
-               SendMessage(GetDlgItem(hDlg, IDC_COLUMN_NUMBER), WM_GETTEXT, 3, (LPARAM)buf);
-               sscanf(buf, "%i", &nbCols);
+               nbCols = GetDlgItemInt(hDlg, IDC_COLUMN_NUMBER, NULL, FALSE);
 
                /* Ensure it is greater than 0 */
                if (nbCols < 1)
                {
                   nbCols = 1;
-                  SendMessage(GetDlgItem(hDlg, IDC_COLUMN_NUMBER), WM_SETTEXT, 0, (LPARAM)1);
+                  SetDlgItemInt(hDlg, IDC_COLUMN_NUMBER, 1, FALSE);
                }
 
                /* Save the change */
@@ -473,8 +471,7 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
          EnableWindow(hWnd, osdEnabled);
 
          //Setup timeout controls
-         hWnd = GetDlgItem(hDlg, IDC_TIMEOUT_EDIT);
-         SendMessage(hWnd, WM_SETTEXT, 0, osd->GetDefaultTimeout());
+         SetDlgItemInt(hDlg, IDC_TIMEOUT_EDIT, osd->GetDefaultTimeout(), FALSE);
          EnableWindow(hWnd, osdEnabled);
 
          hWnd = GetDlgItem(hDlg, IDC_TIMEOUT_SPIN);
@@ -564,12 +561,7 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
             osd->EnableBackground(SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ?  true : false);
 
             //Apply timeout
-            hWnd = GetDlgItem(hDlg, IDC_TIMEOUT_EDIT);
-            TCHAR buffer[10];
-            int timeout;
-            SendMessage(hWnd, WM_GETTEXT, sizeof(buffer)/sizeof(TCHAR), (LPARAM)buffer);
-            sscanf(buffer, "%i", &timeout);
-            osd->SetDefaultTimeout(timeout);
+            osd->SetDefaultTimeout(GetDlgItemInt(hDlg, IDC_TIMEOUT_EDIT, NULL, FALSE));
 
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
