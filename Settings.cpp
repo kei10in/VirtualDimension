@@ -22,7 +22,6 @@
 #include "settings.h"
 
 const char Settings::regKeyName[] = "Software\\Typz Software\\Virtual Dimension\\";
-
 const char Settings::regValPosition[] = "WindowPosition";
 const char Settings::regValNbColumns[] = "ColumnNumber";
 const char Settings::regValShowWindow[] = "ShowWindow";
@@ -32,12 +31,7 @@ const char Settings::regValTransparencyLevel[] = "TransparencyLevel";
 const char Settings::regValEnableTooltips[] = "EnableToolTips";
 const char Settings::regValConfirmKilling[] = "ConfirmKilling";
 const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
-
-const char Settings::Desktop::regKeyDesktops[] = "Desktops";
-
-const char Settings::Desktop::regValIndex[] = "DeskIndex";
-const char Settings::Desktop::regValWallpaper[] = "DeskWallpaper";
-const char Settings::Desktop::regValHotkey[] = "DeskHotkey";
+const char Settings::regValCloseToTray[] = "CloseToTray";
 
 Settings::Settings(void)
 {
@@ -55,15 +49,15 @@ Settings::~Settings(void)
       RegCloseKey(m_regKey);
 }
 
-DWORD Settings::LoadDWord(const char * entry, DWORD defVal)
+DWORD Settings::LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal)
 {
    DWORD size;
    DWORD val;
 
-   if ( (!m_keyOpened) || 
-        (RegQueryValueEx(m_regKey, entry, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
+   if ( (!keyOpened) || 
+        (RegQueryValueEx(regKey, entry, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
         (size != sizeof(val)) || 
-        (RegQueryValueEx(m_regKey, entry, NULL, NULL, (LPBYTE)&val, &size) != ERROR_SUCCESS) )
+        (RegQueryValueEx(regKey, entry, NULL, NULL, (LPBYTE)&val, &size) != ERROR_SUCCESS) )
    {  
       // Cannot load the value from registry --> set default value
       val = defVal;
@@ -72,10 +66,10 @@ DWORD Settings::LoadDWord(const char * entry, DWORD defVal)
    return val;
 }
 
-void Settings::SaveDWord(const char * entry, DWORD value)
+void Settings::SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value)
 {
-   if (m_keyOpened)
-      RegSetValueEx(m_regKey, entry, 0, REG_DWORD, (LPBYTE)&value, sizeof(value));
+   if (keyOpened)
+      RegSetValueEx(regKey, entry, 0, REG_DWORD, (LPBYTE)&value, sizeof(value));
 }
 
 void Settings::LoadPosition(LPRECT rect)
@@ -105,83 +99,98 @@ void Settings::SavePosition(LPRECT rect)
 
 unsigned long Settings::LoadNbCols()
 {
-   return (unsigned long)LoadDWord(regValNbColumns, 2);
+   return (unsigned long)LoadDWord(m_regKey, m_keyOpened, regValNbColumns, 2);
 }
 
 void Settings::SaveNbCols(unsigned long cols)
 {
-   SaveDWord(regValNbColumns, cols);
+   SaveDWord(m_regKey, m_keyOpened, regValNbColumns, cols);
 }
 
 bool Settings::LoadHasTrayIcon()
 {
-   return LoadDWord(regValHasTrayIcon, TRUE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValHasTrayIcon, TRUE) ? true : false;
 }
 
 void Settings::SaveHasTrayIcon(bool val)
 {
-   SaveDWord(regValHasTrayIcon, val);
+   SaveDWord(m_regKey, m_keyOpened, regValHasTrayIcon, val);
 }
 
 bool Settings::LoadShowWindow()
 {
-   return LoadDWord(regValShowWindow, TRUE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValShowWindow, TRUE) ? true : false;
 }
 
 void Settings::SaveShowWindow(bool val)
 {
-   SaveDWord(regValShowWindow, val);
+   SaveDWord(m_regKey, m_keyOpened, regValShowWindow, val);
 }
 
 bool Settings::LoadAlwaysOnTop()
 {
-   return LoadDWord(regValAlwaysOnTop, FALSE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, FALSE) ? true : false;
 }
 
 void Settings::SaveAlwaysOnTop(bool val)
 {
-   SaveDWord(regValAlwaysOnTop, val);
+   SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, val);
 }
 
 unsigned char Settings::LoadTransparencyLevel()
 {
-   return (unsigned char)LoadDWord(regValTransparencyLevel, 255);
+   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, 255);
 }
 
 void Settings::SaveTransparencyLevel(unsigned char level)
 {
-   SaveDWord(regValTransparencyLevel, level);
+   SaveDWord(m_regKey, m_keyOpened, regValTransparencyLevel, level);
 }
 
 bool Settings::LoadEnableTooltips()
 {
-   return LoadDWord(regValEnableTooltips, TRUE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValEnableTooltips, TRUE) ? true : false;
 }
 
 void Settings::SaveEnableTooltips(bool enable)
 {
-   SaveDWord(regValEnableTooltips, enable);
+   SaveDWord(m_regKey, m_keyOpened, regValEnableTooltips, enable);
 }
 
 bool Settings::LoadConfirmKilling()
 {
-   return LoadDWord(regValConfirmKilling, TRUE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValConfirmKilling, TRUE) ? true : false;
 }
 
 void Settings::SaveConfirmKilling(bool confirm)
 {
-   SaveDWord(regValConfirmKilling, confirm);
+   SaveDWord(m_regKey, m_keyOpened, regValConfirmKilling, confirm);
 }
 
 bool Settings::LoadAutoSaveWindowsSettings()
 {
-   return LoadDWord(regValAutoSaveWindowsSettings, FALSE) ? true : false;
+   return LoadDWord(m_regKey, m_keyOpened, regValAutoSaveWindowsSettings, FALSE) ? true : false;
 }
 
 void Settings::SaveAutoSaveWindowsSettings(bool autosave)
 {
-   SaveDWord(regValAutoSaveWindowsSettings, autosave);
+   SaveDWord(m_regKey, m_keyOpened, regValAutoSaveWindowsSettings, autosave);
 }
+
+bool Settings::LoadCloseToTray()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValCloseToTray, FALSE) ? true : false;
+}
+
+void Settings::SaveCloseToTray(bool totray)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValCloseToTray, totray);
+}
+
+const char Settings::Desktop::regKeyDesktops[] = "Desktops";
+const char Settings::Desktop::regValIndex[] = "DeskIndex";
+const char Settings::Desktop::regValWallpaper[] = "DeskWallpaper";
+const char Settings::Desktop::regValHotkey[] = "DeskHotkey";
 
 Settings::Desktop::Desktop(Settings * settings)
 {
@@ -210,11 +219,10 @@ void Settings::Desktop::Init(Settings * settings)
 {
    *m_name = '\0';
    m_keyOpened = false;
-   m_topKeyOpened = false;
 
    m_topKeyOpened = 
       (settings->m_keyOpened) &&
-      (RegOpenKeyEx(settings->m_regKey, regKeyDesktops, 0, KEY_ALL_ACCESS, &m_topKey) == ERROR_SUCCESS);
+      (RegCreateKeyEx(settings->m_regKey, regKeyDesktops, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_topKey, NULL) == ERROR_SUCCESS);
 }
 
 bool Settings::Desktop::Open(int index)
@@ -316,19 +324,7 @@ bool Settings::Desktop::Rename(char * buffer)
 
 int Settings::Desktop::GetIndex(int * index)
 {
-   DWORD size;
-   DWORD idx;
-
-   if ( (!m_keyOpened) || 
-        (RegQueryValueEx(m_regKey, regValIndex, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
-        (size != sizeof(idx)) || 
-        (RegQueryValueEx(m_regKey, regValIndex, NULL, NULL, (LPBYTE)&idx, &size) != ERROR_SUCCESS) )
-   {  
-      // Cannot load the index from registry
-      // --> set default values
-
-      idx = 0;
-   }
+   DWORD idx = Settings::LoadDWord(m_regKey, m_keyOpened, regValIndex, 0);
 
    if (index != NULL)
       *index = idx;
@@ -338,8 +334,7 @@ int Settings::Desktop::GetIndex(int * index)
 
 void Settings::Desktop::SetIndex(int index)
 {
-   if (m_keyOpened)
-      RegSetValueEx(m_regKey, regValIndex, 0, REG_DWORD, (LPBYTE)&index, sizeof(index));
+   Settings::SaveDWord(m_regKey, m_keyOpened, regValIndex, index);
 }
 
 char * Settings::Desktop::GetWallpaper(char * buffer, unsigned int length)
@@ -400,4 +395,149 @@ void Settings::Desktop::SetHotkey(int hotkey)
 {
    if (m_keyOpened)
       RegSetValueEx(m_regKey, regValHotkey, 0, REG_DWORD, (LPBYTE)&hotkey, sizeof(hotkey));
+}
+
+const char Settings::Window::regKeyWindows[] = "Windows";
+const char Settings::Window::regValAlwaysOnTop[] = "AlwaysOnTop";
+const char Settings::Window::regValOnAllDesktops[] = "OnAllDesktops";
+const char Settings::Window::regValMinimizeToTray[] = "MinimizeToTray";
+
+Settings::Window::Window(Settings * settings)
+{
+   Init(settings);
+}
+
+Settings::Window::Window(Settings * settings, int index)
+{
+   Init(settings);
+   Open(index);
+}
+
+Settings::Window::Window(Settings * settings, char * name, bool create)
+{
+   Init(settings);
+   Open(name, create);
+}
+
+Settings::Window::~Window()
+{
+   if (m_keyOpened)
+      Close();
+}
+
+void Settings::Window::Init(Settings * settings)
+{
+   *m_name = '\0';
+   m_keyOpened = false;
+
+   m_topKeyOpened = 
+      (settings->m_keyOpened) &&
+      (RegCreateKeyEx(settings->m_regKey, regKeyWindows, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_topKey, NULL) == ERROR_SUCCESS);
+}
+
+bool Settings::Window::OpenDefault()
+{
+   if (m_keyOpened)
+      Close();
+
+   m_keyOpened =
+      (m_topKeyOpened) &&
+      (RegOpenKeyEx(m_topKey, NULL, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
+
+   strcpy(m_name, "Default");
+
+   return m_keyOpened;
+}
+
+bool Settings::Window::Open(int index)
+{
+   DWORD length;
+   HRESULT result;
+
+   if (m_keyOpened)
+      Close();
+
+   length = sizeof(m_name);
+   m_keyOpened =
+      (m_topKeyOpened) &&
+      (((result = RegEnumKeyEx(m_topKey, index, m_name, &length, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS) || (result == ERROR_MORE_DATA)) && 
+      (RegOpenKeyEx(m_topKey, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS);
+
+   return m_keyOpened;
+}
+
+bool Settings::Window::Open(char * name, bool create)
+{
+   if (m_keyOpened)
+      Close();
+
+   strncpy(m_name, name, MAX_NAME_LENGTH);
+
+   m_keyOpened =
+      (m_topKeyOpened) &&
+      (create ?
+         (RegCreateKeyEx(m_topKey, m_name, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_regKey, NULL) == ERROR_SUCCESS) 
+       : (RegOpenKeyEx(m_topKey, m_name, 0, KEY_ALL_ACCESS, &m_regKey) == ERROR_SUCCESS));
+
+   return m_keyOpened;
+}
+
+void Settings::Window::Close()
+{
+   RegCloseKey(m_regKey);
+   m_keyOpened = false;
+}
+
+bool Settings::Window::IsValid()
+{
+   return m_keyOpened;
+}
+
+void Settings::Window::Destroy()
+{
+   if (m_keyOpened)
+      Close();
+   else
+      return;
+
+   if (m_topKeyOpened)
+      RegDeleteKey(m_topKey, m_name);
+}
+
+char * Settings::Window::GetName(char * buffer, unsigned int length)
+{
+   if (m_keyOpened && (buffer != NULL))
+      strncpy(buffer, m_name, length);
+   
+   return buffer;
+}
+
+bool Settings::Window::GetAlwaysOnTop()
+{
+   return Settings::LoadDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, FALSE) ? true : false;
+}
+
+void Settings::Window::SetAlwaysOnTop(bool ontop)
+{
+   Settings::SaveDWord(m_regKey, m_keyOpened, regValAlwaysOnTop, ontop);
+}
+
+bool Settings::Window::GetOnAllDesktops()
+{
+   return Settings::LoadDWord(m_regKey, m_keyOpened, regValOnAllDesktops, FALSE) ? true : false;
+}
+
+void Settings::Window::SetOnAllDesktops(bool all)
+{
+   Settings::SaveDWord(m_regKey, m_keyOpened, regValOnAllDesktops, all);
+}
+
+bool Settings::Window::GetMinimizeToTray()
+{
+   return Settings::LoadDWord(m_regKey, m_keyOpened, regValMinimizeToTray, FALSE) ? true : false;
+}
+
+void Settings::Window::SetMinimizeToTray(bool totray)
+{
+   Settings::SaveDWord(m_regKey, m_keyOpened, regValMinimizeToTray, totray);
 }
