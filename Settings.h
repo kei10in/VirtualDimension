@@ -60,10 +60,16 @@ public:
    void SaveOSDFont(LPLOGFONT lf);
    COLORREF LoadOSDFgColor();
    void SaveOSDFgColor(COLORREF col);
+   COLORREF LoadOSDBgColor();
+   void SaveOSDBgColor(COLORREF col);
    void LoadOSDPosition(LPPOINT pt);
    void SaveOSDPosition(LPPOINT pt);
    unsigned char LoadOSDTransparencyLevel();
    void SaveOSDTransparencyLevel(unsigned char level);
+   bool LoadOSDHasBackground();
+   void SaveOSDHasBackground(bool background);
+   bool LoadOSDIsTransparent();
+   void SaveOSDIsTransparent(bool transp);
 
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
@@ -187,8 +193,11 @@ protected:
    static const char regValOSDTimeout[];
    static const char regValOSDFont[];
    static const char regValOSDFgColor[];
+   static const char regValOSDBgColor[];
    static const char regValOSDPosition[];
    static const char regValOSDTransparencyLevel[];
+   static const char regValOSDHasBackground[];
+   static const char regValOSDIsTransparent[];
    static const char regValStartWithWindows[];
 
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);

@@ -37,8 +37,11 @@ const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
 const char Settings::regValOSDTimeout[] = "OSDTimeout";
 const char Settings::regValOSDFont[] = "OSDFont";
 const char Settings::regValOSDFgColor[] = "OSDFgColor";
+const char Settings::regValOSDBgColor[] = "OSDBgColor";
 const char Settings::regValOSDPosition[] = "OSDPosition";
 const char Settings::regValOSDTransparencyLevel[] = "OSDTransparencyLevel";
+const char Settings::regValOSDHasBackground[] = "OSDHasBackground";
+const char Settings::regValOSDIsTransparent[] = "OSDIsTransparent";
 
 Settings::Settings(void)
 {
@@ -264,6 +267,16 @@ void Settings::SaveOSDFgColor(COLORREF col)
    SaveDWord(m_regKey, m_keyOpened, regValOSDFgColor, col);
 }
 
+COLORREF Settings::LoadOSDBgColor()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValOSDBgColor, RGB(255,255,255));
+}
+
+void Settings::SaveOSDBgColor(COLORREF col)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValOSDBgColor, col);
+}
+
 void Settings::LoadOSDPosition(LPPOINT pt)
 {
    if (!LoadBinary(m_regKey, m_keyOpened, regValOSDPosition, (LPBYTE)pt, sizeof(*pt)))
@@ -288,6 +301,26 @@ unsigned char Settings::LoadOSDTransparencyLevel()
 void Settings::SaveOSDTransparencyLevel(unsigned char level)
 {
    SaveDWord(m_regKey, m_keyOpened, regValOSDTransparencyLevel, level);
+}
+
+bool Settings::LoadOSDHasBackground()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValOSDHasBackground, true) ? true : false;
+}
+
+void Settings::SaveOSDHasBackground(bool background)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValOSDHasBackground, background);
+}
+
+bool Settings::LoadOSDIsTransparent()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValOSDIsTransparent, true) ? true : false;
+}
+
+void Settings::SaveOSDIsTransparent(bool transp)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValOSDIsTransparent, transp);
 }
 
 const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
