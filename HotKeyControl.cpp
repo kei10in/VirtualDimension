@@ -32,7 +32,7 @@ void InitHotkeyControl()
    RegisterHotkeyClass(vdWindow);
 }
 
-typedef struct _HKControl {
+typedef struct HKControl {
    short key;
    char  flags;
    TCHAR text[40];
