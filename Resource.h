@@ -43,6 +43,7 @@
 #define ID_ABOUT                        132
 #define ID_POPUPMENU_CONFIGURE          133
 #define ID_POPUPMENU_EXIT               134
+#define IDD_WINDOW_SETTINGS             135
 #define IDD_GLOBAL_SETTINGS             137
 #define IDD_MOVEWINDOW                  138
 #define IDC_DESK_LIST                   1001
@@ -59,8 +60,8 @@
 #define IDC_BROWSE_WALLPAPER            1018
 #define IDC_HOTKEY                      1020
 #define IDC_PREVIEW                     1021
+#define IDC_ENABLETRANSP_CHECK          1022
 #define IDC_TRANSP_SLIDER               1026
-#define IDC_CHECK1                      1027
 #define IDC_ALLDESKS_CHECK              1027
 #define IDC_TRANSP_DISP                 1029
 #define IDC_TRAYICON                    1030
@@ -72,6 +73,9 @@
 #define IDC_TOOLTIPS_CHECK              1035
 #define IDC_CONFIRMKILL_CHECK           1036
 #define IDC_CLOSETOTRAY_CHECK           1037
+#define IDC_SAVESETTINGS_BTN            1038
+#define IDC_ERASESETTINGS_BTN           1039
+#define IDC_MINTOTRAY_CHECK             1040
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -81,7 +85,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        139
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1039
+#define _APS_NEXT_CONTROL_VALUE         1041
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif
