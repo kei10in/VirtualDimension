@@ -797,6 +797,39 @@ LRESULT CALLBACK ShortcutsConfiguration(HWND hDlg, UINT message, WPARAM /*wParam
          }   
          break;
 
+      case NM_RCLICK:
+         {
+            if (GetDlgCtrlID(pnmh->hwndFrom) != IDC_SHORTCUTSLIST)
+               break;
+
+            LPNMITEMACTIVATE lpnmitem = (LPNMITEMACTIVATE) lParam;
+            HMENU menu = CreatePopupMenu();
+            AppendMenu(menu, 0, 1000, "Reset");
+
+            if (lpnmitem->iItem == -1)
+               break;
+
+            POINT pt = { lpnmitem->ptAction.x, lpnmitem->ptAction.y };
+            ClientToScreen(pnmh->hwndFrom, &pt);
+
+            if (TrackPopupMenu(menu, TPM_NONOTIFY | TPM_RETURNCMD | TPM_RIGHTBUTTON, 
+                               pt.x, pt.y, 0, 
+                               hDlg, NULL))
+            {
+               int val;
+               switch(lpnmitem->iItem)
+               {
+               case 0: val = deskMan->GetSwitchToNextDesktopHotkey(); break;
+               case 1: val = deskMan->GetSwitchToPreviousDesktopHotkey(); break;
+               default: val = 0; break;
+               }
+               SetItemShortcut(pnmh->hwndFrom, lpnmitem->iItem, val);
+            }
+
+            DestroyMenu(menu);
+         }   
+         break;
+
       case NM_SETFOCUS:
          {
             if (GetDlgCtrlID(pnmh->hwndFrom) != IDC_SHORTCUTSLIST)
