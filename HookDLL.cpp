@@ -132,11 +132,13 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
    case WM_DESTROY:
 	   {
-			//Do some cleanup
+			//Restore window procedure
 			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
+			SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)fnPrevWndProc);
+
+			//Do some cleanup
 			CloseHandle(pData->m_hMutex);
 			CloseHandle(pData->m_hMinToTrayEvent);
-
 			CleanupMenu(hWnd, pData->m_hSubMenu);
 
 			RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
@@ -237,11 +239,13 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
    case WM_DESTROY:		
 	   {
-			//Do some cleanup
+			//Restore window procedure
 			WNDPROC fnPrevWndProc = pData->m_fnPrevWndProc;
+			SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)fnPrevWndProc);
+
+			//Do some cleanup
 			CloseHandle(pData->m_hMutex);
 			CloseHandle(pData->m_hMinToTrayEvent);
-
 			CleanupMenu(hWnd, pData->m_hSubMenu);
 
 			RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEW(g_aPropName));
