@@ -192,11 +192,11 @@ HICON Window::GetIcon(void)
 {
    HICON hIcon = NULL;
 
-  	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 200, (LPDWORD) &hIcon );
+  	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 10, (LPDWORD) &hIcon );
 	if ( !hIcon )
 		hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
 	if ( !hIcon )
-		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 200, (LPDWORD) &hIcon );
+		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 10, (LPDWORD) &hIcon );
    if ( !hIcon )
       hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
 
