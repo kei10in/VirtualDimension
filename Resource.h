@@ -70,6 +70,8 @@
 #define IDC_TRANSP_STATIC2              1033
 #define IDC_TRANSP_STATIC               1034
 #define IDC_TOOLTIPS_CHECK              1035
+#define IDC_CONFIRMKILL_CHECK           1036
+#define IDC_CLOSETOTRAY_CHECK           1037
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
