@@ -62,6 +62,8 @@ public:
    void SaveOSDFgColor(COLORREF col);
    void LoadOSDPosition(LPPOINT pt);
    void SaveOSDPosition(LPPOINT pt);
+   unsigned char LoadOSDTransparencyLevel();
+   void SaveOSDTransparencyLevel(unsigned char level);
 
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
@@ -186,6 +188,7 @@ protected:
    static const char regValOSDFont[];
    static const char regValOSDFgColor[];
    static const char regValOSDPosition[];
+   static const char regValOSDTransparencyLevel[];
    static const char regValStartWithWindows[];
 
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);

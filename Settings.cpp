@@ -38,6 +38,7 @@ const char Settings::regValOSDTimeout[] = "OSDTimeout";
 const char Settings::regValOSDFont[] = "OSDFont";
 const char Settings::regValOSDFgColor[] = "OSDFgColor";
 const char Settings::regValOSDPosition[] = "OSDPosition";
+const char Settings::regValOSDTransparencyLevel[] = "OSDTransparencyLevel";
 
 Settings::Settings(void)
 {
@@ -277,6 +278,16 @@ void Settings::LoadOSDPosition(LPPOINT pt)
 void Settings::SaveOSDPosition(LPPOINT pt)
 {
    SaveBinary(m_regKey, m_keyOpened, regValOSDPosition, (LPBYTE)pt, sizeof(*pt));
+}
+
+unsigned char Settings::LoadOSDTransparencyLevel()
+{
+   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValOSDTransparencyLevel, 200);
+}
+
+void Settings::SaveOSDTransparencyLevel(unsigned char level)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValOSDTransparencyLevel, level);
 }
 
 const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
