@@ -41,14 +41,25 @@ protected:
    LPTSTR m_fileName;
    LPTSTR m_bmpFileName;
 
+   class WallPaperLoader
+   {
+   public:
+      WallPaperLoader();
+      ~WallPaperLoader();
+      void LoadImageAsync(WallPaper * wallpaper);
+
+   protected:
+      static DWORD WINAPI ThreadProc(LPVOID lpParameter);
+
+      list<WallPaper *> m_WallPapersQueue;
+      HANDLE m_hStopThread;
+      HANDLE m_hQueueSem;
+      HANDLE m_hQueueMutex;
+      HANDLE m_hWallPaperLoaderThread;
+   };
+
    static WallPaper * m_activeWallPaper;
-
-   static list<WallPaper *> m_WallPapersQueue;
-   static HANDLE m_hQueueSem;
-   static HANDLE m_hWallPaperLoaderThread;
-   static DWORD WINAPI WallPaperLoaderProc(LPVOID lpParameter);
-   static void LoadImageAsync(WallPaper * wallpaper);
-
+   static WallPaperLoader m_wallPaperLoader;
 };
 
 #endif /*__WALLPAPER_H__*/

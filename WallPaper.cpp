@@ -80,58 +80,76 @@ void WallPaper::Reload()
          SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_bmpFileName, 0);
       }
       else
-         LoadImageAsync(this);
+         m_wallPaperLoader.LoadImageAsync(this);
    }
 }
 
-list<WallPaper *> WallPaper::m_WallPapersQueue;
-HANDLE WallPaper::m_hQueueSem = NULL;
-HANDLE WallPaper::m_hWallPaperLoaderThread = NULL;
+WallPaper::WallPaperLoader WallPaper::m_wallPaperLoader;
 
-DWORD WINAPI WallPaper::WallPaperLoaderProc(LPVOID)
+WallPaper::WallPaperLoader::WallPaperLoader()
 {
-   while(WaitForSingleObject(m_hQueueSem, INFINITE) != WAIT_FAILED)
+   DWORD dwThreadId;
+
+   m_hStopThread = CreateEvent(NULL, TRUE, FALSE, NULL);
+   m_hQueueSem = CreateSemaphore(NULL, 0, 1000, NULL);
+   m_hQueueMutex = CreateMutex(NULL, FALSE, NULL);
+   m_hWallPaperLoaderThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadProc,
+                                           this, 0, &dwThreadId);
+}
+
+WallPaper::WallPaperLoader::~WallPaperLoader()
+{
+   SetEvent(m_hStopThread);
+   WaitForSingleObject(m_hWallPaperLoaderThread, INFINITE);
+
+   CloseHandle(m_hStopThread);
+   CloseHandle(m_hQueueMutex);
+   CloseHandle(m_hQueueSem);
+
+   CloseHandle(m_hWallPaperLoaderThread);
+}
+
+DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
+{
+   WallPaperLoader * self = (WallPaperLoader *)lpParameter;
+   HANDLE handles[2] = { self->m_hQueueSem, self->m_hStopThread };
+
+   while(WaitForMultipleObjects( 2, handles, FALSE, INFINITE) == WAIT_OBJECT_0)
    {
-      WallPaper * self = m_WallPapersQueue.front();
-      m_WallPapersQueue.pop_front();
+      WaitForSingleObject(self->m_hQueueMutex, INFINITE);
+      WallPaper * wallpaper = self->m_WallPapersQueue.front();
+      self->m_WallPapersQueue.pop_front();
+      ReleaseMutex(self->m_hQueueMutex);
       
-      IPicture * picture = PlatformHelper::OpenImage(self->m_fileName);
+      IPicture * picture = PlatformHelper::OpenImage(wallpaper->m_fileName);
       if (!picture)
       {
-         self->m_fileName = NULL;
+         wallpaper->m_fileName = NULL;
          continue;
       }
 
-      self->m_bmpFileName = new TCHAR[MAX_PATH];
-      if (GetTempFileName("C:\\", "VDIMG", 0, self->m_bmpFileName) == 0)
+      wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
+      if (GetTempFileName("C:\\", "VDIMG", 0, wallpaper->m_bmpFileName) == 0)
       {
          picture->Release();
          continue;
       }
 
-      if (PlatformHelper::SaveAsBitmap(picture, self->m_bmpFileName) && 
-          (self == m_activeWallPaper))
-         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, self->m_bmpFileName, 0);
+      if (PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName) && 
+          (wallpaper == m_activeWallPaper))
+         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
 
       picture->Release();
    }
 
-   m_hWallPaperLoaderThread = NULL;
    ExitThread(0);
 }
 
-void WallPaper::LoadImageAsync(WallPaper * wallpaper)
+void WallPaper::WallPaperLoader::LoadImageAsync(WallPaper * wallpaper)
 {
-   if (!m_hWallPaperLoaderThread)
-   {
-      DWORD dwThreadId;
-
-      m_hQueueSem = CreateSemaphore(NULL, 0, 1000, NULL);
-      m_hWallPaperLoaderThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)WallPaperLoaderProc,
-                                              NULL, 0, &dwThreadId);
-   }
-
+   WaitForSingleObject(m_hQueueMutex, INFINITE);
    m_WallPapersQueue.push_back(wallpaper);
+   ReleaseMutex(m_hQueueMutex);
 
    ReleaseSemaphore(m_hQueueSem, 1, NULL);
 }
