@@ -26,17 +26,15 @@
 
 ATOM OnScreenDisplayWnd::s_classAtom = 0;
 
-OnScreenDisplayWnd::OnScreenDisplayWnd()
+OnScreenDisplayWnd::OnScreenDisplayWnd(): m_transp(NULL)
 {
    Settings settings;
-
-   SetDefaultTimeout(settings.LoadOSDTimeout());
 
    settings.LoadOSDFont(&m_lf);
    m_font = CreateFontIndirect(&m_lf);
 
+   SetDefaultTimeout(settings.LoadOSDTimeout());
    m_fgColor = settings.LoadOSDFgColor();
-   
    settings.LoadOSDPosition(&m_position);
 
    m_bgBrush = CreateSolidBrush(RGB(255, 255, 255));
@@ -46,9 +44,12 @@ OnScreenDisplayWnd::~OnScreenDisplayWnd()
 {
    Settings settings;
 
+   settings.SaveOSDTimeout(m_timeout);
    settings.SaveOSDFont(&m_lf);
    settings.SaveOSDFgColor(m_fgColor);
    settings.SaveOSDPosition(&m_position);
+   if (m_transp)
+      settings.SaveOSDTransparencyLevel(m_transp->GetTransparencyLevel());
 
    DeleteObject(m_bgBrush);
    DeleteObject(m_font);
@@ -65,8 +66,9 @@ void OnScreenDisplayWnd::Create()
                             vdWindow, NULL, vdWindow, this);
    ShowWindow(m_hWnd, SW_HIDE);
 
+   Settings settings;
    m_transp = new Transparency(m_hWnd);
-   m_transp->SetTransparencyLevel(200);
+   m_transp->SetTransparencyLevel(settings.LoadOSDTransparencyLevel());
 }
 
 void OnScreenDisplayWnd::Display(char * str, int timeout)
