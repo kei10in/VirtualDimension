@@ -30,7 +30,7 @@
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_intray(false)
+Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false)
 {
    //Find out on which desktop the window is
    m_desk = deskMan->GetCurrentDesktop();
@@ -85,10 +85,20 @@ void Window::MoveToDesktop(Desktop * desk)
    oldDesk = m_desk;
    m_desk = desk;
 
-   if (IsOnDesk(deskMan->GetCurrentDesktop()) && !IsInTray())
-      ShowWindow();
+   if (IsOnDesk(deskMan->GetCurrentDesktop()))
+   {
+      if (IsInTray())
+         trayManager->AddIcon(this);
+      else
+         ShowWindow();
+   }
    else
-      HideWindow();
+   {
+      if (IsInTray())
+         trayManager->DelIcon(this);
+      else
+         HideWindow();
+   }
 
    if (IsOnDesk(NULL))  //on all desktops
       deskMan->UpdateLayout();
@@ -151,7 +161,7 @@ void Window::HideWindow()
 
    case WHM_MINIMIZE:
       //Minimize the application
-      m_iconic = IsIconic(m_hWnd) ? true : false;
+      m_iconic = IsIconic();
       if (!m_iconic)
          ::ShowWindow(m_hWnd, SW_MINIMIZE);
 
@@ -163,12 +173,17 @@ void Window::HideWindow()
    m_hidden = true;
 }
 
-bool Window::IsOnDesk(Desktop * desk)
+bool Window::IsOnDesk(Desktop * desk) const
 {
    if (m_desk == NULL)
       return true;
 
    return desk == m_desk;
+}
+
+bool Window::IsOnCurrentDesk() const
+{ 
+   return IsOnDesk(deskMan->GetCurrentDesktop());
 }
 
 HICON Window::GetIcon(void)
@@ -222,6 +237,8 @@ HMENU Window::BuildMenu()
    bool ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
    mii.fState = ontop ? MFS_CHECKED : MFS_UNCHECKED;
    InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEONTOP, "Always on top");
+   mii.fState = IsMinimizeToTray() ? MFS_CHECKED : MFS_UNCHECKED;
+   InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray");
 
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
    mii.fState = (m_desk==NULL) ? MFS_CHECKED : MFS_UNCHECKED;
@@ -230,16 +247,12 @@ HMENU Window::BuildMenu()
    AppendMenu(hMenu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
 
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
-   if ( (IsIconic(m_hWnd) && !IsHidden()) || 
-        (IsInTray() && IsOnDesk(deskMan->GetCurrentDesktop())) )
-      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Restore");
-   else
-      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Activate");
-   if (!IsHidden() && !IsInTray())
-      InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_MINIMIZE_TRAY), VDM_MINIMIZETOTRAY, "Minimize to tray");
-   if (!IsHidden() && !IsIconic(m_hWnd))
+   InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Activate");
+   if (IsIconic() || IsZoomed(m_hWnd) )
+      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_RESTORE, "Restore");
+   if (!IsIconic())
       InsertMenuItem(hMenu, mii, HBMMENU_POPUP_MINIMIZE, VDM_MINIMIZE, "Minimize");
-   if (!IsHidden() && !IsZoomed(m_hWnd))
+   if (!IsZoomed(m_hWnd))
    {
       InsertMenuItem(hMenu, mii, HBMMENU_POPUP_MAXIMIZE, VDM_MAXIMIZE, "Maximize");
       InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_MAXIMIZE_VERT), VDM_MAXIMIZEHEIGHT, "Maximize Height");
@@ -263,6 +276,10 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       ToggleOnTop();
       break;
 
+   case VDM_TOGGLEMINIMIZETOTRAY:
+      ToggleMinimizeToTray();
+      break;
+
    case VDM_TOGGLEALLDESKTOPS:
       ToggleAllDesktops();
       break;
@@ -271,8 +288,8 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       SelectDesktopForWindow(this);
       break;
 
-   case VDM_MINIMIZETOTRAY:
-      MinimizeToTray();
+   case VDM_RESTORE:
+      Restore();
       break;
 
    case VDM_MINIMIZE:
@@ -304,30 +321,24 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
    }
 }
 
-void Window::MinimizeToTray()
+void Window::ToggleMinimizeToTray()
 {
-   m_intray = true;
+   m_MinToTray = !m_MinToTray;
 
-   trayManager->AddIcon(this);
-   HideWindow();
-}
-
-void Window::Restore()
-{
-   if (IsInTray())
+   if (IsIconic() && IsOnCurrentDesk())
    {
-      m_intray = false;
-
-      trayManager->DelIcon(this);
-      if (IsOnDesk(deskMan->GetCurrentDesktop()))
-         ShowWindow();
-   }
-   else if (IsIconic(m_hWnd))
-   {
-      if (IsHidden())
-         m_iconic = false;
+      if (m_MinToTray)
+      {  
+         // Move minimized icon from taskbar to tray
+         trayManager->AddIcon(this);
+         HideWindow();
+      }
       else
-         OpenIcon(m_hWnd);
+      {
+         // Move minimized icon from tray to taskbar
+         trayManager->DelIcon(this);
+         ShowWindow();
+      }
    }
 }
 
@@ -349,22 +360,48 @@ void Window::ToggleAllDesktops()
 
 void Window::Activate()
 {
-   if (IsHidden())
+   if (!IsOnCurrentDesk())
       deskMan->SwitchToDesktop(m_desk);
-   if (IsInTray())
+   if (IsIconic())
       Restore();
-   if (IsIconic(m_hWnd))
-      OpenIcon(m_hWnd);
    SetForegroundWindow(m_hWnd);
    InvalidateRect(vdWindow, NULL, FALSE);
 }
 
+void Window::Restore()
+{
+   if (IsIconic())
+   {
+      m_iconic = false;
+
+      if (IsOnCurrentDesk())
+      {
+         if (IsMinimizeToTray())
+         {
+            trayManager->DelIcon(this);
+            ShowWindow();
+         }
+         else
+            OpenIcon(m_hWnd);
+      }
+   }
+   else if (IsZoomed(m_hWnd))
+      ::ShowWindow(m_hWnd, SW_RESTORE);
+}
+
 void Window::Minimize()
 {
-   if (IsHidden())
-      m_iconic = true;
-   else
-      CloseWindow(m_hWnd);
+   if (IsOnCurrentDesk())
+   {
+      if (IsMinimizeToTray())
+      {
+         trayManager->AddIcon(this);
+         HideWindow();
+      }
+      else
+         CloseWindow(m_hWnd);
+   }
+   m_iconic = true;
 }
 
 void Window::Maximize()
@@ -438,7 +475,7 @@ void Window::OnContextMenu()
    hMenu = BuildMenu();
 
    GetCursorPos(&pt);
-   //ClientToScreen(vdWindow, &pt);
+   SetForegroundWindow(vdWindow);
    res = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, vdWindow, NULL);
 
    if (res >= WM_USER)
