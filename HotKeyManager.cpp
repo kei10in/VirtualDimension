@@ -60,7 +60,7 @@ void HotKeyManager::RegisterHotkey(int hotkey, EventHandler* handler)
    }
 
    //Register the hotkey
-   int mod = hotkey >> 8;
+   int mod = (hotkey >> 8) & 0xFF;
    int vk = hotkey & 0xFF;
    if (RegisterHotKey(vdWindow, id, mod, vk))
    {
@@ -84,6 +84,10 @@ void HotKeyManager::UnregisterHotkey(EventHandler* handler)
       id ++;
       id &= 0x7FFF;  //ensure this is less than 0xBFFF
       finder = m_map->find(id);
+
+      //Ensure that we never loop forever... At most, we'll try all values in the range [0-7FFF[
+      if (id == (data & 0x7FFF))
+         return;
    }
 
    //Remove the data from the map
