@@ -62,6 +62,7 @@
 #define IDC_HOTKEY                      1020
 #define IDC_PREVIEW                     1021
 #define IDC_ENABLETRANSP_CHECK          1022
+#define IDC_STARTWITHWINDOWS_CHECK      1023
 #define IDC_TRANSP_SLIDER               1026
 #define IDC_ALLDESKS_CHECK              1027
 #define IDC_TRANSP_DISP                 1029
