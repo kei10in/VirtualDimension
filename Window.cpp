@@ -23,6 +23,11 @@
 #include "VirtualDimension.h"
 #include "movewindow.h"
 
+#ifdef __GNUC__
+#define MIM_STYLE 0x10
+#define MNS_CHECKORBMP 0x04000000
+#endif
+
 ITaskbarList* Window::m_tasklist = NULL;
 
 Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_intray(false)
@@ -38,7 +43,11 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_intray(false)
    {
    case WHM_MINIMIZE:
       if (m_tasklist == NULL)
+      {
          CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_ALL, IID_ITaskbarList, (LPVOID*)&m_tasklist);
+         if (m_tasklist != NULL)
+            m_tasklist->HrInit();
+      }
       else
          m_tasklist->AddRef();
       break;
@@ -117,7 +126,6 @@ void Window::ShowWindow()
          ::ShowWindow(m_hWnd, SW_RESTORE);
 
       //Show the icon
-      m_tasklist->HrInit();
       m_tasklist->AddTab(m_hWnd);
       break;
    }
@@ -148,7 +156,6 @@ void Window::HideWindow()
          ::ShowWindow(m_hWnd, SW_MINIMIZE);
 
       //Hide the icon
-      m_tasklist->HrInit();
       m_tasklist->DeleteTab(m_hWnd);
       break;
    }
@@ -179,48 +186,85 @@ HICON Window::GetIcon(void)
    return hIcon;
 }
 
-void Window::BuildMenu(HMENU menu)
+void Window::InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str)
 {
-   AppendMenu(menu, MF_SEPARATOR, 0, 0);
-   AppendMenu(menu, MF_STRING, VDM_ACTIVATEWINDOW, "Activate");
+   mii.hbmpItem = bmp;
+   mii.wID = id;
+   mii.dwTypeData = str;
+   ::InsertMenuItem(menu, (UINT)-1, TRUE, &mii);
+}
+
+HBITMAP Window::LoadBmpRes(int id)
+{
+   return (HBITMAP)LoadImage(vdWindow, MAKEINTRESOURCE(id), IMAGE_BITMAP, 
+                             16, 16, LR_SHARED|LR_LOADTRANSPARENT|LR_LOADMAP3DCOLORS);
+}
+
+HMENU Window::BuildMenu()
+{
+   HMENU hMenu;
+   MENUITEMINFO mii;
+   MENUINFO mi;
+
+   //Create the menu
+   hMenu = CreatePopupMenu();
+
+   //Set its style
+   mi.cbSize = sizeof(MENUINFO);
+   mi.fMask = MIM_STYLE;
+   mi.dwStyle = MNS_CHECKORBMP;
+   SetMenuInfo(hMenu, &mi);
+
+   //Now add the items
+   mii.cbSize = sizeof(MENUITEMINFO);
+   mii.fMask = MIIM_BITMAP | MIIM_ID | MIIM_STRING | MIIM_STATE;
 
    bool ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
-   AppendMenu(menu, MF_STRING | (ontop ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEONTOP, "Always on top");
+   mii.fState = ontop ? MFS_CHECKED : MFS_UNCHECKED;
+   InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEONTOP, "Always on top");
 
-   AppendMenu(menu, MF_STRING | (m_desk==NULL ? MF_CHECKED : MF_UNCHECKED), VDM_TOGGLEALLDESKTOPS, "All desktops");
-   AppendMenu(menu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
+   AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
+   mii.fState = (m_desk==NULL) ? MFS_CHECKED : MFS_UNCHECKED;
+   InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEALLDESKTOPS, "All desktops");
+   mii.fState = MFS_UNCHECKED;
+   AppendMenu(hMenu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
 
-   AppendMenu(menu, MF_STRING, VDM_MINIMIZETOTRAY, "Minimize to tray");
+   AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
+   if ( (IsIconic(m_hWnd) && !IsHidden()) || 
+        (IsInTray() && IsOnDesk(deskMan->GetCurrentDesktop())) )
+      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Restore");
+   else
+      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Activate");
+   if (!IsHidden() && !IsInTray())
+      InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_MINIMIZE_TRAY), VDM_MINIMIZETOTRAY, "Minimize to tray");
+   if (!IsHidden() && !IsIconic(m_hWnd))
+      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_MINIMIZE, VDM_MINIMIZE, "Minimize");
+   if (!IsHidden() && !IsZoomed(m_hWnd))
+   {
+      InsertMenuItem(hMenu, mii, HBMMENU_POPUP_MAXIMIZE, VDM_MAXIMIZE, "Maximize");
+      InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_MAXIMIZE_VERT), VDM_MAXIMIZEHEIGHT, "Maximize Height");
+      InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_MAXIMIZE_HORIZ), VDM_MAXIMIZEWIDTH, "Maximize Width");
+   }
+   InsertMenuItem(hMenu, mii, HBMMENU_POPUP_CLOSE, VDM_CLOSE, "Close");
+   InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_KILL), VDM_KILL, "Kill");
+
+   return hMenu;
 }
 
 void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
 {
-   bool ontop;
-
    switch(cmdId)
    {
    case VDM_ACTIVATEWINDOW:
-      if (!IsOnDesk(deskMan->GetCurrentDesktop()))
-         deskMan->SwitchToDesktop(m_desk);
-      if (IsIconic(m_hWnd))
-         OpenIcon(m_hWnd);
-      if (IsInTray())
-         Restore();
-      SetForegroundWindow(m_hWnd);
-      InvalidateRect(vdWindow, NULL, FALSE);
+      Activate();
       break;
 
    case VDM_TOGGLEONTOP:
-      ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
-      SetWindowPos(m_hWnd, ontop ? HWND_NOTOPMOST : HWND_TOPMOST, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+      ToggleOnTop();
       break;
 
    case VDM_TOGGLEALLDESKTOPS:
-      if (IsOnDesk(NULL))
-         MoveToDesktop(deskMan->GetCurrentDesktop());
-      else
-         MoveToDesktop(NULL);
-      
+      ToggleAllDesktops();
       break;
 
    case VDM_MOVEWINDOW:
@@ -230,7 +274,142 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
    case VDM_MINIMIZETOTRAY:
       MinimizeToTray();
       break;
+
+   case VDM_MINIMIZE:
+      Minimize();
+      break;
+
+   case VDM_MAXIMIZE:
+      Maximize();
+      break;
+
+   case VDM_MAXIMIZEHEIGHT:
+      MaximizeHeight();
+      break;
+
+   case VDM_MAXIMIZEWIDTH:
+      MaximizeWidth();
+      break;
+      
+   case VDM_CLOSE:
+      PostMessage(m_hWnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+      break;
+
+   case VDM_KILL:
+      Kill();
+      break;
+
+   default:
+      break;
    }
+}
+
+void Window::MinimizeToTray()
+{
+   m_intray = true;
+
+   trayManager->AddIcon(this);
+   HideWindow();
+}
+
+void Window::Restore()
+{
+   if (IsInTray())
+   {
+      m_intray = false;
+
+      trayManager->DelIcon(this);
+      if (IsOnDesk(deskMan->GetCurrentDesktop()))
+         ShowWindow();
+   }
+   else if (IsIconic(m_hWnd))
+   {
+      if (IsHidden())
+         m_iconic = false;
+      else
+         OpenIcon(m_hWnd);
+   }
+}
+
+void Window::ToggleOnTop()
+{
+   bool ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
+      
+   SetWindowPos(m_hWnd, ontop ? HWND_NOTOPMOST : HWND_TOPMOST, 
+                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+}
+
+void Window::ToggleAllDesktops()
+{
+   if (IsOnDesk(NULL))
+      MoveToDesktop(deskMan->GetCurrentDesktop());
+   else
+      MoveToDesktop(NULL);
+}
+
+void Window::Activate()
+{
+   if (IsHidden())
+      deskMan->SwitchToDesktop(m_desk);
+   if (IsInTray())
+      Restore();
+   if (IsIconic(m_hWnd))
+      OpenIcon(m_hWnd);
+   SetForegroundWindow(m_hWnd);
+   InvalidateRect(vdWindow, NULL, FALSE);
+}
+
+void Window::Minimize()
+{
+   if (IsHidden())
+      m_iconic = true;
+   else
+      CloseWindow(m_hWnd);
+}
+
+void Window::Maximize()
+{
+   ::ShowWindow(m_hWnd, SW_MAXIMIZE);
+}
+
+void Window::MaximizeHeight()
+{
+   RECT rect;
+   RECT screen;
+
+   GetWindowRect(m_hWnd, &rect);
+   SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
+   MoveWindow( m_hWnd, rect.left, screen.top, 
+               rect.right-rect.left, screen.bottom-screen.top,
+               TRUE);
+}
+
+void Window::MaximizeWidth()
+{
+   RECT rect;
+   RECT screen;
+
+   GetWindowRect(m_hWnd, &rect);
+   SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
+   MoveWindow( m_hWnd, screen.left, rect.top, 
+               screen.right-screen.left, rect.bottom - rect.top, 
+               TRUE);
+}
+
+void Window::Kill()
+{
+   HANDLE hProcess;
+   DWORD pId;
+   
+   GetWindowThreadProcessId(m_hWnd, &pId);
+   hProcess = OpenProcess( PROCESS_TERMINATE, 0, pId );
+   if (hProcess == NULL)
+      return;
+
+   if (MessageBox(vdWindow, "If you kill the window, you may lose some date. Continue ?",
+                  "Warning! Killing is bad", MB_OKCANCEL|MB_ICONWARNING) == IDOK)
+      TerminateProcess( hProcess, 9);
+   CloseHandle (hProcess);
 }
 
 LRESULT Window::OnTrayIconMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
@@ -252,22 +431,20 @@ LRESULT Window::OnTrayIconMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPar
 
 void Window::OnContextMenu()
 {
-   return;
-}
+   HMENU hMenu;
+   HRESULT res;
+   POINT pt;
+   
+   hMenu = BuildMenu();
 
-void Window::MinimizeToTray()
-{
-   m_intray = true;
+   GetCursorPos(&pt);
+   //ClientToScreen(vdWindow, &pt);
+   res = TrackPopupMenu(hMenu, TPM_RETURNCMD|TPM_RIGHTBUTTON, pt.x, pt.y, 0, vdWindow, NULL);
 
-   trayManager->AddIcon(this);
-   HideWindow();
-}
+   if (res >= WM_USER)
+      OnMenuItemSelected(hMenu, res);
+   else
+      PostMessage(vdWindow, WM_COMMAND, res, 0);
 
-void Window::Restore()
-{
-   m_intray = false;
-
-   trayManager->DelIcon(this);
-   if (IsOnDesk(deskMan->GetCurrentDesktop()))
-      ShowWindow();
+   DestroyMenu(hMenu);
 }
