@@ -58,7 +58,7 @@ public:
    virtual ~Group()     { }
 
    // Group selection
-   virtual bool Open(const char * path) = 0;
+   virtual bool Open(const char * path, bool create=true) = 0;
    virtual void Close() = 0;
    bool IsOpened()      { return m_opened; }
 
@@ -135,17 +135,17 @@ template<class T> void Group::SaveSetting(const Setting<T> &setting, T data, con
 class RegistryGroup: public Group
 {
 public:
-   RegistryGroup()                                               { }
-   RegistryGroup(const char * path)                              { Open(HKEY_CURRENT_USER, path); }
-   RegistryGroup(RegistryGroup & parent, const char * relpath)   { Open(parent.m_regKey, relpath); }
-   virtual ~RegistryGroup()                                      { Close(); }
+   RegistryGroup()                                                                  { }
+   RegistryGroup(const char * path, bool create=true)                               { Open(HKEY_CURRENT_USER, path, create); }
+   RegistryGroup(RegistryGroup & parent, const char * relpath, bool create=true)    { Open(parent.m_regKey, relpath, create); }
+   virtual ~RegistryGroup()                                                         { Close(); }
 
    virtual void Close();
 
    //TODO: Open(path) should parse the string to find if it begins with HKEY_CURRENT_USER/..., and open the correct key accordingly
-   virtual bool Open(const char * path)                              { return Open(HKEY_CURRENT_USER, path); }
-   virtual bool Open(RegistryGroup & parent, const char * relpath)   { return Open(parent.m_regKey, relpath); }
-   bool Open(HKEY parent, const char * path);
+   virtual bool Open(const char * path, bool create=true)                              { return Open(HKEY_CURRENT_USER, path, create); }
+   virtual bool Open(RegistryGroup & parent, const char * relpath, bool create=true)   { return Open(parent.m_regKey, relpath, create); }
+   bool Open(HKEY parent, const char * path, bool create=true);
 
    virtual Group * GetSubGroup(const char * path);
 

@@ -22,14 +22,18 @@ unsigned int Group::LoadSetting(const Setting<LPTSTR> &setting, LPTSTR buffer, u
    return size;
 }
 
-bool RegistryGroup::Open(HKEY parent, const char * path)
+bool RegistryGroup::Open(HKEY parent, const char * path, bool create)
 {
    if (m_opened)
       Close();
 
-   m_opened = (RegCreateKeyEx(parent, path, 
-      0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, 
-      &m_regKey, NULL) == ERROR_SUCCESS);
+   if (create)
+      m_opened = RegCreateKeyEx(parent, path, 
+                  0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, 
+                  &m_regKey, NULL) == ERROR_SUCCESS;
+   else
+      m_opened = RegOpenKeyEx(parent, path, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE,
+                  &m_regKey) == ERROR_SUCCESS;
 
    return m_opened;
 }
