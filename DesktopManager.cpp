@@ -29,7 +29,7 @@
 #include "DesktopManager.h"
 #include <Commdlg.h>
 
-DesktopManager::DesktopManager(void)
+DesktopManager::DesktopManager(int width, int height)
 {
    Settings settings;
 
@@ -39,10 +39,8 @@ DesktopManager::DesktopManager(void)
    m_nbColumn = settings.LoadNbCols();
 
    //Get the size
-   RECT rect;
-   GetClientRect(vdWindow, &rect);
-   m_width = rect.right - rect.left;
-   m_height = rect.bottom - rect.top;
+   m_width = width;
+   m_height = height;
 
    //Initialize the display mode
    m_bkDisplayMode = NULL;
@@ -96,17 +94,15 @@ DesktopManager::~DesktopManager(void)
    settings.SavePreviewWindowFontColor(m_crPreviewWindowFontColor);
 }
 
-LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+void DesktopManager::ReSize(int width, int height)
 {
-   if (wParam == SIZE_RESTORED)
+	if ( (width != m_width) || (height != m_height) )
    {
-      m_width = LOWORD(lParam); 
-      m_height = HIWORD(lParam);
+      m_width = width; 
+      m_height = height;
 
       UpdateLayout();
    }
-
-   return 0;
 }
 
 void DesktopManager::UpdateLayout()

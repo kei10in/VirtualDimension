@@ -33,7 +33,7 @@ class BackgroundDisplayMode;
 class DesktopManager
 {
 public:
-   DesktopManager(void);
+   DesktopManager(int width, int height);
    ~DesktopManager(void);
 
    void UpdateLayout();
@@ -81,7 +81,7 @@ public:
    LONG GetWindowHeight() const               { return m_height; }
 
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-   LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   void ReSize(int width, int height);
 
 protected:
    Desktop * AddDesktop(Desktop * desk);

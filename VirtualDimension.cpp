@@ -210,7 +210,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    winMan = new WindowsManager;
 
    // Create the desk manager
-   deskMan = new DesktopManager;
+	settings.LoadPosition(&pos);	//use client position
+   deskMan = new DesktopManager(pos.right - pos.left, pos.bottom - pos.top);
 
    // Retrieve the initial list of windows
    winMan->PopulateInitialWindowsSet();
@@ -660,9 +661,12 @@ LRESULT VirtualDimension::OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 	return deskMan->OnPaint(hWnd, message, wParam, lParam);
 }
 
-LRESULT VirtualDimension::OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
-	return deskMan->OnSize(hWnd, message, wParam, lParam);
+   if (wParam == SIZE_RESTORED)
+		deskMan->ReSize(LOWORD(lParam), HIWORD(lParam));
+
+	return 0;
 }
 
 // Message handler for about box.
