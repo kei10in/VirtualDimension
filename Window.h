@@ -113,8 +113,6 @@ public:
    unsigned char GetTransparencyLevel() const { return m_transpLevel; }
    void SetTransparencyLevel(unsigned char level);
 
-   bool Enable(bool enable);
-
    operator HWND()                            { return m_hWnd; }
    
    HICON GetIcon(void);
@@ -181,7 +179,7 @@ protected:
    HANDLE m_hMinToTrayEvent;
    bool m_iconic;
    char m_name[255];
-   BOOL m_enabled;
+   LONG_PTR m_style;
 
    Transparency m_transp;
    unsigned char m_transpLevel;

@@ -40,7 +40,7 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
-                           m_hIcon(NULL), m_ownIcon(false), m_enabled(FALSE)
+                           m_hIcon(NULL), m_ownIcon(false), m_style(0)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -155,12 +155,12 @@ void Window::ShowWindow()
       return;
 
    //Restore the window's style
-   if (m_enabled)
-      Enable(true);
+   if (m_style)
+      SetWindowLong(m_hWnd, GWL_EXSTYLE, m_style);
 
    //Restore the application if needed
    if (!m_iconic)
-      ::ShowWindowAsync(m_hWnd, SW_SHOWNOACTIVATE);
+      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
 
    //Show the icon
    m_tasklist->AddTab(m_hWnd);
@@ -173,20 +173,26 @@ void Window::HideWindow()
    if (m_hidden)
       return;
 
+   if (!winMan->IsShowAllWindowsInTaskList())
+      m_style = GetWindowLongPtr(m_hWnd, GWL_EXSTYLE);
+   else
+      m_style = 0;
+
    //Minimize the application
    m_iconic = IsIconic();
    if (!m_iconic)
-      ::ShowWindowAsync(m_hWnd, SW_SHOWMINNOACTIVE);
+      ::ShowWindow(m_hWnd, SW_SHOWMINNOACTIVE);
 
    //Hide the icon
    m_tasklist->DeleteTab(m_hWnd);
 
    //disable the window so that it does not appear in task list
    if (!winMan->IsShowAllWindowsInTaskList())
-      m_enabled = !Enable(false);
-   else
-      m_enabled = FALSE;
-
+   {
+      LONG_PTR style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
+      SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, style);
+   }
+   
    m_hidden = true;
 }
 
@@ -564,22 +570,4 @@ void Window::OnContextMenu()
       PostMessage(vdWindow, WM_COMMAND, res, 0);
 
    DestroyMenu(hMenu);
-}
-
-bool Window::Enable(bool enable)
-{
-   LONG_PTR dwStyle;
-
-   if (enable)
-      PostMessage(m_hWnd, WM_CANCELMODE, 0, 0);
-
-   dwStyle = GetWindowLongPtr(m_hWnd, GWL_STYLE);
-   if (enable)
-      SetWindowLongPtr(m_hWnd, GWL_STYLE, dwStyle & ~WS_DISABLED);
-   else
-      SetWindowLongPtr(m_hWnd, GWL_STYLE, dwStyle | WS_DISABLED);
-
-   PostMessage(m_hWnd, WM_ENABLE, enable?TRUE:FALSE, 0);
-
-   return dwStyle & WS_DISABLED ? true : false;
 }
