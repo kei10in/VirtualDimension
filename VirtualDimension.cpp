@@ -581,46 +581,38 @@ LRESULT VirtualDimension::OnMove(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPara
    return 0;
 }
 
-LRESULT VirtualDimension::OnWindowPosChanging(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
-   RECT	wndRect, trayRect;
-   int	leftTaskbar = 0, rightTaskbar = 0, topTaskbar = 0, bottomTaskbar = 0;
+   RECT	deskRect;
    WINDOWPOS * lpwndpos = (WINDOWPOS*)lParam;
 
    int snapSize = 15;
 
-   GetWindowRect(hWnd, &wndRect);
-
-   // Screen resolution
-   int screenWidth =	GetSystemMetrics(SM_CXSCREEN); 
-   int screenHeight =	GetSystemMetrics(SM_CYSCREEN);
-
-   // Find the taskbar
-   HWND hTrayWnd = FindWindow("Shell_TrayWnd", "");
-   GetWindowRect(hTrayWnd, &trayRect);
-
-   int wndWidth = wndRect.right - wndRect.left;
-   int wndHeight = wndRect.bottom - wndRect.top;
-
-   // Compute the offset due to the taskbar for each side of the screen
-   if(trayRect.top <= 0 && trayRect.left <= 0 && trayRect.right >= screenWidth)
-      topTaskbar = trayRect.bottom - trayRect.top;             // top taskbar
-   else if(trayRect.top > 0 && trayRect.left <= 0) 
-      bottomTaskbar = trayRect.bottom - trayRect.top;          // bottom taskbar
-   else if(trayRect.top <= 0 && trayRect.left > 0)
-      rightTaskbar = trayRect.right - trayRect.left;           // right taskbar
-   else
-      leftTaskbar = trayRect.right - trayRect.left;            // left taskbar
+	// Get dimensions
+	SystemParametersInfo(SPI_GETWORKAREA, NULL, &deskRect, 0);
 
    // Snap to screen border
-   if(lpwndpos->x >= -snapSize + leftTaskbar && lpwndpos->x <= leftTaskbar + snapSize)
-      lpwndpos->x = leftTaskbar;                               //Left border
-   if(lpwndpos->y >= -snapSize && lpwndpos->y <= topTaskbar + snapSize)
-      lpwndpos->y = topTaskbar;                                // Top border
-   if(lpwndpos->x + wndWidth <= screenWidth - rightTaskbar + snapSize && lpwndpos->x + wndWidth >= screenWidth - rightTaskbar - snapSize)
-      lpwndpos->x = screenWidth - rightTaskbar - wndWidth;     // Right border
-   if( lpwndpos->y + wndHeight <= screenHeight - bottomTaskbar + snapSize && lpwndpos->y + wndHeight >= screenHeight - bottomTaskbar - snapSize)
-      lpwndpos->y = screenHeight - bottomTaskbar - wndHeight;  // Bottom border
+	m_dockedBorders = 0;
+	if(lpwndpos->x >= -snapSize + deskRect.left && lpwndpos->x <= deskRect.left + snapSize)
+	{
+      lpwndpos->x = deskRect.left;                               //Left border
+		m_dockedBorders |= DOCK_LEFT;
+	}
+   if(lpwndpos->y >= -snapSize + deskRect.top && lpwndpos->y <= deskRect.top + snapSize)
+	{
+      lpwndpos->y = deskRect.top;                                // Top border
+		m_dockedBorders |= DOCK_TOP;
+	}
+	if(lpwndpos->x + lpwndpos->cx <= deskRect.right + snapSize && lpwndpos->x + lpwndpos->cx >= deskRect.right - snapSize)
+	{
+      lpwndpos->x = deskRect.right - lpwndpos->cx;     // Right border
+		m_dockedBorders |= DOCK_RIGHT;
+	}
+   if( lpwndpos->y + lpwndpos->cy <= deskRect.bottom + snapSize && lpwndpos->y + lpwndpos->cy >= deskRect.bottom - snapSize)
+	{
+      lpwndpos->y = deskRect.bottom - lpwndpos->cy;  // Bottom border
+		m_dockedBorders |= DOCK_BOTTOM;
+	}
 
    return TRUE;
 }
