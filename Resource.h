@@ -22,8 +22,10 @@
 //
 #define IDC_MYICON                      2
 #define IDM_WALLPAPER_CTXMENU           4
+#define IDD_APPLLIST_DLG                101
 #define IDD_VIRTUALDIMENSION_DIALOG     102
 #define IDD_TROUBLESHOOTING_SETTINGS    102
+#define IDM_APPSLIST_CTXMENU            102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
@@ -60,12 +62,17 @@
 #define IDC_INSERT_DESK                 1002
 #define IDC_COPYRIGHT                   1002
 #define IDC_REMOVE_DESK                 1003
+#define IDC_APPL_LIST                   1003
 #define IDC_HIDINGMETHODEXCEPTIONS_BTN  1005
 #define IDC_SETUP_DESKS                 1006
 #define IDC_SETUP_DESK                  1006
 #define IDC_AUTOEXCEPTION_CHECK         1006
 #define IDC_DESK_SPIN                   1007
+#define IDC_INSERTAPPL_BTN              1007
+#define IDC_EDITAPPL_BTN                1008
 #define IDC_COLUMN_SPIN                 1009
+
+#define IDC_REMOVEAPPL_BTN              1009
 #define IDC_COLUMN_NUMBER               1010
 #define IDC_APPLY                       1014
 #define IDC_NAME                        1015
@@ -127,5 +134,8 @@
 #define IDC_DEFAULT_WALLPAPER           32774
 #define IDC_NO_WALLPAPER                32775
 #define IDC_PREVIOUS_WALLPAPER          32778
+#define ID_ADDAPPL                      40002
+#define ID_DELAPPL_CMD                  40005
+#define ID_ADDAPPL_CMD                  40006
 #define IDC_STATIC                      -1
 

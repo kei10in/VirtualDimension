@@ -29,6 +29,7 @@
 #include <prsht.h>
 #include <assert.h>
 #include "HotkeyConfig.h"
+#include "ApplicationListDlg.h"
 
 extern char desk_name[80];
 extern char desk_wallpaper[256];
@@ -706,9 +707,17 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       switch(LOWORD(wParam))
       {
       case IDC_HIDINGMETHODEXCEPTIONS_BTN:
+         {
+            ApplicationListDlg dlg;
+            dlg.ShowDialog(vdWindow, hDlg);
+         }
          break;
 
       case IDC_SHELLINTEGEXCEPTION_BTN:
+         {
+            ApplicationListDlg dlg;
+            dlg.ShowDialog(vdWindow, hDlg);
+         }
          break;
       }
       break;
