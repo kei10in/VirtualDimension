@@ -24,15 +24,21 @@
 int ShellHook::nbInstance = 0;
 HINSTANCE ShellHook::hinstDLL = NULL;
 
-BOOL (__STDCALL__ * ShellHook::RegisterShellHook)(HWND,DWORD);
-
+BOOL (__STDCALL__ *ShellHook::RegisterShellHook)(HWND,DWORD);
+/*
+  // RegisterShellHook params
+  RSH_DEREGISTER       = 0;
+  RSH_REGISTER         = 1;
+  RSH_REGISTER_PROGMAN = 2;
+  RSH_REGISTER_TASKMAN = 3;
+*/
 ShellHook::ShellHook(HWND hWnd)
 {
    if (nbInstance == 0)
    {
       hinstDLL = LoadLibrary((LPCTSTR) "shell32.dll");
 
-      RegisterShellHook = (BOOL (__STDCALL__*)(HWND,DWORD) )GetProcAddress(hinstDLL, (LPCSTR)181);
+      RegisterShellHook = (BOOL (__STDCALL__ *)(HWND,DWORD) )GetProcAddress(hinstDLL, (LPCSTR)181);
       if (RegisterShellHook == NULL)
       {
          MessageBox(NULL, "Unable to find function 'RegisterShellHook' in shell32.dll", "Dynamic link error", MB_OK);
@@ -43,9 +49,17 @@ ShellHook::ShellHook(HWND hWnd)
 
    nbInstance++;
 
-   RegisterShellHook(hWnd, 1);
-   RegisterShellHook(hWnd, 2);
-   RegisterShellHook(hWnd, 3);
+   //The following is taken from indiestep/blackbox (they seem to use the exact same code :)
+   OSVERSIONINFO verInfo;
+   verInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+   GetVersionEx(&verInfo);
+   
+   RegisterShellHook(NULL, TRUE);
+   
+   if (verInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
+      RegisterShellHook(hWnd, 1);
+   else
+      RegisterShellHook(hWnd, 3);
 }
 
 ShellHook::~ShellHook(void)
