@@ -21,22 +21,34 @@
 #include "StdAfx.h"
 #include "tooltip.h"
 #include "virtualdimension.h"
+#include "settings.h"
 
 ToolTip::ToolTip(HWND hWnd): m_hOwnerWnd(hWnd)
 {
+   Settings settings;
+
    //Create the control
    m_hWnd = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
                            WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,		
                            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
                            hWnd, NULL, hInst, NULL);
+
+   //Load from the registry to find out whether to enable tooltips or not
+   EnableTooltips(settings.LoadEnableTooltips());
 }
 
 ToolTip::~ToolTip(void)
 {
+   Settings settings;
+
+   //Save to the registry whether to enable tooltips or not
+   settings.SaveEnableTooltips(m_enabled);
+
+   //Destroy the tooltip window
    DestroyWindow(m_hWnd);
 }
 
-void ToolTip::SetTool(Tool * tool)
+void ToolTip::SetTool(Tool * tool, LPRECT rect)
 {
    TOOLINFO ti;
    LRESULT update;
@@ -51,7 +63,10 @@ void ToolTip::SetTool(Tool * tool)
    ti.uFlags = TTF_SUBCLASS;
    ti.hinst = hInst;
    ti.lpszText = tool->GetText();
-   tool->GetRect(&ti.rect);
+   if (rect)
+      ti.rect = *rect;
+   else
+      tool->GetRect(&ti.rect);
 
    if (update)
       SendMessage(m_hWnd, TTM_SETTOOLINFO, 0, (LPARAM) (LPTOOLINFO) &ti);
@@ -70,15 +85,9 @@ void ToolTip::UnsetTool(Tool * tool)
    SendMessage(m_hWnd, TTM_DELTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);
 }
 
-void ToolTip::OnGetDispInfo(LPNMTTDISPINFO lpnmtdi)
+void ToolTip::EnableTooltips(bool enable)
 {
-   POINT pt;
-   GetCursorPos(&pt);
-   ScreenToClient(m_hOwnerWnd, &pt);
-   Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
+   m_enabled = enable;
 
-   if (desk == NULL)
-      return;
-
-   lpnmtdi->lpszText = desk->m_name;
+   SendMessage(m_hWnd, TTM_ACTIVATE, (WPARAM)(BOOL)m_enabled, 0);
 }
