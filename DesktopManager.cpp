@@ -225,6 +225,12 @@ Desktop * DesktopManager::AddDesktop(Desktop * desk)
    {
       m_currentDesktop = desk;
       desk->Activate();
+
+      //Update tray icon tooltip
+      trayIcon->Update();
+      
+      //Refresh preview window
+      vdWindow.Refresh();
    }
 
    return desk;
@@ -310,15 +316,22 @@ void DesktopManager::SwitchToDesktop(Desktop * desk)
    if ( (desk == NULL) || (m_currentDesktop == desk))
       return;
 
+   //Desactive previously active desktop
    if (m_currentDesktop != NULL)
       m_currentDesktop->Desactivate();
 
+   //Activate newly active desktop
    m_currentDesktop = desk;
    m_currentDesktop->Activate();
 
+   //Show OSD
    if (m_useOSD)
       m_osd.Display(desk->GetText());
 
+   //Update tray icon tooltip
+   trayIcon->Update();
+
+   //Refresh preview window
    vdWindow.Refresh();
 }
 
