@@ -212,29 +212,35 @@ void Desktop::Draw(HDC hDc)
 {
    char buffer[20];
    int color;
+   RECT rect;
 
    if (m_active)
       color = 5;
    else
       color = 4;
 
-   FillRect(hDc, &m_rect, GetSysColorBrush(color));
+   rect.left = m_rect.left + 2;
+   rect.top = m_rect.top + 2;
+   rect.right = m_rect.right - 2;
+   rect.bottom = m_rect.bottom - 2;
+
+   FillRect(hDc, &rect, GetSysColorBrush(color));
 
    sprintf(buffer, "%.19s", m_name);
    SetBkColor(hDc, GetSysColor(color));
-   DrawText(hDc, buffer, -1, &m_rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+   DrawText(hDc, buffer, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
-   MoveToEx(hDc, m_rect.left, m_rect.top, NULL);
-   LineTo(hDc, m_rect.left, m_rect.bottom);
-   LineTo(hDc, m_rect.right, m_rect.bottom);
-   LineTo(hDc, m_rect.right, m_rect.top);
-   LineTo(hDc, m_rect.left, m_rect.top);
+   MoveToEx(hDc, rect.left, rect.top, NULL);
+   LineTo(hDc, rect.left, rect.bottom);
+   LineTo(hDc, rect.right, rect.bottom);
+   LineTo(hDc, rect.right, rect.top);
+   LineTo(hDc, rect.left, rect.top);
 
    WindowsManager::Iterator it;
    int x, y;
 
-   x = m_rect.left;
-   y = m_rect.top;
+   x = rect.left;
+   y = rect.top;
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
@@ -247,9 +253,9 @@ void Desktop::Draw(HDC hDc)
       DrawIconEx(hDc, x, y, hIcon, 16, 16, 0, NULL, DI_NORMAL);
 
       x += 16;
-      if (x > m_rect.right-16)
+      if (x > rect.right-16)
       {
-         x = m_rect.left;
+         x = rect.left;
          y += 16;
       }
    }
@@ -273,8 +279,8 @@ Window* Desktop::GetWindowFromPoint(int X, int Y)
    assert(Y>=m_rect.top);
    assert(Y<=m_rect.bottom);
 
-   index = ((X - m_rect.left) / 16) + 
-           ((m_rect.right-m_rect.left) / 16) * ((Y - m_rect.top) / 16);
+   index = ((X - m_rect.left - 2) / 16) + 
+           ((m_rect.right-m_rect.left) / 16) * ((Y - m_rect.top - 2) / 16);
 
    for(it = winMan->GetIterator(); it; it++)
    {
