@@ -50,6 +50,8 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false)
 Window::~Window(void)
 {
    ULONG count;
+
+   //Mode specific cleanup
    switch(m_hidingMethod)
    {
    case WHM_MINIMIZE:
