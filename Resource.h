@@ -40,6 +40,7 @@
 #define ID_POPUPMENU_CONFIGURE          133
 #define ID_POPUPMENU_EXIT               134
 #define IDD_GLOBAL_SETTINGS             137
+#define IDD_MOVEWINDOW                  138
 #define IDC_DESK_LIST                   1001
 #define IDC_INSERT_DESK                 1002
 #define IDC_REMOVE_DESK                 1003
@@ -56,6 +57,7 @@
 #define IDC_PREVIEW                     1021
 #define IDC_TRANSP_SLIDER               1026
 #define IDC_CHECK1                      1027
+#define IDC_ALLDESKS_CHECK              1027
 #define IDC_TRANSP_DISP                 1029
 #define IDC_TRAYICON                    1030
 #define IDC_TRAYICON_CHECK              1030
@@ -70,9 +72,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        138
+#define _APS_NEXT_RESOURCE_VALUE        139
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1035
+#define _APS_NEXT_CONTROL_VALUE         1039
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif
