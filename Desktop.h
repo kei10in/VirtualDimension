@@ -37,7 +37,7 @@ public:
    Desktop(Settings::Desktop * desktop);
    ~Desktop(void);
 
-   void BuildMenu(HMENU menu);
+   HMENU BuildMenu();
    void OnMenuItemSelected(HMENU menu, int cmdId);
    
    void Draw(HDC dc);
