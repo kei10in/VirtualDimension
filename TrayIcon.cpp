@@ -30,6 +30,11 @@ TrayIcon::TrayIcon(HWND hWnd): m_hWnd(hWnd), m_iconLoaded(false)
 
    if (settings.LoadHasTrayIcon())
       AddIcon();
+
+   UINT s_uTaskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
+   vdWindow.SetMessageHandler(s_uTaskbarRestart, this, &TrayIcon::RefreshIcon);
+
+   vdWindow.SetMessageHandler(IDC_TRAYICON, this, &TrayIcon::OnTrayIconMessage);
 }
 
 TrayIcon::~TrayIcon(void)
@@ -53,7 +58,7 @@ void TrayIcon::AddIcon()
    data.uID = 1;
    data.uFlags = NIF_ICON | NIF_MESSAGE;
    data.uCallbackMessage = IDC_TRAYICON;
-   data.hIcon = LoadIcon(hInst, (LPCTSTR)IDI_VIRTUALDIMENSION);
+   data.hIcon = LoadIcon(vdWindow, (LPCTSTR)IDI_VIRTUALDIMENSION);
 
    m_iconLoaded = Shell_NotifyIcon(NIM_ADD, &data) == TRUE ? true : false;
 }
@@ -72,7 +77,7 @@ void TrayIcon::DelIcon()
    data.uID = 1;
    data.uFlags = NIF_ICON | NIF_MESSAGE;
    data.uCallbackMessage = IDC_TRAYICON;
-   data.hIcon = LoadIcon(hInst, (LPCTSTR)IDI_VIRTUALDIMENSION);
+   data.hIcon = LoadIcon(vdWindow, (LPCTSTR)IDI_VIRTUALDIMENSION);
 
    Shell_NotifyIcon(NIM_DELETE, &data);
 
@@ -80,10 +85,12 @@ void TrayIcon::DelIcon()
    ShowWindow(m_hWnd, SW_SHOW);
 }
 
-void TrayIcon::RefreshIcon()
+LRESULT TrayIcon::RefreshIcon(HWND, UINT, WPARAM, LPARAM)
 {
    if (m_iconLoaded)
       AddIcon();
+
+   return TRUE;
 }
 
 void TrayIcon::SetIcon(bool res)
@@ -92,6 +99,23 @@ void TrayIcon::SetIcon(bool res)
       AddIcon();
    else if (!res && m_iconLoaded)
       DelIcon();
+}
+
+LRESULT TrayIcon::OnTrayIconMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   switch(lParam)
+   {
+   case WM_RBUTTONDOWN:
+   case WM_CONTEXTMENU:
+      OnContextMenu();
+      break;
+
+   case WM_LBUTTONDOWN:
+      OnLeftButtonDown();
+      break;
+   }
+
+   return 0;
 }
 
 void TrayIcon::OnLeftButtonDown()
@@ -103,7 +127,7 @@ void TrayIcon::OnLeftButtonDown()
    Desktop * desk;
 
    //Get the "base" menu
-   hMenu = LoadMenu(hInst, (LPCTSTR)IDC_VIRTUALDIMENSION);
+   hMenu = LoadMenu(vdWindow, (LPCTSTR)IDC_VIRTUALDIMENSION);
    if (hMenu == NULL)
       return;
    hmenuTrackPopup = GetSubMenu(hMenu, 0);
@@ -134,7 +158,7 @@ void TrayIcon::OnLeftButtonDown()
    //And show the menu
    GetCursorPos(&pt);
    SetForegroundWindow(m_hWnd);
-   res = TrackPopupMenu(hmenuTrackPopup, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, mainWnd, NULL);
+   res = TrackPopupMenu(hmenuTrackPopup, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, m_hWnd, NULL);
 
    //Process the resulting message
    if (res >= WM_USER)

@@ -27,16 +27,17 @@ public:
    TrayIcon(HWND hWnd);
    ~TrayIcon(void);
 
-   void RefreshIcon();
    void SetIcon(bool res);
    bool HasIcon() const { return m_iconLoaded; }
-
-   void OnLeftButtonDown();
-   void OnContextMenu();
 
 protected:
    void AddIcon();
    void DelIcon();
+
+   LRESULT RefreshIcon(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   void OnLeftButtonDown();
+   void OnContextMenu();
 
    HWND m_hWnd;
    bool m_iconLoaded;
