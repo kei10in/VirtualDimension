@@ -27,6 +27,12 @@ static ATOM RegisterHyperLinkClass(HINSTANCE hInstance);
 static LRESULT CALLBACK	HyperLinkWndProc(HWND, UINT, WPARAM, LPARAM);
 static HFONT GetHyperLinkFont(HWND hWnd, HDC hdc);
 static void ActivateLink(HWND hWnd);
+static void ResizeToText(HWND hWnd, LPTSTR text);
+
+#ifdef __GNUC__
+#define GetClassLongPtr GetClassLong
+#define SetClassLongPtr SetClassLong
+#endif
 
 void InitHyperLinkControl()
 {
