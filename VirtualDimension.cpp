@@ -146,6 +146,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	SetMessageHandler(WM_TIMER, this, &VirtualDimension::OnTimer);
 	SetMessageHandler(WM_ACTIVATEAPP, this, &VirtualDimension::OnActivateApp);
 
+	SetMessageHandler(WM_MOUSEMOVE, this, &VirtualDimension::OnMouseMove);
 	SetMessageHandler(WM_MOUSEHOVER, this, &VirtualDimension::OnMouseHover);
 	SetMessageHandler(WM_MOUSELEAVE, this, &VirtualDimension::OnMouseLeave);
 	SetMessageHandler(WM_NCHITTEST, this, &VirtualDimension::OnNCHitTest);
@@ -805,6 +806,15 @@ LRESULT VirtualDimension::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam,
 {
    if ((!m_shrinked) && (wParam == SIZE_RESTORED))
 		deskMan->ReSize(LOWORD(lParam), HIWORD(lParam));
+
+	return 0;
+}
+
+LRESULT VirtualDimension::OnMouseMove(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+   //Reset auto-hide timer
+   if (!m_shrinked && m_autoHideDelay > 0 && KillTimer(hWnd, TIMERID_AUTOHIDE))
+      SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
 
 	return 0;
 }

@@ -128,6 +128,7 @@ protected:
 	LRESULT OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnTimer(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+   LRESULT OnMouseMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseHover(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnMouseLeave(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
