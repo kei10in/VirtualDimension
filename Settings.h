@@ -22,6 +22,8 @@
 #define __SETTINGS_H__
 
 #define MAX_NAME_LENGTH 255
+#define DEFAULT_WINDOW_TRANSPARENCY_LEVEL 0xc0
+#define DEFAULT_VD_TRANSPARENCY_LEVEL     0xff
 
 class Settings
 {

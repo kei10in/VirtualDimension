@@ -202,7 +202,7 @@ void Settings::SaveAlwaysOnTop(bool val)
 
 unsigned char Settings::LoadTransparencyLevel()
 {
-   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, 255);
+   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, DEFAULT_VD_TRANSPARENCY_LEVEL);
 }
 
 void Settings::SaveTransparencyLevel(unsigned char level)
@@ -1087,7 +1087,7 @@ void Settings::Window::SaveMinimizeToTray(bool totray)
 
 unsigned char Settings::Window::LoadTransparencyLevel()
 {
-   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, 255);
+   return (unsigned char)LoadDWord(m_regKey, m_keyOpened, regValTransparencyLevel, DEFAULT_WINDOW_TRANSPARENCY_LEVEL);
 }
 
 void Settings::Window::SaveTransparencyLevel(unsigned char level)

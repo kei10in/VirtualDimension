@@ -21,6 +21,8 @@
 #ifndef __TRANSPARENCY_H__
 #define __TRANSPARENCY_H__
 
+#define TRANSPARENCY_DISABLED 0xff
+
 class Transparency
 {
 public:

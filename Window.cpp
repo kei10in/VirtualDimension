@@ -428,11 +428,13 @@ void Window::ToggleAllDesktops()
 
 void Window::SetTransparent(bool transp)
 {
-   m_transp.SetTransparencyLevel(transp ? m_transpLevel : (unsigned char)255);
+   m_transp.SetTransparencyLevel(transp ? m_transpLevel : (unsigned char)TRANSPARENCY_DISABLED);
 }
 
 void Window::ToggleTransparent()
 {
+   if (GetTransparencyLevel() == TRANSPARENCY_DISABLED && !IsTransparent())
+      SetTransparencyLevel(DEFAULT_WINDOW_TRANSPARENCY_LEVEL);
    SetTransparent(!IsTransparent());
 }
 

@@ -28,10 +28,10 @@ Transparency::SetLayeredWindowAttributes_t * Transparency::SetLayeredWindowAttri
 HINSTANCE Transparency::hinstDLL = NULL;
 int Transparency::nbInstance = 0;
 
-/* m_level gets an initial value of 0xff, so that we do not do anything anyway
+/* m_level gets an initial value of TRANSPARENCY_DISABLED, so that we do not do anything anyway
  * if the level is not set to some other value in the registry
  */
-Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(0xff)
+Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(TRANSPARENCY_DISABLED)
 {
    nbInstance ++;
 }
@@ -76,7 +76,7 @@ void Transparency::ForceTransparencyLevel(unsigned char level)
 
    // Update the window
    style = GetWindowLong(m_hWnd, GWL_EXSTYLE);
-   if (m_level == 0xff)
+   if (m_level == TRANSPARENCY_DISABLED)
    {
       // Disable transparency completely
       style &= ~WS_EX_LAYERED;
@@ -113,5 +113,5 @@ unsigned char Transparency::GetTransparencyLevel() const
    if (IsTransparencySupported())
       return m_level;
    else
-      return 255;
+      return TRANSPARENCY_DISABLED;
 }

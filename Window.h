@@ -140,7 +140,7 @@ public:
 
    void DisplayWindowProperties();
 
-   bool IsTransparent() const                 { return m_transp.GetTransparencyLevel() != 255; }
+   bool IsTransparent() const                 { return m_transp.GetTransparencyLevel() != TRANSPARENCY_DISABLED; }
    void SetTransparent(bool transp);
    void ToggleTransparent();
    unsigned char GetTransparencyLevel() const { return m_transpLevel; }

@@ -39,7 +39,7 @@ void FormatTransparencyLevel(HWND hWnd, int level)
 {
    char buffer[15];
 
-   if (level == 255)
+   if (level == TRANSPARENCY_DISABLED)
       sprintf(buffer, "%3i (disabled)", level);
    else
       sprintf(buffer, "%3i", level);
