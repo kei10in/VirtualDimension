@@ -30,7 +30,7 @@
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false)
+Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), m_transp(hWnd), m_transpLevel(128)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -52,17 +52,21 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false)
    if (settings.IsValid())
    {
       //Load settings for this window
-      m_desk = settings.GetOnAllDesktops() ? NULL : deskMan->GetCurrentDesktop();
+      m_desk = settings.LoadOnAllDesktops() ? NULL : deskMan->GetCurrentDesktop();
 
-      m_MinToTray = settings.GetMinimizeToTray();
+/*      m_MinToTray = settings.LoadMinimizeToTray();
       if (IsIconic() && IsOnCurrentDesk() && m_MinToTray)
       {
          trayManager->AddIcon(this);
          HideWindow();
       }
-      
-      SetWindowPos( m_hWnd, settings.GetAlwaysOnTop() ? HWND_TOPMOST : HWND_NOTOPMOST, 
-                    0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+*/
+      SetMinimizeToTray(settings.LoadMinimizeToTray());
+
+      SetAlwaysOnTop(settings.LoadAlwaysOnTop());
+
+      SetTransparent(settings.LoadEnableTransparency());
+      SetTransparencyLevel(settings.LoadTransparencyLevel());
    }
    else
       //Find out on which desktop the window is
@@ -209,11 +213,15 @@ HMENU Window::BuildMenu()
    mii.cbSize = sizeof(MENUITEMINFO);
    mii.fMask = MIIM_BITMAP | MIIM_ID | MIIM_STRING | MIIM_STATE;
 
-   bool ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
-   mii.fState = ontop ? MFS_CHECKED : MFS_UNCHECKED;
+   mii.fState = IsAlwaysOnTop() ? MFS_CHECKED : MFS_UNCHECKED;
    InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEONTOP, "Always on top");
    mii.fState = IsMinimizeToTray() ? MFS_CHECKED : MFS_UNCHECKED;
    InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray");
+   if (m_transp.IsTransparencySupported())
+   {
+      mii.fState = m_transp.GetTransparencyLevel() == 255 ? MFS_UNCHECKED : MFS_CHECKED;
+      InsertMenuItem(hMenu, mii, NULL, VDM_TOGGLETRANSPARENCY, "Transparent");
+   }
 
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
    mii.fState = (m_desk==NULL) ? MFS_CHECKED : MFS_UNCHECKED;
@@ -236,6 +244,9 @@ HMENU Window::BuildMenu()
    InsertMenuItem(hMenu, mii, HBMMENU_POPUP_CLOSE, VDM_CLOSE, "Close");
    InsertMenuItem(hMenu, mii, LoadBmpRes(IDB_KILL), VDM_KILL, "Kill");
 
+   AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
+   InsertMenuItem(hMenu, mii, NULL, VDM_PROPERTIES, "Properties");
+
    return hMenu;
 }
 
@@ -253,6 +264,10 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
 
    case VDM_TOGGLEMINIMIZETOTRAY:
       ToggleMinimizeToTray();
+      break;
+
+   case VDM_TOGGLETRANSPARENCY:
+      ToggleTransparent();
       break;
 
    case VDM_TOGGLEALLDESKTOPS:
@@ -291,14 +306,18 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
       Kill();
       break;
 
+   case VDM_PROPERTIES:
+      DisplayWindowProperties();
+      break;
+
    default:
       break;
    }
 }
 
-void Window::ToggleMinimizeToTray()
+void Window::SetMinimizeToTray(bool totray)
 {
-   m_MinToTray = !m_MinToTray;
+   m_MinToTray = totray;
 
    if (IsIconic() && IsOnCurrentDesk())
    {
@@ -317,20 +336,57 @@ void Window::ToggleMinimizeToTray()
    }
 }
 
+void Window::ToggleMinimizeToTray()
+{
+   SetMinimizeToTray(!IsMinimizeToTray());
+}
+
+bool Window::IsAlwaysOnTop() const
+{
+   return (GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST;
+}
+
+void Window::SetAlwaysOnTop(bool ontop)
+{
+   SetWindowPos(m_hWnd, ontop ? HWND_TOPMOST : HWND_NOTOPMOST, 
+                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+}
+
 void Window::ToggleOnTop()
 {
-   bool ontop = ((GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) == WS_EX_TOPMOST);
-      
-   SetWindowPos(m_hWnd, ontop ? HWND_NOTOPMOST : HWND_TOPMOST, 
-                0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+   SetAlwaysOnTop(!IsAlwaysOnTop());
+}
+
+void Window::SetOnAllDesktops(bool onall)
+{
+   if (onall)
+      MoveToDesktop(NULL);
+   else if (IsOnAllDesktops())
+      MoveToDesktop(deskMan->GetCurrentDesktop());
 }
 
 void Window::ToggleAllDesktops()
 {
-   if (IsOnDesk(NULL))
-      MoveToDesktop(deskMan->GetCurrentDesktop());
-   else
-      MoveToDesktop(NULL);
+   SetOnAllDesktops(!IsOnAllDesktops());
+}
+
+void Window::SetTransparent(bool transp)
+{
+   m_transp.SetTransparencyLevel(transp ? m_transpLevel : (unsigned char)255);
+}
+
+void Window::ToggleTransparent()
+{
+   SetTransparent(!IsTransparent());
+}
+
+void Window::SetTransparencyLevel(unsigned char level)
+{
+   //Update the variable
+   m_transpLevel = level;
+   
+   //Refresh the display
+   SetTransparent(IsTransparent());
 }
 
 void Window::Activate()
@@ -459,3 +515,5 @@ void Window::OnContextMenu()
 
    DestroyMenu(hMenu);
 }
+
+
