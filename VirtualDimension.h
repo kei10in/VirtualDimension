@@ -54,6 +54,8 @@ public:
    HMENU GetMenu() const  { return m_pSysMenu; } 
    operator HINSTANCE()   { return m_hInstance; }
 
+   inline void Refresh()  { InvalidateRect(m_hWnd, NULL, FALSE); }
+
 protected:
    Window * m_draggedWindow;
    HCURSOR m_dragCursor;
