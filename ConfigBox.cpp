@@ -271,31 +271,13 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                Desktop * desk = (Desktop*)SendMessage(listBox, LB_GETITEMDATA, index, 0);
                strncpy(desk_name, desk->m_name, sizeof(desk_name));
                strncpy(desk_wallpaper, desk->m_wallpaper, sizeof(desk_wallpaper));
-               desk_hotkey = desk->m_hotkey&0xff;
-               if (desk->m_hotkey & (MOD_ALT << 8))
-                  desk_hotkey |= (HOTKEYF_ALT<<8);
-               if (desk->m_hotkey & (MOD_CONTROL<< 8))
-                  desk_hotkey |= (HOTKEYF_CONTROL<<8);
-               if (desk->m_hotkey & (MOD_SHIFT << 8))
-                  desk_hotkey |= (HOTKEYF_SHIFT<<8);
-               if (desk->m_hotkey & (MOD_WIN << 8))
-                  desk_hotkey |= (HOTKEYF_EXT<<8);
+               desk_hotkey = desk->m_hotkey;
                if (DialogBox(vdWindow, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties) == IDOK)
                {
                   /* Update the desk informations */
                   desk->Rename(desk_name);
                   strncpy(desk->m_wallpaper, desk_wallpaper, sizeof(desk->m_wallpaper));
-
-                  int hotkey = desk_hotkey&0xff;
-                  if (desk_hotkey & (HOTKEYF_ALT << 8))
-                     hotkey |= (MOD_ALT<<8);
-                  if (desk_hotkey & (HOTKEYF_CONTROL << 8))
-                     hotkey |= (MOD_CONTROL<<8);
-                  if (desk_hotkey & (HOTKEYF_SHIFT << 8))
-                     hotkey |= (MOD_SHIFT<<8);
-                  if (desk_hotkey & (HOTKEYF_EXT << 8))
-                     hotkey |= (MOD_WIN<<8);
-                  desk->SetHotkey(hotkey);
+                  desk->SetHotkey(desk_hotkey);
 
                   /* Update the lsit box content */
                   SendMessage(listBox, LB_DELETESTRING, index, 0);
