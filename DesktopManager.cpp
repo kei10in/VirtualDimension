@@ -26,9 +26,6 @@
 #include "OnScreenDisplay.h"
 #include <algorithm>
 
-bool deskOrder(Desktop * first, Desktop * second)
-{  return first->m_index < second->m_index;  }
-
 DesktopManager::DesktopManager(void)
 {
    Settings settings;
@@ -80,7 +77,7 @@ DesktopManager::~DesktopManager(void)
       Desktop * desk;
 
       desk = *it;
-      desk->m_index = index;
+      desk->SetIndex(index);
 
       desk->Save();
 
@@ -169,10 +166,7 @@ Desktop * DesktopManager::AddDesktop(Desktop * desk)
 {
    /* If needed, create the object */
    if (desk == NULL)
-   {
-      desk = new Desktop;
-      sprintf(desk->m_name, "Desk%i", (int)m_desks.size());
-   }
+      desk = new Desktop((int)m_desks.size());
 
    /* Add the desktop to the list */
    m_desks.push_back(desk);
@@ -234,7 +228,7 @@ void DesktopManager::RemoveDesktop(Desktop * desk)
 
 void DesktopManager::Sort()
 {
-   sort(m_desks.begin(), m_desks.end(), deskOrder);
+   sort(m_desks.begin(), m_desks.end(), Desktop::deskOrder);
 }
 
 Desktop* DesktopManager::GetDesktopFromPoint(int X, int Y)
