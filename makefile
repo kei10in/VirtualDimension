@@ -18,7 +18,11 @@
 #
 
 TARGET = VirtualDimension.exe
-BUILDDIR = mingw
+ifdef DEBUG
+BUILDDIR = mingw-debug
+else
+BUILDDIR = mingw-release
+endif
 SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp \
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
@@ -27,38 +31,62 @@ RES_FILE = VirtualDimension.res
 OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
 
+ifdef DEBUG
+CXXFLAGS = -g
+CFLAGS = -g
+else
 CXXFLAGS = -fexpensive-optimizations -O3
 CFLAGS = -fexpensive-optimizations -O3
+endif
+
+MAKEDEPEND = gcc -MM $(CPPFLAGS) -o $*.d $<
 
 
-.PHONY: all clean precomp
+.PHONY: all recall clean pre_comp
 
+VPATH = ..
 
-vpath %.o ${BUILDDIR}
-vpath %.a ${BUILDDIR}
-vpath %.res ${BUILDDIR}
+ifdef INCDEP
+DEP_FILE_TMP = $(SRC_FILE:cpp=P)
+DEP_FILE = $(DEP_FILE_TMP:c=P)
+-include $(DEP_FILE)
+endif
 
-all: pre_comp ${TARGET}
+all: pre_comp
+	@cd $(BUILDDIR); make allrec -f ../Makefile INCDEP=1
+
+allrec: $(TARGET)
 
 clean:
 	-rm -r ${BUILDDIR}
-	-rm $(TARGET)
 
 pre_comp:
 	-mkdir ${BUILDDIR}
-
+	
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 $(CXXFLAGS)
+ifndef DEBUG
 	strip $@
+endif
 
-libtransp.a: transp.def
-	dlltool --def $< --dllname user32.dll  --output-lib ${BUILDDIR}/$@
+libtransp.a: Transp.def
+	dlltool --def $< --dllname user32.dll  --output-lib $@
 
 VirtualDimension.res: VirtualDimension.rc
-	windres -i $< -I rc -o ${BUILDDIR}/$@ -O coff 
+	windres -i $< -I rc -o $@ -O coff --include-dir=..
 
 %.o: %.cpp
-	g++ -c -o ${BUILDDIR}/$@ $< $(CXXFLAGS)
+	@-$(MAKEDEPEND); \
+            cp $*.d $*.P; \
+            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+            rm -f $*.d
+	g++ -c -o $@ $< $(CXXFLAGS)
 
 %.o: %.c
-	gcc -c -o ${BUILDDIR}/$@ $< $(CFLAGS)
+	@-$(MAKEDEPEND); \
+            cp $*.d $*.P; \
+            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+                -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
+            rm -f $*.d
+	gcc -c -o $@ $< $(CFLAGS)
