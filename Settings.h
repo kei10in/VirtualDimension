@@ -45,8 +45,8 @@ public:
    void SaveEnableTooltips(bool enable);
    bool LoadConfirmKilling();
    void SaveConfirmKilling(bool confirm);
-   bool LoadAutoSaveWindowSettings();
-   void SaveAutoSaveWindowSettings(bool autosave);
+   bool LoadAutoSaveWindowsSettings();
+   void SaveAutoSaveWindowsSettings(bool autosave);
 
    class Desktop 
    {
