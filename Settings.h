@@ -284,15 +284,13 @@ template<class T> inline void Settings::SaveSetting(const Setting<T> &setting, c
    return SaveBinarySetting(setting.m_name, (LPBYTE)data, sizeof(T));
 }
 
+template<class T> inline T ConvertFromDWord(DWORD dw)    { return (T)dw; }
+template<> inline bool ConvertFromDWord<bool>(DWORD dw)  { return dw ? true : false; }
+
 template<class T> T Settings::LoadSetting(const Setting<T> &setting, const DWordSetting& /*type*/)
 {
    assert(sizeof(T)<=sizeof(DWORD));
-   return (T)LoadDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)setting.m_default);
-}
-
-template<> inline bool Settings::LoadSetting(const Setting<bool> &setting, const DWordSetting& /*type*/)
-{
-   return LoadDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)setting.m_default) ? true : false;
+   return ConvertFromDWord<T>(LoadDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)setting.m_default));
 }
 
 template<class T> void Settings::SaveSetting(const Setting<T> &setting, T data, const DWordSetting& /*type*/)
