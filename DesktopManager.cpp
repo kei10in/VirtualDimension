@@ -347,6 +347,9 @@ void DesktopManager::LoadDesktops()
    if (m_desks.empty())
       AddDesktop();
 
+   //Set layout
+   UpdateLayout();
+
    //Activate the first desktop
    m_currentDesktop = m_desks.front();
    m_currentDesktop->Activate();
