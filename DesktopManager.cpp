@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "hotkeymanager.h"
 #include "VirtualDimension.h"
+#include "OnScreenDisplay.h"
 #include <algorithm>
 
 bool deskOrder(Desktop * first, Desktop * second)
@@ -57,6 +58,9 @@ DesktopManager::DesktopManager(void)
    keyMan->RegisterHotkey( (MOD_ALT|MOD_CONTROL)<<8 | VK_TAB, m_nextDeskEventHandler);
    m_prevDeskEventHandler = new DeskChangeEventHandler(this, -1);
    keyMan->RegisterHotkey( (MOD_ALT|MOD_CONTROL|MOD_SHIFT)<<8 | VK_TAB, m_prevDeskEventHandler);
+
+   //Create the OSD window
+   m_osd.Create();
 }
 
 DesktopManager::~DesktopManager(void)
@@ -261,6 +265,8 @@ void DesktopManager::SwitchToDesktop(Desktop * desk)
 
    m_currentDesktop = desk;
    m_currentDesktop->Activate();
+
+   m_osd.Display(desk->GetText());
 
    InvalidateRect(vdWindow, NULL, FALSE);
 }

@@ -23,6 +23,7 @@
 
 #include <vector>
 #include "desktop.h"
+#include "OnScreenDisplay.h"
 
 using namespace std;
 
@@ -75,6 +76,8 @@ protected:
    DeskChangeEventHandler * m_prevDeskEventHandler;
 
    int m_width, m_height;
+
+   OnScreenDisplayWnd m_osd;
 };
 
 inline Desktop * DesktopManager::AddDesktop()
