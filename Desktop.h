@@ -81,6 +81,7 @@ public:
 
    bool Configure(HWND hDlg);
 
+   static BOOL CALLBACK ActivateTopWindowProc( HWND hWnd, LPARAM lParam );
 protected:
    void OnHotkey();
 

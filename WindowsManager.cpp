@@ -208,7 +208,6 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    if (win->IsSwitching())
       return;  //Ignore switching windows
 
-   wIt.MoveToBegin();
 
    if (!win->IsOnCurrentDesk())
    {
@@ -218,11 +217,6 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
       else
          //Auto move window
          win->MoveToDesktop(deskMan->GetCurrentDesktop());
-   }
-   else
-   {
-      deskMan->GetCurrentDesktop()->UpdateLayout();
-      vdWindow.Refresh();
    }
 }
 
@@ -293,7 +287,6 @@ void WindowsManager::SetTopWindow(Window * top)
    WindowsList::Node * node = (*it).second;
    WindowsList::Iterator wIt(&m_windows, node);
    
-   wIt.MoveToBegin();
 
    if (top->IsOnAllDesktops())
       deskMan->UpdateLayout();

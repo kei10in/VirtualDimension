@@ -59,6 +59,7 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
    OpenSettings(settings, false);
 
    //Setup the hiding method to use
+   m_hHideMutex = CreateMutex(NULL, FALSE, NULL);
    m_hidingMethod = s_hiding_methods[s.LoadHidingMethod(m_className)];
    m_hidingMethod->Attach(this);
 
@@ -106,6 +107,9 @@ Window::~Window(void)
 
    if (m_autoSaveSettings)
       SaveSettings();
+
+   if (m_hHideMutex)
+      CloseHandle(m_hHideMutex);
 
    m_hidingMethod->Detach(this);
 }

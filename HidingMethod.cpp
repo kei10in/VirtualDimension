@@ -30,7 +30,7 @@ void HidingMethod::SetWindowData(Window * wnd, int data)
    wnd->m_hidingMethodData = data;
 }
 
-int HidingMethod::GetWindowData(Window * wnd)
+int HidingMethod::GetWindowData(const Window * wnd)
 {
    return wnd->m_hidingMethodData;
 }
@@ -43,23 +43,70 @@ void HidingMethodHide::Attach(Window * wnd)
 
 void HidingMethodHide::Show(Window * wnd)
 {
-   SetWindowData(wnd, SHOWING);
-   ShowWindow(*wnd, SW_SHOWNA);
-   ShowOwnedPopups(*wnd, SW_SHOWNA);
+   int iconic = GetWindowData(wnd) & 0x10;
+   int state = GetWindowData(wnd) & 0xf;
+
+   if (state == HIDING)
+   {
+      SetWindowData(wnd, HIDING_TO_SHOW | iconic);
+   }
+   else if (state == SHOWING_TO_HIDE)
+   {
+      SetWindowData(wnd, SHOWING | iconic);
+   }
+   else if (state == HIDDEN)
+   {
+      SetWindowData(wnd, SHOWING | iconic);
+
+      winMan->DisableAnimations();
+      SetWindowPos(*wnd, NULL, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+      if (!iconic)
+         ShowOwnedPopups(*wnd, TRUE);
+      winMan->EnableAnimations();
+   }
 }
 
 void HidingMethodHide::Hide(Window * wnd)
 {
-   SetWindowData(wnd, HIDING);
-   ShowWindow(*wnd, SW_HIDE);
-   ShowOwnedPopups(*wnd, SW_HIDE);
+   int state = GetWindowData(wnd) & 0xf;
+
+   if (state == SHOWING)
+   {
+      int iconic = GetWindowData(wnd) & 0x10;
+      SetWindowData(wnd, SHOWING_TO_HIDE | iconic);
+   }
+   else if (state == HIDING_TO_SHOW)
+   {
+      int iconic = GetWindowData(wnd) & 0x10;
+      SetWindowData(wnd, HIDING | iconic);
+   }
+   else if (state == SHOWN)
+   {
+      SetWindowData(wnd, HIDING);
+
+      winMan->DisableAnimations();
+      //need to hide the parent window first or hiding owned windows causes an activate of the parent (theory, didn't confirm)
+      SetWindowPos(*wnd, NULL, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+      if (::IsIconic(*wnd))
+         SetWindowData(wnd, HIDING|0x10);
+      else
+         ShowOwnedPopups(*wnd, FALSE);
+      winMan->EnableAnimations();
+   }
 }
 
 bool HidingMethodHide::CheckCreated(Window * wnd)
 {
-   if (GetWindowData(wnd) == SHOWING)
+   int data = GetWindowData(wnd);
+   if ((data&0xf) == SHOWING)
    {
-      SetWindowData(wnd, SHOWN);
+      SetWindowData(wnd, SHOWN|(data&0x10));
+      return false;
+   } 
+   else if ((data&0xf) == SHOWING_TO_HIDE)
+   {
+      SetWindowData(wnd, SHOWN|(data&0x10));
+      Hide(wnd);
       return false;
    }
    else
@@ -68,13 +115,26 @@ bool HidingMethodHide::CheckCreated(Window * wnd)
 
 bool HidingMethodHide::CheckDestroyed(Window * wnd)
 {
-   if (GetWindowData(wnd) == HIDING)
+   int data = GetWindowData(wnd);
+   if ((data&0xf) == HIDING)
    {
-      SetWindowData(wnd, HIDDEN);
+      SetWindowData(wnd, HIDDEN|(data&0x10));
+      return false;
+   }
+   else if ((data&0xf) == HIDING_TO_SHOW)
+   {
+      SetWindowData(wnd, HIDDEN|(data&0x10));
+      Show(wnd);
       return false;
    }
    else
       return true;
+}
+
+bool HidingMethodHide::CheckSwitching(const Window * wnd)
+{
+   int data = GetWindowData(wnd) & 0xf;
+   return data != SHOWN && data != HIDDEN;
 }
 
 

@@ -57,9 +57,9 @@ ShellHook::ShellHook(HWND hWnd)
    RegisterShellHook(NULL, TRUE);
    
    if (verInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-      RegisterShellHook(hWnd, 1);
+      RegisterShellHook(hWnd, 1); //Windows 95, Windows 98, or Windows Me.
    else
-      RegisterShellHook(hWnd, 3);
+      RegisterShellHook(hWnd, 3); //Windows NT 3.51, Windows NT 4.0, Windows 2000, Windows XP, or Windows Server 2003 family.
 }
 
 ShellHook::~ShellHook(void)

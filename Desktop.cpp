@@ -23,11 +23,10 @@
 #include <string>
 #include <Shellapi.h>
 #include <assert.h>
-#include "HotkeyManager.h"
-#include "DesktopManager.h"
 #include "WindowsManager.h"
+#include "DesktopManager.h"
+#include "WindowsList.h"
 #include "VirtualDimension.h"
-#include "ZOrderKeeper.h"
 #include "PlatformHelper.h"
 
 Desktop::Desktop(int i)
@@ -325,8 +324,6 @@ void Desktop::ShowWindowWorkerProc(void * lpParam)
    else
    {
       win->ShowWindow();
-
-      ZOrderKeeper::GetInstance().ZPositionWindow(win);
    }
 
    win->SetSwitching(false);
@@ -335,15 +332,46 @@ void Desktop::ShowWindowWorkerProc(void * lpParam)
 void Desktop::HideWindowWorkerProc(void * lpParam)
 {
    Window * win = (Window*)lpParam;
-            
+
+   win->SetSwitching(true);
+
    if (win->IsInTray())
       trayManager->DelIcon(win);
    else
       win->HideWindow();
+
+   win->SetSwitching(false);
+}
+
+BOOL CALLBACK Desktop::ActivateTopWindowProc( HWND hWnd, LPARAM lParam ) {
+	HWND tmpOwner = hWnd;
+	HWND OwnerWindow = NULL;
+	Window * win;
+
+	if(!(GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE) || (GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW))
+		return TRUE;
+
+	while((tmpOwner = ::GetWindow(tmpOwner, GW_OWNER)) != NULL)
+		OwnerWindow = tmpOwner;
+	if(OwnerWindow) {
+		if((GetWindowLong(OwnerWindow, GWL_STYLE) & WS_VISIBLE) && !(GetWindowLong(OwnerWindow, GWL_EXSTYLE) & WS_EX_TOOLWINDOW))
+			win = winMan->GetWindow(OwnerWindow);
+		else
+			return TRUE;
+	}
+	else
+		win = winMan->GetWindow(hWnd);
+	if(win && win->IsOnDesk((Desktop *)lParam)) {
+		SetForegroundWindow(hWnd);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 void Desktop::Activate(void)
 {
+	bool WindowsOnThisDesk = false;
+
    WindowsManager::Iterator it;
 
    m_active = true;
@@ -351,10 +379,9 @@ void Desktop::Activate(void)
    /* Set the wallpaper */
    m_wallpaper.Activate();
 
-   SetForegroundWindow(vdWindow);
+	//SetForegroundWindow(vdWindow);
 
-   // Show the windows
-   ZOrderKeeper::GetInstance().ClearWindowsOrder();
+	// Show/hide the windows
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
@@ -365,17 +392,18 @@ void Desktop::Activate(void)
 
       if (win->IsOnDesk(this))
       {
-         ZOrderKeeper::GetInstance().AddWindowToOrder(win);
-
-         if (!m_taskPool.UpdateJob(HideWindowWorkerProc, win, ShowWindowWorkerProc, win))
-            m_taskPool.QueueJob(ShowWindowWorkerProc, win);
+			ShowWindowWorkerProc(win);
+			WindowsOnThisDesk = true;
       }
-      else
+		else if(!win->IsHidden())
       {
-         if (!m_taskPool.UpdateJob(ShowWindowWorkerProc, win, ShowWindowWorkerProc, win))
+         if (!m_taskPool.UpdateJob(ShowWindowWorkerProc, win, HideWindowWorkerProc, win))
             m_taskPool.QueueJob(HideWindowWorkerProc, win);
       }
    }
+	if(WindowsOnThisDesk) { //don't bother with all this if empty desktop
+		EnumWindows(ActivateTopWindowProc, (LPARAM)this);
+	}
 }
 
 void Desktop::Desactivate(void)

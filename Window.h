@@ -116,8 +116,8 @@ public:
    inline void ShowWindow();
    inline void HideWindow();
    inline bool IsHidden() const               { return m_hidden; }
-   inline bool CheckCreated()                 { return m_hidingMethod->CheckCreated(this); }
-   inline bool CheckDestroyed()               { return m_hidingMethod->CheckDestroyed(this); }
+   inline bool CheckCreated();
+   inline bool CheckDestroyed();
 
    bool IsMinimizeToTray() const              { return m_MinToTray; }
    void ToggleMinimizeToTray();
@@ -162,7 +162,7 @@ public:
    inline HWND GetOwnedWindow() const         { return m_hOwnedWnd; }
    inline static HWND GetOwnedWindow(HWND hWnd);
 
-   inline bool IsSwitching() const            { return m_switching; }
+   inline bool IsSwitching() const            { return m_switching || m_hidingMethod->CheckSwitching(this); }
    inline void SetSwitching(bool on)          { m_switching = on; }
 
    inline bool CheckExists() const            { return IsWindow(m_hWnd) != 0; }
@@ -221,7 +221,6 @@ protected:
    HWND m_hWnd;
    HWND m_hOwnedWnd;
    Desktop * m_desk;
-   bool m_hidden;
    bool m_MinToTray;
    HANDLE m_hMinToTrayEvent;
    bool m_iconic;
@@ -246,8 +245,10 @@ protected:
 
    bool m_switching;
 
+   bool m_hidden;
    HidingMethod * m_hidingMethod;
    int m_hidingMethodData;
+   HANDLE m_hHideMutex;		//used to prevent hiding & showing at the same time if switching quickly to a desktop and back to the first
 
    static HidingMethodHide       s_hider_method;
    static HidingMethodMinimize   s_minimizer_method;
@@ -264,20 +265,46 @@ HWND Window::GetOwnedWindow(HWND hWnd)
 
 void Window::ShowWindow()
 {
+   WaitForSingleObject(m_hHideMutex, INFINITE);
    if (m_hidden)
    {
       m_hidingMethod->Show(this);
       m_hidden = false;
    }
+   ReleaseMutex(m_hHideMutex);
 }
 
 void Window::HideWindow()
 {
+   WaitForSingleObject(m_hHideMutex, INFINITE);
    if (!m_hidden)
    {
       m_hidingMethod->Hide(this);
       m_hidden = true;
    }
+   ReleaseMutex(m_hHideMutex);
+}
+
+bool Window::CheckCreated()
+{
+   bool res;
+
+   WaitForSingleObject(m_hHideMutex, INFINITE);
+   res = m_hidingMethod->CheckCreated(this);
+   ReleaseMutex(m_hHideMutex);
+
+   return res;
+}
+
+bool Window::CheckDestroyed()
+{
+   bool res;
+
+   WaitForSingleObject(m_hHideMutex, INFINITE);
+   res = m_hidingMethod->CheckDestroyed(this);
+   ReleaseMutex(m_hHideMutex);
+
+   return res;
 }
 
 #endif /*__WINDOW_H__*/

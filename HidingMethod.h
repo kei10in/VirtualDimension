@@ -27,7 +27,7 @@ class HidingMethod
 {
 public:
    inline void SetWindowData(Window * wnd, int data);
-   inline int GetWindowData(Window * wnd);
+   inline int GetWindowData(const Window * wnd);
 
    virtual void Attach(Window * /*wnd*/)            { return; }
    virtual void Detach(Window * /*wnd*/)            { return; }
@@ -35,6 +35,7 @@ public:
    virtual void Hide(Window * wnd) = 0;
    virtual bool CheckCreated(Window * /*wnd*/)      { return true; }
    virtual bool CheckDestroyed(Window * /*wnd*/)    { return true; }
+   virtual bool CheckSwitching(const Window * /*wnd*/)    { return false; }
 };
 
 class HidingMethodHide: public HidingMethod
@@ -45,13 +46,16 @@ public:
    virtual void Hide(Window * wnd);
    virtual bool CheckCreated(Window * wnd);
    virtual bool CheckDestroyed(Window * wnd);
+   virtual bool CheckSwitching(const Window * wnd);
 
 protected:
    enum States {
       SHOWN,
       SHOWING,
+      SHOWING_TO_HIDE,
       HIDDEN,
-      HIDING
+      HIDING,
+      HIDING_TO_SHOW
    };
 };
 
