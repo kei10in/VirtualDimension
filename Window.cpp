@@ -86,7 +86,10 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
       m_desk = deskMan->GetCurrentDesktop();
 
    m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
-   m_HookDllHandle = HookWindow(m_hWnd, (int)this, m_hMinToTrayEvent);
+   if (winMan->IsIntegrateWithShell())
+      m_HookDllHandle = HookWindow(GetOwnedWindow(m_hWnd), (int)this, m_hMinToTrayEvent);
+   else
+      m_HookDllHandle = NULL;
 }
 
 Window::~Window(void)
@@ -94,7 +97,7 @@ Window::~Window(void)
    ULONG count;
 
    if (m_HookDllHandle)
-      UnHookWindow(m_HookDllHandle, m_hWnd);
+      UnHookWindow(m_HookDllHandle, GetOwnedWindow(m_hWnd));
 
    if (m_hMinToTrayEvent)
       CloseHandle(m_hMinToTrayEvent);
@@ -160,7 +163,7 @@ void Window::ShowWindow()
 
    //Restore the application if needed
    if (!m_iconic)
-      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
+      ::ShowWindowAsync(m_hWnd, SW_SHOWNOACTIVATE);
 
    //Show the icon
    m_tasklist->AddTab(m_hWnd);
