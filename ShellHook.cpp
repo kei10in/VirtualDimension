@@ -21,20 +21,11 @@
 #include "StdAfx.h"
 #include "shellhook.h"
 
-/* 
- 3 solutions:
-    - RegisterShellHookWindow/DeregisterShellHookWindow @user32.dll
-    - #181 @shell32.dll, with param (HWND, type)
-  (type := {RSH_DEREGISTER = 0, RSH_REGISTER = 1, RSH_REGISTER_PROGMAN = 2, RSH_REGISTER_TASKMAN = 3})
-    - "basic" shell hook, in a DLL
-*/
-
 int ShellHook::nbInstance = 0;
 HINSTANCE ShellHook::hinstDLL = NULL;
 UINT ShellHook::WM_SHELLHOOK = 0;
 
-BOOL (__STDCALL__ * ShellHook::RegisterShellHookWindow)(HWND) = NULL;
-BOOL (__STDCALL__ * ShellHook::DeregisterShellHookWindow)(HWND) = NULL;
+BOOL (__STDCALL__ * ShellHook::RegisterShellHook)(HWND,DWORD);
 
 ShellHook::ShellHook(HWND hWnd)
 {
@@ -42,20 +33,23 @@ ShellHook::ShellHook(HWND hWnd)
    {
       WM_SHELLHOOK = RegisterWindowMessage(TEXT("SHELLHOOK"));
 
-      hinstDLL = LoadLibrary((LPCTSTR) "user32.dll");
+      hinstDLL = LoadLibrary((LPCTSTR) "shell32.dll");
 
-      RegisterShellHookWindow = (BOOL (__STDCALL__*)(HWND) )GetProcAddress(hinstDLL, "RegisterShellHookWindow");
-      DeregisterShellHookWindow = (BOOL (__STDCALL__*)(HWND) )GetProcAddress(hinstDLL, "DeregisterShellHookWindow");
+      RegisterShellHook = (BOOL (__STDCALL__*)(HWND,DWORD) )GetProcAddress(hinstDLL, (LPCSTR)181);
+      if (RegisterShellHook == NULL)
+         MessageBox(NULL, "coucou", "coucou", MB_OK);
    }
 
    nbInstance++;
 
-   RegisterShellHookWindow(hWnd);
+   RegisterShellHook(hWnd, 1);
+   RegisterShellHook(hWnd, 2);
+   RegisterShellHook(hWnd, 3);
 }
 
 ShellHook::~ShellHook(void)
 {
-   DeregisterShellHookWindow(hWnd);
+   RegisterShellHook(hWnd, 0);
 
    nbInstance--;
    
