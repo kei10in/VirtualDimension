@@ -57,6 +57,8 @@ MouseWarp::~MouseWarp(void)
    Settings settings;
 
    //Terminate mouse watch thread
+   if (!m_enableWarp)
+      ResumeThread(m_hThread);
    SignalObjectAndWait(m_hTerminateThreadEvt, m_hThread, INFINITE, FALSE);
 
    //Release resources
