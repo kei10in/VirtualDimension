@@ -1,0 +1,68 @@
+/* 
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+ * for the Microsoft Windows platform.
+ * Copyright (C) 2003 Francois Ferrand
+ *
+ * This program is free software; you can redistribute it and/or modify it under 
+ * the terms of the GNU General Public License as published by the Free Software 
+ * Foundation; either version 2 of the License, or (at your option) any later 
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with 
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * Place, Suite 330, Boston, MA 02111-1307 USA
+ *
+ */
+
+//{{NO_DEPENDENCIES}}
+// Used by VirtualDimension.rc
+//
+#define IDC_MYICON                      2
+#define IDD_VIRTUALDIMENSION_DIALOG     102
+#define IDS_APP_TITLE                   103
+#define IDD_ABOUTBOX                    103
+#define IDM_ABOUT                       104
+#define IDM_EXIT                        105
+#define IDM_CONFIGURE                   106
+#define IDI_VIRTUALDIMENSION            107
+#define IDI_SMALL                       108
+#define IDC_VIRTUALDIMENSION            109
+#define IDR_MAINFRAME                   128
+#define ID_CONFIGURE                    129
+#define IDD_SETTINGS                    130
+#define IDD_DEKSTOPPROPS                131
+#define ID_ABOUT                        132
+#define ID_POPUPMENU_CONFIGURE          133
+#define ID_POPUPMENU_EXIT               134
+#define IDC_DESK_LIST                   1001
+#define IDC_INSERT_DESK                 1002
+#define IDC_REMOVE_DESK                 1003
+#define IDC_SETUP_DESKS                 1006
+#define IDC_SETUP_DESK                  1006
+#define IDC_DESK_SPIN                   1007
+#define IDC_COLUMN_SPIN                 1009
+#define IDC_COLUMN_NUMBER               1010
+#define IDC_APPLY                       1014
+#define IDC_NAME                        1015
+#define IDC_WALLPAPER                   1016
+#define IDC_BROWSE_WALLPAPER            1018
+#define IDC_HOTKEY                      1020
+#define IDC_PREVIEW                     1021
+#define IDC_TRAYICON                    1030
+#define IDC_STATIC                      -1
+
+// Next default values for new objects
+// 
+#ifdef APSTUDIO_INVOKED
+#ifndef APSTUDIO_READONLY_SYMBOLS
+#define _APS_NO_MFC                     1
+#define _APS_NEXT_RESOURCE_VALUE        137
+#define _APS_NEXT_COMMAND_VALUE         32771
+#define _APS_NEXT_CONTROL_VALUE         1024
+#define _APS_NEXT_SYMED_VALUE           111
+#endif
+#endif
