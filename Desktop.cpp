@@ -36,40 +36,29 @@ IActiveDesktop * Desktop::m_ActiveDesktop = NULL;
 #define MNS_CHECKORBMP 0x04000000
 #endif
 
-Desktop::Desktop(void)
+Desktop::Desktop(int i)
 {
    m_active = false;
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
-   *m_name = 0;
-   *m_wallpaper = 0;
+   *m_wallpaperFile = 0;
 
-#ifdef USE_IACTIVEDESKTOP
-   if (m_ActiveDesktop)
-      m_ActiveDesktop->AddRef();
-   else
-      CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_INPROC_SERVER, IID_IActiveDesktop, (LPVOID*)&m_ActiveDesktop);
-#endif /*USE_IACTIVEDESKTOP*/
+   sprintf(m_name, "Desk%i", i);
 }
 
 Desktop::Desktop(Settings::Desktop * desktop)
 {
    desktop->GetName(m_name, sizeof(m_name));
-   desktop->GetWallpaper(m_wallpaper, sizeof(m_wallpaper));
+   desktop->GetWallpaper(m_wallpaperFile, sizeof(m_wallpaperFile));
    desktop->GetIndex(&m_index);
    desktop->GetHotkey(&m_hotkey);
+
+   m_wallpaper.SetImage(m_wallpaperFile);
 
    m_active = false;
 
    if (m_hotkey != 0)
       HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, this);
-
-#ifdef USE_IACTIVEDESKTOP
-   if (m_ActiveDesktop)
-      m_ActiveDesktop->AddRef();
-   else
-      CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_ALL, IID_IActiveDesktop, (LPVOID*)&m_ActiveDesktop);
-#endif /*USE_IACTIVEDESKTOP*/
 }
 
 Desktop::~Desktop(void)
@@ -91,17 +80,6 @@ Desktop::~Desktop(void)
 
    //Remove the tooltip tool
    tooltip->UnsetTool(this);
-
-#ifdef USE_IACTIVEDESKTOP
-   //Release the active desktop
-   if (m_ActiveDesktop)
-   {
-      ULONG count;
-      count = m_ActiveDesktop->Release();
-      if (count == 0)
-         m_ActiveDesktop = NULL;
-   }
-#endif /*USE_IACTIVEDESKTOP*/
 }
 
 HMENU Desktop::BuildMenu()
@@ -334,7 +312,7 @@ void Desktop::Save()
    Settings settings;
    Settings::Desktop desktop(&settings, m_name); 
 
-   desktop.SetWallpaper(m_wallpaper);
+   desktop.SetWallpaper(m_wallpaperFile);
    desktop.SetIndex(m_index);
    desktop.SetHotkey(m_hotkey);
 }
@@ -347,20 +325,7 @@ void Desktop::Activate(void)
    m_active = true;
 
    /* Set the wallpaper */
-   if (*m_wallpaper != '\0')
-   {
-#ifdef USE_IACTIVEDESKTOP
-      if (m_ActiveDesktop)
-      {
-         WCHAR wallpaper[sizeof(m_wallpaper)];
-         MultiByteToWideChar(CP_OEMCP, 0, m_wallpaper, sizeof(m_wallpaper), wallpaper, sizeof(wallpaper));  
-         m_ActiveDesktop->SetWallpaper(wallpaper, 0);
-         m_ActiveDesktop->ApplyChanges(AD_APPLY_SAVE);
-      }
-      else
-#endif /*USE_IACTIVEDESKTOP*/
-         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_wallpaper, 0);
-   }
+   m_wallpaper.Activate();
 
    // Activate the Virtual Dimension window (to make the window which has the focus lose it)
    SetForegroundWindow(vdWindow);
@@ -414,4 +379,15 @@ void Desktop::SetHotkey(int hotkey)
 void Desktop::OnHotkey()
 {
    deskMan->SwitchToDesktop(this);
+}
+
+void Desktop::SetWallpaper(LPTSTR fileName)
+{
+   strncpy(m_wallpaperFile, fileName, sizeof(m_wallpaperFile)/sizeof(TCHAR));
+   m_wallpaper.SetImage(fileName);
+}
+
+bool Desktop::deskOrder(Desktop * first, Desktop * second)
+{
+   return first->m_index < second->m_index;
 }

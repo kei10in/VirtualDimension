@@ -27,6 +27,7 @@
 #include <wininet.h>
 #include <shlobj.h>
 #include "HotKeyManager.h"
+#include "WallPaper.h"
 
 using namespace std;
 class Window;
@@ -34,7 +35,7 @@ class Window;
 class Desktop: public ToolTip::Tool, HotKeyManager::EventHandler
 {
 public:
-   Desktop(void);
+   Desktop(int i);
    Desktop(Settings::Desktop * desktop);
    ~Desktop(void);
 
@@ -52,27 +53,33 @@ public:
 
    void Activate(void);
    void Desactivate(void);
+   bool IsActive() const      { return m_active; }
 
+   int GetHotkey() const      { return m_hotkey; }
    void SetHotkey(int hotkey);
+
+   void SetIndex(int index)   { m_index = index; }
+   int GetIndex() const       { return m_index; }
+
+   LPTSTR GetWallpaper()      { return m_wallpaperFile; }
+   void SetWallpaper(LPTSTR fileName);
 
    char * GetText()           { return m_name; }
    void GetRect(LPRECT rect)  { *rect = m_rect; }
 
+   static bool deskOrder(Desktop * first, Desktop * second);
+
 protected:
    void OnHotkey();   
 
-public:
    bool m_active;
 
    int m_index;
    char m_name[80];
-   char m_wallpaper[256];
    int m_hotkey;
    RECT m_rect;
-
-#ifdef USE_IACTIVEDESKTOP
-   static IActiveDesktop * m_ActiveDesktop;
-#endif /*USE_IACTIVEDESKTOP*/
+   WallPaper m_wallpaper;
+   TCHAR m_wallpaperFile[256];
 };
 
 #endif /*__DESKTOP_H__*/
