@@ -26,6 +26,7 @@
 #include "HotkeyManager.h"
 #include "WindowsManager.h"
 #include "VirtualDimension.h"
+#include "ZOrderKeeper.h"
 
 #ifdef __GNUC__
 #define MIM_STYLE 0x10
@@ -303,22 +304,18 @@ void Desktop::ShowWindowWorkerProc(void * lpParam)
 {
    Window * win = (Window *)lpParam;
 
+   win->SetSwitching(true);
+
    if (win->IsInTray())
       trayManager->AddIcon(win);
    else
    {
       win->ShowWindow();
 
-      Window * prev = winMan->GetPredecessor(win);
-
-      if (prev)
-         SetWindowPos(*win, *prev, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-      else
-         SetWindowPos(*win, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-
-      if (*win == winMan->GetActiveWindow())
-         SetForegroundWindow(*win);
+      ZOrderKeeper::GetInstance().ZPositionWindow(win);
    }
+
+   win->SetSwitching(false);
 }
 
 void Desktop::HideWindowWorkerProc(void * lpParam)
@@ -343,12 +340,15 @@ void Desktop::Activate(void)
    SetForegroundWindow(vdWindow);
 
    // Show the windows
+   ZOrderKeeper::GetInstance().ClearWindowsOrder();
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
 
       if (win->IsOnDesk(this))
       {
+         ZOrderKeeper::GetInstance().AddWindowToOrder(win);
+
          if (!m_taskPool.UpdateJob(HideWindowWorkerProc, win, ShowWindowWorkerProc, win))
             m_taskPool.QueueJob(ShowWindowWorkerProc, win);
       }
