@@ -54,6 +54,8 @@ protected:
    class ToggleWindowEventHandler: public ConfigurableHotkey
    {
    public:
+      ToggleWindowEventHandler();
+      virtual ~ToggleWindowEventHandler();
       virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Show/hide preview window"; }
    };
