@@ -275,18 +275,34 @@ void Settings::SaveBackgroundColor(COLORREF color)
 
 LPTSTR Settings::LoadBackgroundImage(LPTSTR buffer, unsigned int length)
 {
-   if (LoadBinary(m_regKey, m_keyOpened, regValBackgroundImage, (LPBYTE)buffer, length))
-      return buffer;
-   else
-   {
-      strncpy(buffer, "", length);
+   DWORD size;
+
+   if (buffer == NULL)
       return NULL;
+
+   if ( (!m_keyOpened) || 
+        (RegQueryValueEx(m_regKey, regValBackgroundImage, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
+        (size > length) || 
+        (size == 0) ||
+        (RegQueryValueEx(m_regKey, regValBackgroundImage, NULL, NULL, (LPBYTE)buffer, &size) != ERROR_SUCCESS) )
+   {  
+      // Cannot load the wallpaper from registry
+      // --> set default values
+
+      *buffer = '\0';
    }
+
+   return buffer;
 }
 
 void Settings::SaveBackgroundImage(LPTSTR buffer)
 {
-   SaveBinary(m_regKey, m_keyOpened, regValBackgroundImage, (LPBYTE)buffer, strlen(buffer)*sizeof(TCHAR));
+   DWORD len;
+
+   len = (DWORD)(strlen(buffer)+sizeof(char));
+
+   if (m_keyOpened)
+      RegSetValueEx(m_regKey, regValBackgroundImage, 0, REG_SZ, (LPBYTE)buffer, len);
 }
 
 bool Settings::LoadDesktopNameOSD()
