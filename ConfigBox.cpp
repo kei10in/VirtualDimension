@@ -272,14 +272,14 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                strncpy(desk_name, desk->m_name, sizeof(desk_name));
                strncpy(desk_wallpaper, desk->m_wallpaper, sizeof(desk_wallpaper));
                desk_hotkey = desk->m_hotkey&0xff;
-               if (desk->m_hotkey & (HOTKEYF_ALT << 8))
-                  desk_hotkey |= (MOD_ALT<<8);
-               if (desk->m_hotkey & (HOTKEYF_CONTROL << 8))
-                  desk_hotkey |= (MOD_CONTROL<<8);
-               if (desk->m_hotkey & (HOTKEYF_SHIFT << 8))
-                  desk_hotkey |= (MOD_SHIFT<<8);
-               if (desk->m_hotkey & (HOTKEYF_EXT << 8))
-                  desk_hotkey |= (MOD_WIN<<8);
+               if (desk->m_hotkey & (MOD_ALT << 8))
+                  desk_hotkey |= (HOTKEYF_ALT<<8);
+               if (desk->m_hotkey & (MOD_CONTRO L<< 8))
+                  desk_hotkey |= (HOTKEYF_CONTROL<<8);
+               if (desk->m_hotkey & (MOD_SHIFT << 8))
+                  desk_hotkey |= (HOTKEYF_SHIFT<<8);
+               if (desk->m_hotkey & (MOD_WIN << 8))
+                  desk_hotkey |= (HOTKEYF_EXT<<8);
                if (DialogBox(vdWindow, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties) == IDOK)
                {
                   /* Update the desk informations */
