@@ -31,7 +31,7 @@ using namespace std;
 class WindowsManager
 {
 public:
-   WindowsManager(HWND hWnd);
+   WindowsManager();
    ~WindowsManager(void);
    void PopulateInitialWindowsSet();
 
@@ -66,7 +66,6 @@ public:
    Iterator GetIterator()        { return (Iterator(m_windows)); }
 
 protected:
-   HWND m_hWnd;
    map<HWND, Window*> m_windows;
    ShellHook m_shellhook;
    bool m_confirmKill;
