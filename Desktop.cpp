@@ -19,7 +19,7 @@
  */
 
 #include "StdAfx.h"
-#include "desktop.h"
+#include "Desktop.h"
 #include <string>
 #include <Shellapi.h>
 #include <assert.h>
@@ -27,18 +27,43 @@
 #include "windowsmanager.h"
 #include "virtualdimension.h"
 
+IActiveDesktop * Desktop::m_ActiveDesktop = NULL;
+
 Desktop::Desktop(void)
 {
    m_active = false;
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
+
+   if (m_ActiveDesktop)
+      m_ActiveDesktop->AddRef();
+   else
+      CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_ALL, IID_IActiveDesktop, (LPVOID*)&m_ActiveDesktop);
+}
+
+Desktop::Desktop(Settings::Desktop * desktop)
+{
+   desktop->GetName(m_name, sizeof(m_name));
+   desktop->GetWallpaper(m_wallpaper, sizeof(m_wallpaper));
+   desktop->GetIndex(&m_index);
+   desktop->GetHotkey(&m_hotkey);
+
+   m_active = false;
+
+   if (m_hotkey != 0)
+      HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, (int)this);
+
+   if (m_ActiveDesktop)
+      m_ActiveDesktop->AddRef();
+   else
+      CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_ALL, IID_IActiveDesktop, (LPVOID*)&m_ActiveDesktop);
 }
 
 Desktop::~Desktop(void)
 {
    WindowsManager::Iterator it;
 
-   /* Show the hidden windows, if any */
+   //Show the hidden windows, if any
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
@@ -53,19 +78,15 @@ Desktop::~Desktop(void)
 
    //Remove the tooltip tool
    tooltip->UnsetTool(this);
-}
 
-Desktop::Desktop(Settings::Desktop * desktop)
-{
-   desktop->GetName(m_name, sizeof(m_name));
-   desktop->GetWallpaper(m_wallpaper, sizeof(m_wallpaper));
-   desktop->GetIndex(&m_index);
-   desktop->GetHotkey(&m_hotkey);
-
-   m_active = false;
-
-   if (m_hotkey != 0)
-      HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, (int)this);
+   //Release the active desktop
+   if (m_ActiveDesktop)
+   {
+      ULONG count;
+      count = m_ActiveDesktop->Release();
+      if (count == 0)
+         m_ActiveDesktop = NULL;
+   }
 }
 
 void Desktop::BuildMenu(HMENU menu)
@@ -290,7 +311,17 @@ void Desktop::Activate(void)
 
    /* Set the wallpaper */
    if (*m_wallpaper != '\0')
-      SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_wallpaper, 0);
+   {
+      if (m_ActiveDesktop)
+      {
+         WCHAR wallpaper[sizeof(m_wallpaper)];
+         MultiByteToWideChar(CP_OEMCP, 0, m_wallpaper, sizeof(m_wallpaper), wallpaper, sizeof(wallpaper));  
+         m_ActiveDesktop->SetWallpaper(wallpaper, 0);
+         m_ActiveDesktop->ApplyChanges(AD_APPLY_SAVE);
+      }
+      else
+         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_wallpaper, 0);
+   }
 
    /* Show the windows */
    for(it = winMan->GetIterator(); it; it++)
