@@ -38,18 +38,6 @@ public:
    void MoveWindow(HWND hWnd, Desktop* desk);
    Window* GetWindow(HWND hWnd);
 
-   void OnWindowCreated(HWND hWnd);       //window has just been created
-   void OnWindowDestroyed(HWND hWnd);     //window is going to be destroyed
-   void OnWindowActivated(HWND hWnd);     //activation changed to another window
-   void OnGetMinRect(HWND hWnd);          //window minimized/maximized
-   void OnRedraw(HWND hWnd);              //window's title changed
-   void OnSysMenu()                       { return; } //???
-   void OnEndTask()                       { return; } //???
-   void OnWindowReplaced(HWND)            { return; } //window has been replaced
-   void OnWindowReplacing(HWND)           { return; } //window is being replaced
-   void OnWindowFlash(HWND hWnd);         //window is flashing
-   void OnRudeAppActivated(HWND hWnd);    //activation changed to another window
-
    class Iterator
    {
       friend class WindowsManager;
@@ -77,6 +65,19 @@ protected:
    HWND m_hWnd;
    map<HWND, Window*> m_windows;
    ShellHook m_shellhook;
+
+   LRESULT OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam);
+   void OnWindowCreated(HWND hWnd);       //window has just been created
+   void OnWindowDestroyed(HWND hWnd);     //window is going to be destroyed
+   void OnWindowActivated(HWND hWnd);     //activation changed to another window
+   void OnGetMinRect(HWND hWnd);          //window minimized/maximized
+   void OnRedraw(HWND hWnd);              //window's title changed
+   void OnSysMenu()                       { return; } //???
+   void OnEndTask()                       { return; } //???
+   void OnWindowReplaced(HWND)            { return; } //window has been replaced
+   void OnWindowReplacing(HWND)           { return; } //window is being replaced
+   void OnWindowFlash(HWND hWnd);         //window is flashing
+   void OnRudeAppActivated(HWND hWnd);    //activation changed to another window
 
    static BOOL CALLBACK ListWindowsProc( HWND hWnd, LPARAM lParam );
 };
