@@ -23,6 +23,7 @@
 #define IDC_MYICON                      2
 #define IDM_WALLPAPER_CTXMENU           4
 #define IDD_VIRTUALDIMENSION_DIALOG     102
+#define IDD_TROUBLESHOOTING_SETTINGS    102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
@@ -52,13 +53,16 @@
 #define IDI_MAXIMIZE_VERT               144
 #define IDI_MAXIMIZE_HORIZ              145
 #define IDI_MINIMIZE_TRAY               146
+#define IDC_SHELLINTEGEXCEPTION_BTN     1000
 #define IDC_DESK_LIST                   1001
 #define IDC_PRODUCT                     1001
 #define IDC_INSERT_DESK                 1002
 #define IDC_COPYRIGHT                   1002
 #define IDC_REMOVE_DESK                 1003
+#define IDC_HIDINGMETHODEXCEPTIONS_BTN  1005
 #define IDC_SETUP_DESKS                 1006
 #define IDC_SETUP_DESK                  1006
+#define IDC_AUTOEXCEPTION_CHECK         1006
 #define IDC_DESK_SPIN                   1007
 #define IDC_COLUMN_SPIN                 1009
 #define IDC_COLUMN_NUMBER               1010
@@ -105,6 +109,9 @@
 #define IDC_AUTOSWITCHDESKTOP_CHECK     1062
 #define IDC_RADIO1                      1063
 #define IDC_PLAINCOLOR_RATIO            1063
+#define IDC_HIDEMETHOD_RADIO            1063
+#define IDC_MINIMIZEMETHOD_RATIO        1064
+#define IDC_MOVEMETHOD_RATIO            1065
 #define IDC_IMAGE_RATIO                 1064
 #define IDC_SCREENSHOT_RATIO            1065
 #define IDC_EXTRAPARAM_BTN              1068

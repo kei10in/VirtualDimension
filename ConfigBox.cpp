@@ -681,10 +681,74 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
+// Message handler for the troubleshooting settings page.
+LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   switch (message)
+   {
+   case WM_INITDIALOG:
+      {
+         Settings settings;
+         int hidingmethod;
+
+         //Setup integrate with shell
+         CheckDlgButton(hDlg, IDC_INTEGRATEWTHSHELL_CHECK, winMan->IsIntegrateWithShell() ? BST_CHECKED : BST_UNCHECKED);
+
+         //Setup hiding method   
+         hidingmethod = settings.LoadSetting(Settings::DefaultHidingMethod);
+         if (hidingmethod > 2 || hidingmethod < 0)
+            hidingmethod = 0;
+         CheckRadioButton(hDlg, IDC_HIDEMETHOD_RADIO, IDC_MOVEMETHOD_RATIO, IDC_HIDEMETHOD_RADIO+hidingmethod);
+      }
+      return TRUE;
+
+   case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+      case IDC_HIDINGMETHODEXCEPTIONS_BTN:
+         break;
+
+      case IDC_SHELLINTEGEXCEPTION_BTN:
+         break;
+      }
+      break;
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      switch (pnmh->code)
+      {
+      case PSN_KILLACTIVE:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         return TRUE;
+
+      case PSN_APPLY:
+         {
+            int i;
+
+            winMan->SetIntegrateWithShell(IsDlgButtonChecked(hDlg, IDC_INTEGRATEWTHSHELL_CHECK) ? true : false);
+
+            for(i = IDC_HIDEMETHOD_RADIO; i <= IDC_MOVEMETHOD_RATIO; i++)
+               if (IsDlgButtonChecked(hDlg, i))
+               {
+                  Settings settings;
+                  settings.SaveSetting(Settings::DefaultHidingMethod, i-IDC_HIDEMETHOD_RADIO);
+                  break;
+               }
+
+            //Apply succeeded
+            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         }
+         return TRUE; 
+      }
+      break;
+   }
+   return FALSE;
+}
+
 //Property Sheet initialization
 HWND CreateConfigBox()
 {
-   PROPSHEETPAGE pages[5];
+   PROPSHEETPAGE pages[6];
    PROPSHEETHEADER propsheet;
 
    memset(&pages, 0, sizeof(pages));
@@ -723,6 +787,13 @@ HWND CreateConfigBox()
    pages[4].pfnDlgProc = ShortcutsConfigurationDlg::GetWindowProc();
    pages[4].pszTitle = "Shortcuts";
    pages[4].pszTemplate = MAKEINTRESOURCE(IDD_SHORTCUT_SETTINGS);
+
+   pages[5].dwSize = sizeof(PROPSHEETPAGE);
+   pages[4].hInstance = vdWindow;
+   pages[4].dwFlags = PSP_USETITLE ;
+   pages[4].pfnDlgProc = (DLGPROC)TroubleShootingConfiguration;
+   pages[4].pszTitle = "TroubleShooting";
+   pages[4].pszTemplate = MAKEINTRESOURCE(IDD_TROUBLESHOOTING_SETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
