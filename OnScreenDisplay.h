@@ -31,12 +31,26 @@ public:
    void Create();
    void Display(char * str, int timeout);
    void Display(char * str)               { Display(str, m_timeout); }
+   
+   int GetDefaultTimeout() const          { return m_timeout; }
    void SetDefaultTimeout(int timeout)    { m_timeout = timeout; }
+   COLORREF GetFgColor() const            { return m_fgColor; }
+   void SetFgColor(COLORREF color)        { m_fgColor = color; }
+   COLORREF GetBgColor() const            { return m_bgColor; }
+   void SetBgColor(COLORREF color);
+   bool HasBackground() const             { return m_hasBackground; }
+   void EnableBackground(bool background);
+   bool IsTransparent() const             { return m_isTransparent; }
+   void MakeTransparent(bool transp);
+   unsigned char GetTransparencyLevel() const   { return m_transpLevel; }
+   void SetTransparencyLevel(unsigned char level);
+
    void SelectFont();
+   void SelectBgColor();
 
 protected:
    HWND m_hWnd;
-   Transparency * m_transp;
+
    char m_text[50];
    int m_timeout;
 
@@ -45,18 +59,23 @@ protected:
    LOGFONT m_lf;
    HFONT m_font;
    COLORREF m_fgColor;
+   COLORREF m_bgColor;
    HBRUSH m_bgBrush;
    POINT m_position;
-   bool m_shadeBackground;
+   bool m_hasBackground;
+   bool m_isTransparent;
+   Transparency * m_transp;
+   unsigned char m_transpLevel;
 
-   static ATOM s_classAtom;
-
+   //Definitions for the OSD Window
    void paint(HDC hdc);
+   void eraseBackground(HDC hdc);
    void OnLeftButtonDown(LPARAM lParam);
    void OnLeftButtonDblClk();
    void OnMove(LPARAM lParam);
    void OnTimer();
 
+   static ATOM s_classAtom;
    static void RegisterClass();
    static LRESULT CALLBACK osdProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
