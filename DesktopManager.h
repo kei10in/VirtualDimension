@@ -27,6 +27,8 @@
 
 using namespace std;
 
+class BackgroundDisplayMode;
+
 class DesktopManager
 {
 public:
@@ -65,15 +67,12 @@ public:
 
    DisplayMode GetDisplayMode() const         { return m_displayMode; }
    void SetDisplayMode(DisplayMode dm);
-   bool ChooseBackgroundColor(HWND hWnd);
-   bool ChooseBackgroundPicture(HWND hWnd);
+   bool ChooseBackgroundDisplayModeOptions(HWND hWnd);
 
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-   void UpdateBackgroundPictureObjects();
-   void UpdateBackgroundPlainColorObjects();
 
    class DeskChangeEventHandler: public HotKeyManager::EventHandler {
    public:
@@ -99,13 +98,7 @@ protected:
    bool m_useOSD;
 
    DisplayMode m_displayMode;
-   COLORREF m_bkgrndColor;
-   TCHAR m_bkgrndPictureFile[MAX_PATH];
-
-   HBRUSH m_selDeskBkBrush;
-   HBRUSH m_deskBkBrush;
-   HBITMAP m_selDeskBkPicture;
-   HBITMAP m_deskBkPicture;
+   BackgroundDisplayMode * m_bkDisplayMode;
 };
 
 inline Desktop * DesktopManager::AddDesktop()

@@ -25,8 +25,7 @@
 #include "VirtualDimension.h"
 #include "OnScreenDisplay.h"
 #include <algorithm>
-#include <Commdlg.h>
-#include "PlatformHelper.h"
+#include "BackgroundDisplayMode.h"
 
 DesktopManager::DesktopManager(void)
 {
@@ -45,20 +44,8 @@ DesktopManager::DesktopManager(void)
    m_height = rect.bottom - rect.top;
    
    //Initialize the display mode
-   m_displayMode = (DisplayMode)settings.LoadDisplayMode();
-   m_bkgrndColor = settings.LoadBackgroundColor();
-   settings.LoadBackgroundImage(m_bkgrndPictureFile, MAX_PATH);
-   switch(GetDisplayMode())
-   {
-   case DM_PICTURE:
-      UpdateBackgroundPictureObjects();
-      break;
-
-   default:
-   case DM_PLAINCOLOR:
-      UpdateBackgroundPlainColorObjects();
-      break;
-   }
+   m_bkDisplayMode = NULL;
+   SetDisplayMode((DisplayMode)settings.LoadDisplayMode());
 
    //Bind the message handlers
    vdWindow.SetMessageHandler(WM_SIZE, this, &DesktopManager::OnSize);
@@ -86,11 +73,7 @@ DesktopManager::~DesktopManager(void)
 
    delete m_nextDeskEventHandler;
    delete m_prevDeskEventHandler;
-
-   DeleteObject(m_deskBkBrush);
-   DeleteObject(m_selDeskBkBrush);
-   DeleteObject(m_deskBkPicture);
-   DeleteObject(m_selDeskBkPicture);
+   delete m_bkDisplayMode;
 
    index = 0;
 
@@ -113,8 +96,6 @@ DesktopManager::~DesktopManager(void)
    settings.SaveNbCols(m_nbColumn);
    settings.SaveDesktopNameOSD(m_useOSD);
    settings.SaveDisplayMode(m_displayMode);
-   settings.SaveBackgroundColor(m_bkgrndColor);
-   settings.SaveBackgroundImage(m_bkgrndPictureFile);
 }
 
 LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
@@ -125,13 +106,6 @@ LRESULT DesktopManager::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, L
       m_height = HIWORD(lParam);
 
       UpdateLayout();
-
-      if (GetDisplayMode() == DM_PICTURE)
-      {
-         DeleteObject(m_deskBkPicture);
-         DeleteObject(m_selDeskBkPicture);
-         UpdateBackgroundPictureObjects();
-      }
    }
 
    return 0;
@@ -149,6 +123,8 @@ void DesktopManager::UpdateLayout()
 
    deltaX = m_width / min(m_nbColumn, (int)m_desks.size());
    deltaY = m_height / (((int)m_desks.size()+m_nbColumn-1) / m_nbColumn);
+
+   m_bkDisplayMode->ReSize(deltaX, deltaY);
 
    x = 0;
    y = 0;
@@ -185,7 +161,6 @@ LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, 
    HDC deskHdc;
    RECT rect;
    HBITMAP deskBmp;
-   HDC picDC = NULL;
    vector<Desktop*>::const_iterator it;
 
    //Start drawing
@@ -202,55 +177,22 @@ LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, 
    rect.right = m_width;
    FillRect(deskHdc, &rect, GetSysColorBrush(COLOR_WINDOW));
 
-   switch(m_displayMode)
-   {
-   case DM_PLAINCOLOR:
-      if (deskMan->GetCurrentDesktop())
-      {
-         RECT activeRect;
-         deskMan->GetCurrentDesktop()->GetRect(&activeRect);
-      }
-      break;
-
-   case DM_PICTURE:
-      picDC = CreateCompatibleDC(hdc);
-      break;
-
-   case DM_SCREENSHOT:
-      break;
-   }
+   m_bkDisplayMode->BeginPainting(deskHdc);
 
    //Draw the desktops
    for(it = m_desks.begin(); it != m_desks.end(); it ++)
    {
       RECT rect;
 
-      switch(m_displayMode)
-      {
-      case DM_PICTURE:
-         (*it)->GetRect(&rect);
+      //Paint the background
+      (*it)->GetRect(&rect);
+      m_bkDisplayMode->PaintDesktop(deskHdc, &rect, (*it)->IsActive());
 
-         if ((*it)->IsActive())
-            SelectObject(picDC, m_selDeskBkPicture);
-         else
-            SelectObject(picDC, m_deskBkPicture);
-
-         BitBlt(deskHdc, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, 
-                picDC, 0, 0, SRCCOPY);
-         break;
-
-      default:
-      case DM_PLAINCOLOR:
-         (*it)->GetRect(&rect);
-         if ((*it)->IsActive())
-            FillRect(deskHdc, &rect, m_selDeskBkBrush);
-         else
-            FillRect(deskHdc, &rect, m_deskBkBrush);
-         break;
-      }
-
+      //And the desktop
       (*it)->Draw(deskHdc);
    }
+
+   m_bkDisplayMode->EndPainting(deskHdc);
 
    //Copy the resulting image to the actual DC
    BitBlt(hdc, 0, 0, m_width, m_height, deskHdc, 0, 0, SRCCOPY);
@@ -261,8 +203,6 @@ LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, 
    //Cleanup
    DeleteDC(deskHdc);
    DeleteObject(deskBmp);
-   if (m_displayMode == DM_PICTURE)
-      DeleteObject(picDC);
 
    return 0;
 }
@@ -408,13 +348,6 @@ void DesktopManager::SetNbColumns(int cols)
 {
    m_nbColumn = cols; 
    UpdateLayout();
-
-   if (GetDisplayMode() == DM_PICTURE)
-   {
-      DeleteObject(m_deskBkPicture);
-      DeleteObject(m_selDeskBkPicture);
-      UpdateBackgroundPictureObjects();
-   }
 }
 
 void DesktopManager::SelectOtherDesk(int change)
@@ -441,158 +374,42 @@ void DesktopManager::SetDisplayMode(DisplayMode dm)
    if (dm == m_displayMode)
       return;
 
-   switch(m_displayMode)
-   {
-   default:
-   case DM_PLAINCOLOR:
-      DeleteObject(m_selDeskBkBrush);
-      DeleteObject(m_deskBkBrush);
-      break;
-
-   case DM_PICTURE:
-      DeleteObject(m_selDeskBkPicture);
-      DeleteObject(m_deskBkPicture);
-      break;
-   }
+   if (m_bkDisplayMode)
+      delete m_bkDisplayMode;
 
    m_displayMode = dm;
 
    switch(m_displayMode)
    {
    default:
+      m_displayMode = DM_PLAINCOLOR;
+
    case DM_PLAINCOLOR:
-      UpdateBackgroundPlainColorObjects();      
+      m_bkDisplayMode = new PlainColorBackgroundDisplayMode();
       break;
 
    case DM_PICTURE:
-      UpdateBackgroundPictureObjects();
+      m_bkDisplayMode = new PictureBackgroundDisplayMode();
       break;
+   }
+
+   if (m_desks.size())
+   {
+      int deltaX = m_width / min(m_nbColumn, (int)m_desks.size());
+      int deltaY = m_height / (((int)m_desks.size()+m_nbColumn-1) / m_nbColumn);
+      m_bkDisplayMode->ReSize(deltaX, deltaY);
    }
 
    vdWindow.Refresh();
 }
 
-bool DesktopManager::ChooseBackgroundColor(HWND hWnd)
+bool DesktopManager::ChooseBackgroundDisplayModeOptions(HWND hWnd)
 {
-   CHOOSECOLOR cc;
-   BOOL res;
-   static COLORREF acrCustClr[16];
+   bool res;
 
-   ZeroMemory(&cc, sizeof(CHOOSECOLOR));
-   cc.lStructSize = sizeof(CHOOSECOLOR);
-   cc.hwndOwner = hWnd;
-   cc.rgbResult = m_bkgrndColor;
-   cc.lpCustColors = acrCustClr;
-   cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
-
-   res = ChooseColor(&cc);
-   m_bkgrndColor = cc.rgbResult;
-   
-   if (res && (GetDisplayMode() == DM_PLAINCOLOR))
-   {
-      DeleteObject(m_selDeskBkBrush);
-      DeleteObject(m_deskBkBrush);
-      UpdateBackgroundPlainColorObjects();
+   res = m_bkDisplayMode->ChooseOptions(hWnd);
+   if (res)
       vdWindow.Refresh();
-   }
 
-   return res ? true : false;
-}
-
-bool DesktopManager::ChooseBackgroundPicture(HWND hWnd)
-{
-   OPENFILENAME ofn;
-   BOOL res;
-
-   ZeroMemory(&ofn, sizeof(OPENFILENAME));
-   ofn.lStructSize = sizeof(OPENFILENAME);
-   ofn.hwndOwner = hWnd;
-   ofn.lpstrFile = m_bkgrndPictureFile;
-   ofn.nMaxFile = MAX_PATH;
-   ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
-   ofn.nFilterIndex = 1;
-   ofn.lpstrFileTitle = NULL;
-   ofn.nMaxFileTitle = 0;
-   ofn.lpstrInitialDir = NULL;
-   ofn.lpstrTitle = "Select background image";
-   ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
-
-   res = GetOpenFileName(&ofn);
-   
-   if (res && (GetDisplayMode() == DM_PICTURE))
-   {
-      DeleteObject(m_selDeskBkPicture);
-      DeleteObject(m_deskBkPicture);
-      UpdateBackgroundPictureObjects();
-      vdWindow.Refresh();
-   }
-
-   return res ? true : false;
-}
-
-void DesktopManager::UpdateBackgroundPlainColorObjects()
-{
-   COLORREF selected = RGB((GetRValue(m_bkgrndColor) * 255) / 192,
-                           (GetGValue(m_bkgrndColor) * 255) / 192,
-                           (GetBValue(m_bkgrndColor) * 255) / 192);
-   m_selDeskBkBrush = CreateSolidBrush(selected);
-   m_deskBkBrush = CreateSolidBrush(m_bkgrndColor);
-}
-
-void DesktopManager::UpdateBackgroundPictureObjects()
-{
-   IPicture * image;
-
-   //Open the picture
-   image = PlatformHelper::OpenImage(m_bkgrndPictureFile);
-
-   //If succesful, get the bitmap handles
-   if (image && (m_desks.size()>0))
-   {
-      HBITMAP bmp;
-      HDC memDC;
-      HDC picDC;
-      RECT rect;
-      BLENDFUNCTION bf;
-      HDC winDC;
-      int Width = m_width / min(m_nbColumn, (int)m_desks.size());
-      int Height = m_height / (((int)m_desks.size()+m_nbColumn-1) / m_nbColumn);
-
-      //Deselected picture
-      image->get_Handle((OLE_HANDLE *)&bmp);
-      m_deskBkPicture = (HBITMAP)CopyImage(bmp, IMAGE_BITMAP, Width, Height, 0);
-//DeleteObject(bmp);
-
-      //Selected picture
-      winDC = GetWindowDC(vdWindow);
-      memDC = CreateCompatibleDC(winDC);
-      m_selDeskBkPicture = CreateCompatibleBitmap(winDC, Width, Height);
-      SelectObject(memDC, m_selDeskBkPicture);
-//ReleaseDC(vdWindow, winDC);
-
-      picDC = CreateCompatibleDC(memDC);
-      SelectObject(picDC, m_deskBkPicture);
-
-      rect.left = rect.top = 0;
-      rect.right = Width;
-      rect.bottom = Height;
-      FillRect(memDC, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
-
-      bf.AlphaFormat = 0;
-      bf.BlendFlags = 0;
-      bf.BlendOp = AC_SRC_OVER;
-      bf.SourceConstantAlpha = 128;
-      AlphaBlend(memDC, 0, 0, Width, Height,
-                 picDC, 0, 0, Width, Height,
-                 bf);
-
-      DeleteDC(picDC);
-      DeleteDC(memDC);
-   }
-   else
-      m_deskBkPicture = m_selDeskBkPicture = NULL;
-
-   //Release the IPicture object
-   if (image)
-      image->Release();
+   return res;
 }
