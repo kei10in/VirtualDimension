@@ -59,35 +59,26 @@ Window* WindowsManager::GetWindow(HWND hWnd)
       return (*it).second;
 }
 
-/*
-Window* WindowsManager::GetFirstWindow()
-{
-   m_iterator = m_windows.begin();
-
-   if (m_iterator == m_windows.end())
-      return NULL;
-   else
-      return *m_iterator;
-}
-
-Window* WindowsManager::GetNextWindow()
-{
-   m_iterator ++;
-
-   if (m_iterator == m_windows.end())
-      return NULL;
-   else
-      return *m_iterator;
-}
-*/
-
 void WindowsManager::OnWindowCreated(HWND hWnd)
 {
    Window * window;
+   map<HWND, Window*>::iterator it = m_windows.find(hWnd);
 
-   //Update the list
-   window = new Window(hWnd);
-   m_windows[hWnd] = window;
+   if (it == m_windows.end())
+   {
+      //Update the list
+      window = new Window(hWnd);
+      m_windows[hWnd] = window;
+
+      InvalidateRect(m_hWnd, NULL, FALSE);
+   }
+   else
+   {
+      window = (*it).second;
+
+      if (window->IsHidden())
+         window->HideWindow();
+   }
 }
 
 void WindowsManager::OnWindowDestroyed(HWND hWnd)
@@ -99,38 +90,37 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
       return;
 
    win = (*it).second;
-   if (win->m_hiding)
-   {
-      win->m_hiding = false;
+   if (win->IsHidden())
       return;
-   }
 
    //Update the list
    delete win;
    m_windows.erase(it);
+
+   InvalidateRect(m_hWnd, NULL, FALSE);
 }
 
-void WindowsManager::OnWindowActivated(HWND hWnd)
+void WindowsManager::OnWindowActivated(HWND /*hWnd*/)
 {
 
 }
 
-void WindowsManager::OnGetMinRect(HWND hWnd)
+void WindowsManager::OnGetMinRect(HWND /*hWnd*/)
 {
 
 }
 
-void WindowsManager::OnRedraw(HWND hWnd)
+void WindowsManager::OnRedraw(HWND /*hWnd*/)
+{
+   InvalidateRect(m_hWnd, NULL, FALSE);
+}
+
+void WindowsManager::OnWindowFlash(HWND /*hWnd*/)
 {
 
 }
 
-void WindowsManager::OnWindowFlash(HWND hWnd)
-{
-
-}
-
-void WindowsManager::OnRudeAppActivated(HWND hWnd)
+void WindowsManager::OnRudeAppActivated(HWND /*hWnd*/)
 {
 
 }
