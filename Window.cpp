@@ -62,7 +62,9 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
 
    //Setup the hiding method to use
    m_hHideMutex = CreateMutex(NULL, FALSE, NULL);
-   method = s.LoadHidingMethod(m_className);
+   TCHAR filename[MAX_PATH];
+   PlatformHelper::GetWindowFileName(m_hWnd, filename, MAX_PATH);
+   method = s.LoadHidingMethod(filename);
    if (method < 0 && method > sizeof(s_hiding_methods)/sizeof(*s_hiding_methods))
       method = 0;
    m_hidingMethod = s_hiding_methods[method];
@@ -149,7 +151,9 @@ void Window::OnDelayUpdate()
       (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
 
    //Shell integration
-   if (winMan->IsIntegrateWithShell() && !s.LoadDisableShellIntegration(m_className))
+   TCHAR filename[MAX_PATH];
+   PlatformHelper::GetWindowFileName(m_hWnd, filename, MAX_PATH);
+   if (winMan->IsIntegrateWithShell() && !s.LoadDisableShellIntegration(filename))
       Hook();
 }
 
