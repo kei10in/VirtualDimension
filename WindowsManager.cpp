@@ -20,6 +20,7 @@
 
 #include "StdAfx.h"
 #include "windowsmanager.h"
+#include "VirtualDimension.h"
 
 WindowsManager::WindowsManager(HWND hWnd): m_hWnd(hWnd), m_shellhook(hWnd)
 {
@@ -70,6 +71,12 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
       window = new Window(hWnd);
       m_windows[hWnd] = window;
 
+      //Add the tooltip (let the desktop do it)
+      if (window->IsOnDesk(NULL))  //on all desktops
+         deskMan->UpdateLayout();
+      else
+         window->GetDesk()->UpdateLayout();
+
       InvalidateRect(m_hWnd, NULL, FALSE);
    }
    else
@@ -94,8 +101,17 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
       return;
 
    //Update the list
-   delete win;
    m_windows.erase(it);
+
+   //Remove tooltip(s)
+   tooltip->UnsetTool(win);
+   if (win->IsOnDesk(NULL))  //on all desktops
+      deskMan->UpdateLayout();
+   else
+      win->GetDesk()->UpdateLayout();
+
+   //Delete the object
+   delete win;
 
    InvalidateRect(m_hWnd, NULL, FALSE);
 }
