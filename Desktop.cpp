@@ -21,6 +21,7 @@
 #include "StdAfx.h"
 #include "desktop.h"
 #include <string>
+#include <Shellapi.h>
 #include "hotkeymanager.h"
 #include "windowsmanager.h"
 #include "virtualdimension.h"
@@ -72,14 +73,24 @@ void Desktop::BuildMenu(HMENU menu)
 
    for(it = winMan->GetIterator(); it; it++)
    {
-      TCHAR buffer[40];
+      TCHAR buffer[50];
+      DWORD res;
       Window * win = it;
 
       if (!win->IsOnDesk(this))
          continue;
 
-      SendMessage(*win, WM_GETTEXT, (WPARAM)sizeof(buffer), (LPARAM)buffer);
-      AppendMenu(menu, MF_DISABLED, 0, buffer);
+      SendMessageTimeout(*win, WM_GETTEXT, (WPARAM)sizeof(buffer), (LPARAM)buffer, SMTO_ABORTIFHUNG, 50, &res);
+
+      MENUITEMINFO mii;
+
+      mii.cbSize = sizeof(mii);
+      mii.fMask = MIIM_STATE | MIIM_STRING | MIIM_ID;
+      mii.fState = MFS_DISABLED | MFS_GRAYED;
+      mii.dwTypeData = buffer;
+      mii.cch = strlen(buffer);
+      mii.wID = 0;
+      InsertMenuItem(menu, (UINT)-1, TRUE, &mii);
    }
 }
 
@@ -104,6 +115,30 @@ void Desktop::Draw(HDC hDc, LPRECT rect)
    LineTo(hDc, rect->right, rect->bottom);
    LineTo(hDc, rect->right, rect->top);
    LineTo(hDc, rect->left, rect->top);
+
+   WindowsManager::Iterator it;
+   int x, y;
+
+   x = rect->left;
+   y = rect->top;
+   for(it = winMan->GetIterator(); it; it++)
+   {
+      Window * win = it;
+      HICON hIcon;
+      
+      if (!win->IsOnDesk(this))
+         continue;
+
+      hIcon = win->GetIcon();
+      DrawIconEx(hDc, x, y, hIcon, 16, 16, 0, NULL, DI_NORMAL);
+
+      x += 16;
+      if (x > rect->right-15)
+      {
+         x = rect->left;
+         y += 16;
+      }
+   }
 }
 
 void Desktop::Rename(char * name)
