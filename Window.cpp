@@ -36,9 +36,9 @@ bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
+Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwnedWnd),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
-                           m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128),
+                           m_transp(m_hOwnedWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
                            m_hIcon(NULL), m_ownIcon(false), m_style(0)
 {
@@ -76,7 +76,7 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
       m_autopos = settings.LoadAutoSetPos();
 
       if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
-         SetWindowPos(GetOwnedWindow(m_hWnd), 0, 
+         SetWindowPos(m_hOwnedWnd, 0, 
                       rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
                       SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
                       (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
@@ -87,11 +87,7 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
 
    m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
    if (winMan->IsIntegrateWithShell())
-   {
-      HWND hWnd = GetOwnedWindow(m_hWnd);
-      GetWindowThreadProcessId(hWnd, &m_dwProcessId);
-      m_HookDllHandle = HookWindow(hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
-   }
+      Hook();
    else
       m_HookDllHandle = NULL;
 }
@@ -100,8 +96,7 @@ Window::~Window(void)
 {
    ULONG count;
 
-   if (m_HookDllHandle)
-      UnHookWindow(m_HookDllHandle, m_dwProcessId, GetOwnedWindow(m_hWnd));
+   UnHook();
 
    if (m_hMinToTrayEvent)
       CloseHandle(m_hMinToTrayEvent);
@@ -505,7 +500,7 @@ void Window::MaximizeHeight()
 {
    RECT rect;
    RECT screen;
-   HWND hWnd = GetOwnedWindow(m_hWnd);
+   HWND hWnd = GetOwnedWindow();
 
    GetWindowRect(hWnd, &rect);
    SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
@@ -518,7 +513,7 @@ void Window::MaximizeWidth()
 {
    RECT rect;
    RECT screen;
-   HWND hWnd = GetOwnedWindow(m_hWnd);
+   HWND hWnd = GetOwnedWindow();
 
    GetWindowRect(hWnd, &rect);
    SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
@@ -577,4 +572,18 @@ void Window::OnContextMenu()
       PostMessage(vdWindow, WM_COMMAND, res, 0);
 
    DestroyMenu(hMenu);
+}
+
+void Window::Hook()
+{
+   HWND hWnd = GetOwnedWindow();
+   GetWindowThreadProcessId(hWnd, &m_dwProcessId);
+   m_HookDllHandle = HookWindow(hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
+}
+
+void Window::UnHook()
+{
+   if (m_HookDllHandle)
+      UnHookWindow(m_HookDllHandle, m_dwProcessId, m_hOwnedWnd);
+   m_HookDllHandle = NULL;
 }

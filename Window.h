@@ -172,6 +172,10 @@ public:
    }
    void GetRect(LPRECT /*rect*/)  { return; }
 
+   void Hook();
+   void UnHook();
+
+   inline HWND GetOwnedWindow() const         { return m_hOwnedWnd; }
    inline static HWND GetOwnedWindow(HWND hWnd);
 
 protected:
@@ -222,6 +226,7 @@ protected:
    };
 
    HWND m_hWnd;
+   HWND m_hOwnedWnd;
    Desktop * m_desk;
    bool m_hidden;
    bool m_MinToTray;
