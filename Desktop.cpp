@@ -41,6 +41,8 @@ Desktop::Desktop(void)
    m_active = false;
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
+   *m_name = 0;
+   *m_wallpaper = 0;
 
 #ifdef USE_IACTIVEDESKTOP
    if (m_ActiveDesktop)
