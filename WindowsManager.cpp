@@ -120,8 +120,6 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
       return;
 
    win = (*it).second;
-   if (win->IsHidden())
-      return;
 
    //Update the list
    m_windows.erase(it);
