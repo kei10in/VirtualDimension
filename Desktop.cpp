@@ -78,13 +78,17 @@ void Desktop::BuildMenu(HMENU menu)
 void Desktop::Draw(HDC hDc, LPRECT rect)
 {
    char buffer[20];
+   int color;
 
    if (m_active)
-      FillRect(hDc, rect, GetSysColorBrush(5));
+      color = 5;
    else
-      FillRect(hDc, rect, GetSysColorBrush(4));
+      color = 4;
+
+   FillRect(hDc, rect, GetSysColorBrush(color));
 
    sprintf(buffer, "%.19s", m_name);
+   SetBkColor(hDc, GetSysColor(color));
    DrawText(hDc, buffer, -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
    MoveToEx(hDc, rect->left, rect->top, NULL);
