@@ -130,8 +130,6 @@ HMENU Desktop::BuildMenu()
    {
       TCHAR buffer[50];
       DWORD res;
-      HICON icon;
-      ICONINFO iconInfo;
       Window * win = it;
 
       if (!win->IsOnDesk(this))
@@ -143,9 +141,7 @@ HMENU Desktop::BuildMenu()
       mii.dwTypeData = buffer;
       mii.cch = strlen(buffer);
       mii.wID = i++;
-      icon = win->GetIcon();
-      GetIconInfo(icon, &iconInfo);
-      mii.hbmpItem = iconInfo.hbmColor;
+      mii.hbmpItem = HBMMENU_CALLBACK;
 
       InsertMenuItem(hMenu, (UINT)-1, TRUE, &mii);
    }
