@@ -31,6 +31,11 @@
 IActiveDesktop * Desktop::m_ActiveDesktop = NULL;
 #endif /*USE_IACTIVEDESKTOP*/
 
+#ifdef __GNUC__
+#define MIM_STYLE 0x10
+#define MNS_CHECKORBMP 0x04000000
+#endif
+
 Desktop::Desktop(void)
 {
    m_active = false;
@@ -97,18 +102,34 @@ Desktop::~Desktop(void)
 #endif /*USE_IACTIVEDESKTOP*/
 }
 
-void Desktop::BuildMenu(HMENU menu)
+HMENU Desktop::BuildMenu()
 {
    WindowsManager::Iterator it;
    int i;
+   HMENU hMenu;
+   MENUITEMINFO mii;
+   MENUINFO mi;
 
-   AppendMenu(menu, MF_SEPARATOR, 0, 0);
+   //Create the menu
+   hMenu = CreatePopupMenu();
+
+   //Set its style
+   mi.cbSize = sizeof(MENUINFO);
+   mi.fMask = MIM_STYLE;
+   mi.dwStyle = MNS_CHECKORBMP;
+   SetMenuInfo(hMenu, &mi);
+
+   //Add the menu items
+   mii.cbSize = sizeof(mii);
+   mii.fMask = MIIM_STRING | MIIM_ID | MIIM_DATA | MIIM_BITMAP;
 
    i = WM_USER;
    for(it = winMan->GetIterator(); it; it++)
    {
       TCHAR buffer[50];
       DWORD res;
+      HICON icon;
+      ICONINFO iconInfo;
       Window * win = it;
 
       if (!win->IsOnDesk(this))
@@ -116,16 +137,18 @@ void Desktop::BuildMenu(HMENU menu)
 
       SendMessageTimeout(*win, WM_GETTEXT, (WPARAM)sizeof(buffer), (LPARAM)buffer, SMTO_ABORTIFHUNG, 50, &res);
 
-      MENUITEMINFO mii;
-
-      mii.cbSize = sizeof(mii);
-      mii.fMask = MIIM_STRING | MIIM_ID | MIIM_DATA;
       mii.dwItemData = (DWORD)win;
       mii.dwTypeData = buffer;
       mii.cch = strlen(buffer);
       mii.wID = i++;
-      InsertMenuItem(menu, (UINT)-1, TRUE, &mii);
+      icon = win->GetIcon();
+      GetIconInfo(icon, &iconInfo);
+      mii.hbmpItem = iconInfo.hbmColor;
+
+      InsertMenuItem(hMenu, (UINT)-1, TRUE, &mii);
    }
+
+   return hMenu;
 }
 
 void Desktop::OnMenuItemSelected(HMENU menu, int cmdId)
@@ -138,7 +161,7 @@ void Desktop::OnMenuItemSelected(HMENU menu, int cmdId)
    GetMenuItemInfo(menu, cmdId, FALSE, &mii);
 
    win = (Window *)mii.dwItemData;
-   win->OnMenuItemSelected(menu, Window::VDM_ACTIVATEWINDOW);
+   win->Activate();
 }
 
 void Desktop::resize(LPRECT rect)
