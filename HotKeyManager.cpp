@@ -60,16 +60,7 @@ void HotKeyManager::RegisterHotkey(int hotkey, EventHandler* handler)
    }
 
    //Register the hotkey
-   int mod = 0;
-   if (hotkey & (HOTKEYF_ALT << 8))
-      mod |= MOD_ALT;
-   if (hotkey & (HOTKEYF_CONTROL << 8))
-      mod |= MOD_CONTROL;
-   if (hotkey & (HOTKEYF_SHIFT << 8))
-      mod |= MOD_SHIFT;
-   if (hotkey & (HOTKEYF_EXT << 8))
-      mod |= MOD_WIN;
-
+   int mod = hotkey >> 8;
    int vk = hotkey & 0xFF;
    if (RegisterHotKey(vdWindow, id, mod, vk))
    {
