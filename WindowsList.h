@@ -54,7 +54,7 @@ public:
    class Iterator
    {
    public:
-      Iterator(): m_node(NULL) { return; }
+      Iterator(): m_list(NULL), m_node(NULL) { return; }
       Iterator(WindowsList * list, Node* node): m_list(list), m_node(node) { return; }
 
       operator Window*()         { return &m_node->m_window; }
