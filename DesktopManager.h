@@ -21,7 +21,7 @@
 #ifndef __DESKTOPMANAGER_H__
 #define __DESKTOPMANAGER_H__
 
-#include <list>
+#include <vector>
 #include "desktop.h"
 
 using namespace std;
@@ -42,7 +42,7 @@ public:
    void Sort();
    
    int GetNbColumns() const { return m_nbColumn; }
-   void SetNbColumns(int cols) { m_nbColumn = cols; }
+   void SetNbColumns(int cols);
 
    void LoadDesktops();
    void SaveDesktops();
@@ -53,11 +53,12 @@ public:
 
 protected:
    Desktop * AddDesktop(Desktop * desk);
+   void UpdateLayout();
 
    int m_nbColumn;
 
-   list<Desktop*> m_desks;
-   list<Desktop*>::const_iterator m_deskIterator;
+   vector<Desktop*> m_desks;
+   vector<Desktop*>::const_iterator m_deskIterator;
    Desktop * m_currentDesktop;
 
    int m_width, m_height;
