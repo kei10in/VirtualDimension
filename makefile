@@ -33,7 +33,7 @@ FastWindow.cpp TrayIconsManager.cpp WindowDialogs.cpp HotKeyControl.cpp \
 OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp WindowsList.cpp  \
 WallPaper.cpp BackgroundDisplayMode.cpp BackgroundColor.cpp TaskPool.cpp \
 LinkControl.cpp ZOrderKeeper.cpp HotkeyConfig.cpp guids.c ExplorerWrapper.cpp \
-HidingMethod.cpp SharedMenuBuffer.cpp MouseWarp.cpp
+HidingMethod.cpp SharedMenuBuffer.cpp MouseWarp.cpp Config.cpp
 RES_FILE = VirtualDimension.res
 OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a

@@ -22,45 +22,14 @@
 #define __SETTINGS_H__
 
 #include <assert.h>
+#include "Config.h"
 
 #define MAX_NAME_LENGTH 255
 
-//Settings framework
-class BinarySetting  { };
-class DWordSetting   { };
-class StringSetting  { };
-
-template <class T> class SettingType: public BinarySetting { };
-#define DECLARE_SETTINGTYPE(clas, typ)    template <> class SettingType<clas>: public typ { };
-
-template <class T> class Setting: public SettingType<T>
-{
-public:
-   Setting(T defval, char * name): m_default(defval), m_name(name) { }
-   Setting(const T* defval, char * name): m_default(*defval), m_name(name) { }
-   T m_default;
-   char * m_name;
-};
-
-#define DECLARE_SETTING(name, type)                const Setting<type> name
-#define DEFINE_SETTING(clas, name, type, defval)   const Setting<type> clas::name(defval, #name)
-
-
-//Actual settings
-DECLARE_SETTINGTYPE(int, DWordSetting);
-DECLARE_SETTINGTYPE(unsigned int, DWordSetting);
-DECLARE_SETTINGTYPE(long, DWordSetting);
-DECLARE_SETTINGTYPE(unsigned long, DWordSetting);
-DECLARE_SETTINGTYPE(char, DWordSetting);
-DECLARE_SETTINGTYPE(unsigned char, DWordSetting);
-DECLARE_SETTINGTYPE(bool, DWordSetting);
-DECLARE_SETTINGTYPE(LPTSTR, StringSetting);
-
-class Settings
+class Settings : public Config::RegistryGroup
 {
 public:
    Settings(void);
-   virtual ~Settings(void);
 
    static DECLARE_SETTING(WindowPosition, RECT);
    static DECLARE_SETTING(DockedBorders, int);
@@ -109,19 +78,6 @@ public:
    static DECLARE_SETTING(WarpSensibility, LONG);
    static DECLARE_SETTING(WarpMinDuration, DWORD);
    static DECLARE_SETTING(WarpRewarpDelay, DWORD);
-
-   // Generic settings accessors for "large", fixed size, settings, saved in registry as binary
-   template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data)          { return LoadSetting(setting, data, setting); }
-   template<class T> inline void SaveSetting(const Setting<T> &setting, const T* data)    { SaveSetting(setting, data, setting); }
-
-   // Generic settings accessors for "small" settings (32bits or less), saved in registry as DWORD
-   template<class T> inline T LoadSetting(const Setting<T> &setting)                      { return LoadSetting(setting, setting); }
-   template<class T> inline void SaveSetting(const Setting<T> &setting, T data)           { SaveSetting(setting, data, setting); }
-   template<class T> static inline T GetDefaultSetting(const Setting<T> &setting)         { return GetDefaultSetting(setting, setting); }
-
-   // String settings accessors
-   inline unsigned int LoadSetting(const Setting<LPTSTR> setting, LPTSTR buffer, unsigned int length)    { return LoadSetting(setting, buffer, length, setting); }
-   inline void SaveSetting(const Setting<LPTSTR> setting, LPTSTR buffer)                                 { SaveSetting(setting, buffer, setting); }
 
    // Other settings
    bool LoadStartWithWindows();
@@ -247,56 +203,13 @@ protected:
    static const char regSubKeyHidingMethods[];
    static const char regValStartWithWindows[];
 
-   template<class T> inline bool LoadSetting(const Setting<T> &setting, T* data, const BinarySetting& type);
-   template<class T> inline void SaveSetting(const Setting<T> &setting, const T* data, const BinarySetting& type);
-
-   template<class T> inline T LoadSetting(const Setting<T> &setting, const DWordSetting& type);
-   template<class T> inline void SaveSetting(const Setting<T> &setting, T data, const DWordSetting& type);
-   template<class T> static inline T GetDefaultSetting(const Setting<T> &setting, const DWordSetting& type) { return setting.m_default; }
-
-   unsigned int LoadSetting(const Setting<LPTSTR> setting, LPTSTR buffer, unsigned int length, const StringSetting& type);
-   void SaveSetting(const Setting<LPTSTR> setting, LPTSTR buffer, const StringSetting& type);
-
-   bool LoadBinarySetting(const char * name, LPBYTE data, const LPBYTE defval, DWORD size);
-   void SaveBinarySetting(const char * name, const LPBYTE data, DWORD size);
-
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);
    static void SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value);
    static bool LoadBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length);
    static void SaveBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length);
 
-   HKEY m_regKey;
-   bool m_keyOpened;
-
    friend class Settings::Desktop;
    friend class Settings::Window;
 };
-
-template<class T> inline bool Settings::LoadSetting(const Setting<T> &setting, T* data, const BinarySetting& /*type*/)
-{
-   assert(sizeof(T)>sizeof(DWORD));
-   return LoadBinarySetting(setting.m_name, (LPBYTE)data, (LPBYTE)&setting.m_default, sizeof(T));
-}
-
-template<class T> inline void Settings::SaveSetting(const Setting<T> &setting, const T* data, const BinarySetting& /*type*/)
-{
-   assert(sizeof(T)>sizeof(DWORD));
-   return SaveBinarySetting(setting.m_name, (LPBYTE)data, sizeof(T));
-}
-
-template<class T> inline T ConvertFromDWord(DWORD dw)    { return (T)dw; }
-template<> inline bool ConvertFromDWord<bool>(DWORD dw)  { return dw ? true : false; }
-
-template<class T> T Settings::LoadSetting(const Setting<T> &setting, const DWordSetting& /*type*/)
-{
-   assert(sizeof(T)<=sizeof(DWORD));
-   return ConvertFromDWord<T>(LoadDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)setting.m_default));
-}
-
-template<class T> void Settings::SaveSetting(const Setting<T> &setting, T data, const DWordSetting& /*type*/)
-{
-   assert(sizeof(T)<=sizeof(DWORD));
-   SaveDWord(m_regKey, m_keyOpened, setting.m_name, (DWORD)data);
-}
 
 #endif /*__SETTINGS_H__*/

@@ -76,20 +76,8 @@ DEFINE_SETTING(Settings, WarpSensibility, LONG, 3);
 DEFINE_SETTING(Settings, WarpMinDuration, DWORD, 500);
 DEFINE_SETTING(Settings, WarpRewarpDelay, DWORD, 3000);
 
-Settings::Settings(void)
+Settings::Settings(void): RegistryGroup(regKeyName)
 {
-   HRESULT res;
-
-   res = RegCreateKeyEx(HKEY_CURRENT_USER, regKeyName, 
-                        0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, 
-                        &m_regKey, NULL);
-   m_keyOpened = (res == ERROR_SUCCESS);
-}
-
-Settings::~Settings(void)
-{
-   if (m_keyOpened)
-      RegCloseKey(m_regKey);
 }
 
 DWORD Settings::LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal)
@@ -129,61 +117,6 @@ void Settings::SaveBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYT
 {
    if (keyOpened)
       RegSetValueEx(regKey, entry, 0, REG_BINARY, buffer, length);
-}
-
-bool Settings::LoadBinarySetting(const char * name, LPBYTE data, const LPBYTE defval, DWORD size)
-{
-   bool res;
-
-   res = LoadBinary(m_regKey, m_keyOpened, name, data, size);
-   if (!res)
-   {  
-      // Cannot load the position from registry
-      // --> set default values
-      memcpy(data, defval, size);
-   }
-
-   return res;
-}
-
-void Settings::SaveBinarySetting(const char * name, const LPBYTE data, DWORD size)
-{
-   return SaveBinary(m_regKey, m_keyOpened, name, data, size);
-}
-
-unsigned int Settings::LoadSetting(const Setting<LPTSTR> setting, LPTSTR buffer, unsigned int length, const StringSetting& /*type*/)
-{
-   DWORD size;
-   
-   if (buffer == NULL)
-   {
-      if ( (!m_keyOpened) || 
-         (RegQueryValueEx(m_regKey, setting.m_name, NULL, NULL, NULL, &size) != ERROR_SUCCESS) )
-         size = _tcslen(setting.m_default);
-   }
-   else if ( (!m_keyOpened) || 
-             (RegQueryValueEx(m_regKey, setting.m_name, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
-             (size > length) || 
-             (size == 0) ||
-             (RegQueryValueEx(m_regKey, setting.m_name, NULL, NULL, (LPBYTE)buffer, &size) != ERROR_SUCCESS) )
-   {  
-      // Cannot load the string from registry
-      // --> set default value
-      size = _tcslen(setting.m_default);
-      strncpy(buffer, setting.m_default, length-1);
-      buffer[length-1] = 0;
-   }
-
-   return size;
-}
-
-void Settings::SaveSetting(const Setting<LPTSTR> setting, LPTSTR buffer, const StringSetting& /*type*/)
-{
-   DWORD len;
-
-   len = (DWORD)((_tcslen(buffer)+1) * sizeof(TCHAR));
-   if (m_keyOpened)
-      RegSetValueEx(m_regKey, setting.m_name, 0, REG_SZ, (LPBYTE)buffer, len);
 }
 
 const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
@@ -227,7 +160,7 @@ bool Settings::LoadDisableShellIntegration(const char * windowclass)
    HKEY regKey=NULL;
    bool res;
 
-   res = m_keyOpened &&
+   res = m_opened &&
          RegOpenKeyEx(m_regKey, regSubKeyDisableShellIntegration, 0, KEY_READ, &regKey) == ERROR_SUCCESS &&
          RegQueryValueEx(regKey, windowclass, NULL, NULL, NULL, NULL) == ERROR_SUCCESS;
 
@@ -241,7 +174,7 @@ void Settings::SaveDisableShellIntegration(const char * windowclass, bool enable
 {
    HKEY regKey=NULL;
 
-   if (m_keyOpened &&
+   if (m_opened &&
        RegOpenKeyEx(m_regKey, regSubKeyDisableShellIntegration, 0, KEY_READ, &regKey) == ERROR_SUCCESS)
    {
       DWORD value = 0;
@@ -262,7 +195,7 @@ int Settings::LoadHidingMethod(const char * windowclass)
    DWORD size = sizeof(val);
    int res;
 
-   res = (m_keyOpened &&
+   res = (m_opened &&
           RegOpenKeyEx(m_regKey, regSubKeyHidingMethods, 0, KEY_READ, &regKey) == ERROR_SUCCESS &&
           RegQueryValueEx(regKey, windowclass, NULL, NULL, (BYTE*)&val, &size) == ERROR_SUCCESS) ? val : 0;
 
@@ -276,7 +209,7 @@ void Settings::SaveHidingMethod(const char * windowclass, int method)
 {
    HKEY regKey=NULL;
 
-   if (m_keyOpened &&
+   if (m_opened &&
        RegOpenKeyEx(m_regKey, regSubKeyHidingMethods, 0, KEY_READ, &regKey) == ERROR_SUCCESS)
    {
       if (method == 0)
@@ -323,7 +256,7 @@ void Settings::Desktop::Init(Settings * settings)
    m_keyOpened = false;
 
    m_topKeyOpened = 
-      (settings->m_keyOpened) &&
+      (settings->m_opened) &&
       (RegCreateKeyEx(settings->m_regKey, regKeyDesktops, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_topKey, NULL) == ERROR_SUCCESS);
 }
 
@@ -551,7 +484,7 @@ void Settings::Window::Init(Settings * settings)
    m_keyOpened = false;
 
    m_topKeyOpened = 
-      (settings->m_keyOpened) &&
+      (settings->m_opened) &&
       (RegCreateKeyEx(settings->m_regKey, regKeyWindows, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &m_topKey, NULL) == ERROR_SUCCESS);
 }
 
