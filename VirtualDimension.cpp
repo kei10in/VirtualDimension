@@ -133,6 +133,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    SetMessageHandler(WM_DESTROY, this, &VirtualDimension::OnDestroy);
    SetMessageHandler(WM_MOVE, this, &VirtualDimension::OnMove);
+   SetMessageHandler(WM_WINDOWPOSCHANGING, this, &VirtualDimension::OnWindowPosChanging);
    SetMessageHandler(WM_ENDSESSION, this, &VirtualDimension::OnEndSession);
 
    SetMessageHandler(WM_LBUTTONDOWN, this, &VirtualDimension::OnLeftButtonDown);
@@ -578,6 +579,50 @@ LRESULT VirtualDimension::OnMove(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPara
    m_location.y = (int)(short) HIWORD(lParam);
 
    return 0;
+}
+
+LRESULT VirtualDimension::OnWindowPosChanging(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   RECT	wndRect, trayRect;
+   int	leftTaskbar = 0, rightTaskbar = 0, topTaskbar = 0, bottomTaskbar = 0;
+   WINDOWPOS * lpwndpos = (WINDOWPOS*)lParam;
+
+   int snapSize = 15;
+
+   GetWindowRect(hWnd, &wndRect);
+
+   // Screen resolution
+   int screenWidth =	GetSystemMetrics(SM_CXSCREEN); 
+   int screenHeight =	GetSystemMetrics(SM_CYSCREEN);
+
+   // Find the taskbar
+   HWND hTrayWnd = FindWindow("Shell_TrayWnd", "");
+   GetWindowRect(hTrayWnd, &trayRect);
+
+   int wndWidth = wndRect.right - wndRect.left;
+   int wndHeight = wndRect.bottom - wndRect.top;
+
+   // Compute the offset due to the taskbar for each side of the screen
+   if(trayRect.top <= 0 && trayRect.left <= 0 && trayRect.right >= screenWidth)
+      topTaskbar = trayRect.bottom - trayRect.top;             // top taskbar
+   else if(trayRect.top > 0 && trayRect.left <= 0) 
+      bottomTaskbar = trayRect.bottom - trayRect.top;          // bottom taskbar
+   else if(trayRect.top <= 0 && trayRect.left > 0)
+      rightTaskbar = trayRect.right - trayRect.left;           // right taskbar
+   else
+      leftTaskbar = trayRect.right - trayRect.left;            // left taskbar
+
+   // Snap to screen border
+   if(lpwndpos->x >= -snapSize + leftTaskbar && lpwndpos->x <= leftTaskbar + snapSize)
+      lpwndpos->x = leftTaskbar;                               //Left border
+   if(lpwndpos->y >= -snapSize && lpwndpos->y <= topTaskbar + snapSize)
+      lpwndpos->y = topTaskbar;                                // Top border
+   if(lpwndpos->x + wndWidth <= screenWidth - rightTaskbar + snapSize && lpwndpos->x + wndWidth >= screenWidth - rightTaskbar - snapSize)
+      lpwndpos->x = screenWidth - rightTaskbar - wndWidth;     // Right border
+   if( lpwndpos->y + wndHeight <= screenHeight - bottomTaskbar + snapSize && lpwndpos->y + wndHeight >= screenHeight - bottomTaskbar - snapSize)
+      lpwndpos->y = screenHeight - bottomTaskbar - wndHeight;  // Bottom border
+
+   return TRUE;
 }
 
 // Message handler for about box.

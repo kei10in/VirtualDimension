@@ -98,6 +98,7 @@ protected:
    LRESULT OnDrawItem(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnWindowPosChanging(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnHookWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
