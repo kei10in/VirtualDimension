@@ -17,12 +17,15 @@
 # Place, Suite 330, Boston, MA 02111-1307 USA
 #
 
-TARGET = VirtualDimension.exe
+ifndef BUILDDIR
 ifdef DEBUG
 BUILDDIR = mingw-debug
 else
 BUILDDIR = mingw-release
 endif
+endif
+
+TARGET = VirtualDimension.exe
 SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp \
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
