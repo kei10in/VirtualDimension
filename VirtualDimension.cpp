@@ -986,14 +986,17 @@ void VirtualDimension::UnShrink(void)
 }
 
 // Message handler for about box.
-LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/)
+LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+   static IPicture * picture;
+
 	switch (message)
 	{
 	case WM_INITDIALOG:
       SetDlgItemText(hDlg, IDC_HOMEPAGE_LINK, "http://virt-dimension.sourceforge.net");
       SetDlgItemText(hDlg, IDC_GPL_LINK, "Click here to display the GNU General Public License");
       SetFocus(GetDlgItem(hDlg, IDOK));
+      picture = PlatformHelper::OpenImage(MAKEINTRESOURCE(IDI_VIRTUALDIMENSION));
       return FALSE;
 
 	case WM_COMMAND:
@@ -1002,6 +1005,11 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
       case IDOK:
       case IDCANCEL:
 			EndDialog(hDlg, LOWORD(wParam));
+         if (picture)
+         {
+            picture->Release();
+            picture = NULL;
+         }
 			return TRUE;
 
       case IDC_HOMEPAGE_LINK:
@@ -1023,6 +1031,12 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
          break;
 		}
 		break;
+
+   
+   case WM_DRAWITEM:
+      if (picture)
+         PlatformHelper::CustomDrawIPicture(picture, (LPDRAWITEMSTRUCT)lParam, false);
+      return TRUE;
 	}
 	return FALSE;
 }

@@ -132,6 +132,8 @@ public:
    static IPicture * OpenImage(LPCTSTR fileName);
    static bool SaveAsBitmap(IPicture * picture, LPTSTR fileName);
 
+   static void CustomDrawIPicture(IPicture * picture, LPDRAWITEMSTRUCT lpDrawItem, bool resize = true);
+
    typedef BOOL WINAPI SetMenuInfo_t(HMENU, LPCMENUINFO);
 	static SetMenuInfo_t * SetMenuInfo;
 

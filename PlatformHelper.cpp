@@ -36,6 +36,8 @@ PlatformHelper::AlphaBlend_t * PlatformHelper::pAlphaBlend = NULL;
 
 PlatformHelper::SetMenuInfo_t * PlatformHelper::SetMenuInfo = NULL;
 
+#define HIMETRIC_INCH   2540 
+
 PlatformHelper::PlatformHelper(void)
 {
    hPSAPILib = LoadLibrary("psapi.dll");
@@ -93,34 +95,56 @@ IPicture * PlatformHelper::OpenImage(LPCTSTR fileName)
    IPicture * picture = NULL;
    HGLOBAL hGlobal;
    IStream* pStream;
-   void * pData;
-   HANDLE hFile;
    DWORD dwSize;
-   DWORD dwNbRead;
 
-   hFile = CreateFile(fileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-   if (!hFile)
-      return NULL;
-
-   dwSize = GetFileSize(hFile, NULL);
-
-   hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
-	if(!hGlobal)
+   if (IS_INTRESOURCE(fileName))
    {
-      CloseHandle(hFile);
-      return NULL;
+      HRSRC hrsrc = FindResource(NULL, fileName, MAKEINTRESOURCE(300));
+      if (!hrsrc)
+         return NULL;
+
+      dwSize = SizeofResource(NULL, hrsrc);
+
+      hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
+	   if(!hGlobal)
+         return NULL;
+
+      HGLOBAL hres = LoadResource(NULL, hrsrc);
+      void * pResData = LockResource(hres);
+
+      void * pData = GlobalLock(hGlobal);
+      memcpy(pData, pResData, dwSize);
+	   GlobalUnlock(hGlobal);
+
+      UnlockResource(hres);
    }
-
-	pData = GlobalLock(hGlobal);
-   ReadFile(hFile, pData, dwSize, &dwNbRead, NULL);
-	GlobalUnlock(hGlobal);
-
-   CloseHandle(hFile);
-
-   if (dwNbRead < dwSize)
+   else
    {
-      FreeResource(hGlobal);
-      return NULL;
+      HANDLE hFile = CreateFile(fileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+      if (!hFile)
+         return NULL;
+
+      dwSize = GetFileSize(hFile, NULL);
+
+      hGlobal = GlobalAlloc(GMEM_MOVEABLE, dwSize);
+	   if(!hGlobal)
+      {
+         CloseHandle(hFile);
+         return NULL;
+      }
+
+	   void * pData = GlobalLock(hGlobal);
+      DWORD dwNbRead;
+      ReadFile(hFile, pData, dwSize, &dwNbRead, NULL);
+	   GlobalUnlock(hGlobal);
+
+      CloseHandle(hFile);
+
+      if (dwNbRead < dwSize)
+      {
+         FreeResource(hGlobal);
+         return NULL;
+      }
    }
 
 	if(CreateStreamOnHGlobal(hGlobal, TRUE, &pStream) == S_OK)
@@ -244,4 +268,37 @@ void PlatformHelper::AlphaBlendEmul(HDC hdcDest, int nXOriginDest, int nYOriginD
                             (GetBValue(dst) * sourceAlpha + GetBValue(src) * otherAlpha) >> 8);
          SetPixel(hdcDest, x+nXOriginDest, y+nYOriginDest, res);
       }
+}
+
+void PlatformHelper::CustomDrawIPicture(IPicture * picture, LPDRAWITEMSTRUCT lpDrawItem, bool resize)
+{
+   LPRECT rect = &lpDrawItem->rcItem;
+   OLE_XSIZE_HIMETRIC width;
+   OLE_YSIZE_HIMETRIC height;
+   LONG x;
+   LONG y;
+   LONG nWidth;
+   LONG nHeight;
+   
+   picture->get_Width(&width);
+   picture->get_Height(&height);
+
+   if (resize)
+   {
+      //Get target dimension
+      nWidth = rect->right - rect->left;
+      nHeight = rect->bottom - rect->top;
+   }
+   else
+   {
+      //Get image dimensions (convert to device units)
+      nWidth  = MulDiv(width, GetDeviceCaps(lpDrawItem->hDC, LOGPIXELSX), HIMETRIC_INCH);
+      nHeight = MulDiv(height, GetDeviceCaps(lpDrawItem->hDC, LOGPIXELSY), HIMETRIC_INCH);
+   }
+
+   //Center picture
+   x = (rect->left + rect->right - nWidth) / 2;
+   y = (rect->top + rect->bottom - nHeight) / 2;
+
+   picture->Render(lpDrawItem->hDC, x, y, nWidth, nHeight, 0, height, width, -height, rect);
 }

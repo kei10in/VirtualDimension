@@ -149,23 +149,14 @@ void Desktop::DesktopProperties::OnChooseWallpaper(HWND hDlg)
 
 void Desktop::DesktopProperties::OnPreviewDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
 {
-   LPRECT rect = &lpDrawItem->rcItem;
-
    if (m_picture)
    {
-      OLE_XSIZE_HIMETRIC width;
-      OLE_YSIZE_HIMETRIC height;
-      m_picture->get_Width(&width);
-      m_picture->get_Height(&height);
-      
-      m_picture->Render( lpDrawItem->hDC, 
-                         rect->left, rect->top, rect->right-rect->left, rect->bottom-rect->top,
-                         0, height, width, -height, NULL);
+      PlatformHelper::CustomDrawIPicture(m_picture, lpDrawItem);
    }
    else
    {
-      FillRect(lpDrawItem->hDC, rect, GetSysColorBrush(COLOR_BTNFACE));
-      DrawText(lpDrawItem->hDC, "No image", -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+      FillRect(lpDrawItem->hDC, &lpDrawItem->rcItem, GetSysColorBrush(COLOR_BTNFACE));
+      DrawText(lpDrawItem->hDC, "No image", -1, &lpDrawItem->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
    }
 }
 
