@@ -63,12 +63,21 @@ public:
       map<HWND, Window*>::iterator m_iterator;
    };
 
-   Iterator GetIterator()        { return (Iterator(m_windows)); }
+   Iterator GetIterator()                   { return (Iterator(m_windows)); }
+
+   HWND GetActiveWindow() const             { return m_activeWindow; }
+   bool IsAutoSwitchDesktop() const         { return m_autoSwitch; }
+   void SetAutoSwitchDesktop(bool autoSw)   { m_autoSwitch = autoSw; }
+   bool IsShowAllWindowsInTaskList() const  { return m_allWindowsInTaskList; }
+   void ShowAllWindowsInTaskList(bool all)  { m_allWindowsInTaskList = all; }
 
 protected:
    map<HWND, Window*> m_windows;
    ShellHook m_shellhook;
    bool m_confirmKill;
+   HWND m_activeWindow;
+   bool m_autoSwitch;
+   bool m_allWindowsInTaskList;
 
    LRESULT OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam);
    void OnWindowCreated(HWND hWnd);       //window has just been created
@@ -81,7 +90,6 @@ protected:
    void OnWindowReplaced(HWND)            { return; } //window has been replaced
    void OnWindowReplacing(HWND)           { return; } //window is being replaced
    void OnWindowFlash(HWND hWnd);         //window is flashing
-   void OnRudeAppActivated(HWND hWnd);    //activation changed to another window
 
    static BOOL CALLBACK ListWindowsProc( HWND hWnd, LPARAM lParam );
 };

@@ -22,12 +22,14 @@
 #include "windowsmanager.h"
 #include "VirtualDimension.h"
 
-WindowsManager::WindowsManager(): m_shellhook(vdWindow)
+WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_activeWindow(NULL)
 {
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
    
    m_confirmKill = settings.LoadConfirmKilling();
+   m_autoSwitch = settings.LoadAutoSwitchDesktop();
+   m_allWindowsInTaskList = settings.LoadAllWindowsInTaskList();
 
    vdWindow.SetMessageHandler(uiShellHookMsg, this, &WindowsManager::OnShellHookMessage);
 }
@@ -45,6 +47,8 @@ WindowsManager::~WindowsManager(void)
    m_windows.clear();
 
    settings.SaveConfirmKilling(m_confirmKill);
+   settings.SaveAutoSwitchDesktop(m_autoSwitch);
+   settings.SaveAllWindowsInTaskList(m_allWindowsInTaskList);
 }
 
 void WindowsManager::PopulateInitialWindowsSet()
@@ -71,17 +75,18 @@ LRESULT WindowsManager::OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPAR
 {
    switch(wParam)
    {
+      case ShellHook::RUDEAPPACTIVATEED:
       case ShellHook::WINDOWACTIVATED: OnWindowActivated((HWND)lParam); break;
-      case ShellHook::RUDEAPPACTIVATEED: OnRudeAppActivated((HWND)lParam); break;
       case ShellHook::WINDOWREPLACING: OnWindowReplacing((HWND)lParam); break;
       case ShellHook::WINDOWREPLACED: OnWindowReplaced((HWND)lParam); break;
       case ShellHook::WINDOWCREATED: OnWindowCreated((HWND)lParam); break;
       case ShellHook::WINDOWDESTROYED: OnWindowDestroyed((HWND)lParam); break;
-      //case ShellHook::ACTIVATESHELLWINDOW: break;
-      //case ShellHook::TASKMAN: break;
+      case ShellHook::ACTIVATESHELLWINDOW: break;
+      case ShellHook::TASKMAN: break;
       case ShellHook::REDRAW: OnRedraw((HWND)lParam); break;
-      //case ShellHook::FLASH: break;
-      //case ShellHook::ENDTASK: break;
+      case ShellHook::FLASH: break;
+      case ShellHook::ENDTASK: break;
+      case ShellHook::GETMINRECT: OnGetMinRect((HWND)lParam); break;
    }
 
    return 0;
@@ -143,9 +148,29 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
    vdWindow.Refresh();
 }
 
-void WindowsManager::OnWindowActivated(HWND /*hWnd*/)
+void WindowsManager::OnWindowActivated(HWND hWnd)
 {
+   if (hWnd != vdWindow)
+      m_activeWindow = hWnd;
 
+   //Try to see if some window that should not be on this desktop has
+   //been activated. If so, move it to the current desktop
+   map<HWND, Window*>::iterator it = m_windows.find(hWnd);
+   Window * win;
+
+   if (it == m_windows.end())
+      return;
+
+   win = (*it).second;
+   if (!win->IsOnCurrentDesk())
+   {
+      if (m_autoSwitch)
+         //Auto switch desktop
+         deskMan->SwitchToDesktop(win->GetDesk());
+      else
+         //Auto move window
+         win->MoveToDesktop(deskMan->GetCurrentDesktop());
+   }
 }
 
 void WindowsManager::OnGetMinRect(HWND /*hWnd*/)
@@ -159,11 +184,6 @@ void WindowsManager::OnRedraw(HWND /*hWnd*/)
 }
 
 void WindowsManager::OnWindowFlash(HWND /*hWnd*/)
-{
-
-}
-
-void WindowsManager::OnRudeAppActivated(HWND /*hWnd*/)
 {
 
 }
