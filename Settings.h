@@ -51,6 +51,12 @@ public:
    void SaveAutoSaveWindowsSettings(bool autosave);
    bool LoadCloseToTray();
    void SaveCloseToTray(bool totray);
+
+   bool LoadDesktopNameOSD();
+   void SaveDesktopNameOSD(bool osd);
+   int LoadOSDTimeout();
+   void SaveOSDTimeout(int timeout);
+
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
 
@@ -169,6 +175,8 @@ protected:
    static const char regValConfirmKilling[];
    static const char regValAutoSaveWindowsSettings[];
    static const char regValCloseToTray[];
+   static const char regValDesktopNameOSD[];
+   static const char regValOSDTimeout[];
    static const char regValStartWithWindows[];
 
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);

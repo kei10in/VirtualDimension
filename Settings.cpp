@@ -33,6 +33,8 @@ const char Settings::regValEnableTooltips[] = "EnableToolTips";
 const char Settings::regValConfirmKilling[] = "ConfirmKilling";
 const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
 const char Settings::regValCloseToTray[] = "CloseToTray";
+const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
+const char Settings::regValOSDTimeout[] = "OSDTimeout";
 
 Settings::Settings(void)
 {
@@ -196,6 +198,26 @@ bool Settings::LoadCloseToTray()
 void Settings::SaveCloseToTray(bool totray)
 {
    SaveDWord(m_regKey, m_keyOpened, regValCloseToTray, totray);
+}
+
+bool Settings::LoadDesktopNameOSD()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValDesktopNameOSD, false) ? true : false;
+}
+
+void Settings::SaveDesktopNameOSD(bool osd)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValDesktopNameOSD, osd);
+}
+
+int Settings::LoadOSDTimeout()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValOSDTimeout, 2000);
+}
+
+void Settings::SaveOSDTimeout(int timeout)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValOSDTimeout, timeout);
 }
 
 const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
