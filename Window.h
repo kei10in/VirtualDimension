@@ -190,6 +190,8 @@ protected:
    HICON m_hIcon;
    bool m_ownIcon;
 
+   HINSTANCE m_HookDllHandle;
+
    /** Pointer to the COM taskbar interface.
     * This interface is used for the WHM_MINIMIZE hiding method, to add/remove the icons
     * from the taskbar
