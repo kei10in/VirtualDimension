@@ -708,7 +708,7 @@ HWND CreateConfigBox()
    pages[4].dwSize = sizeof(PROPSHEETPAGE);
    pages[4].hInstance = vdWindow;
    pages[4].dwFlags = PSP_USETITLE ;
-   pages[4].pfnDlgProc = (DLGPROC)ShortcutsConfiguration;
+   pages[4].pfnDlgProc = ShortcutsConfigurationDlg::GetWindowProc();
    pages[4].pszTitle = "Shortcuts";
    pages[4].pszTemplate = MAKEINTRESOURCE(IDD_SHORTCUT_SETTINGS);
 
