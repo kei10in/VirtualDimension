@@ -131,4 +131,6 @@ inline Desktop * DesktopManager::AddDesktop()
    return AddDesktop(NULL);
 }
 
+extern DesktopManager * deskMan;
+
 #endif /*__DESKTOPMANAGER_H__*/

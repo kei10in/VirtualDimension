@@ -22,6 +22,7 @@
 #include "trayicon.h"
 #include "settings.h"
 #include "VirtualDimension.h"
+#include "DesktopManager.h"
 
 TrayIcon::TrayIcon(HWND hWnd): m_hWnd(hWnd), m_iconLoaded(false)
 {

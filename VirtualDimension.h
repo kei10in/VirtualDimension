@@ -22,23 +22,18 @@
 #define __VIRTUAL_DIMENSION_H__
 
 #include "resource.h"
-#include "desktopmanager.h"
 #include "transparency.h"
 #include "trayicon.h"
 #include "alwaysontop.h"
-#include "windowsmanager.h"
 #include "ToolTip.h"
 #include "FastWindow.h"
-#include "TrayIconsManager.h"
+#include "Window.h"
 
 extern HWND configBox;
-extern DesktopManager * deskMan;
-extern WindowsManager * winMan;
 extern Transparency * transp;
 extern TrayIcon * trayIcon;
 extern AlwaysOnTop * ontop;
 extern ToolTip * tooltip;
-extern TrayIconsManager * trayManager;
 
 #define WM_VIRTUALDIMENSION (WM_APP + 1)
 #define VD_MOVEWINDOW 1

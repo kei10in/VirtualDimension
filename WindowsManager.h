@@ -166,4 +166,6 @@ protected:
    static BOOL CALLBACK ListWindowsProc( HWND hWnd, LPARAM lParam );
 };
 
+extern WindowsManager * winMan;
+
 #endif /*__WINDOWSMANAGER_H__*/

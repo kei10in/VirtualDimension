@@ -21,6 +21,7 @@
 #include "StdAfx.h"
 #include "movewindow.h"
 #include "VirtualDimension.h"
+#include "DesktopManager.h"
 
 Window * movedWindow;
 

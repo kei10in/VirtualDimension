@@ -28,6 +28,9 @@
 #include "BackgroundDisplayMode.h"
 #include "DesktopManager.h"
 #include <Commdlg.h>
+#include "WindowsManager.h"
+
+DesktopManager * deskMan;
 
 DesktopManager::DesktopManager(int width, int height)
 {

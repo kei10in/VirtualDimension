@@ -24,7 +24,8 @@
 #include "VirtualDimension.h"
 #include "settings.h"
 #include "desktopmanager.h"
-#include "Windowsx.h"
+#include "WindowsManager.h"
+#include <Windowsx.h>
 #include "hotkeymanager.h"
 #include "shellhook.h"
 #include "tooltip.h"
@@ -32,17 +33,15 @@
 #include "fastwindow.h"
 #include "HotKeyControl.h"
 #include "LinkControl.h"
+#include "ExplorerWrapper.h"
 #include <shellapi.h>
 
 // Global Variables:
 HWND configBox = NULL;
-DesktopManager * deskMan;
-WindowsManager * winMan;
 Transparency * transp;
 TrayIcon * trayIcon;
 AlwaysOnTop * ontop;
 ToolTip * tooltip;
-TrayIconsManager * trayManager;
 
 VirtualDimension vdWindow;;
 
@@ -228,6 +227,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // Lock the preview window as appropriate
    LockPreviewWindow(settings.LoadLockPreviewWindow());
+
+   // Bind to explorer
+   explorerWrapper = new ExplorerWrapper(this);
 
    // Initialize the tray icon manager
    trayManager = new TrayIconsManager();

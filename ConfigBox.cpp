@@ -21,7 +21,8 @@
 #include "stdafx.h"
 #include "VirtualDimension.h"
 #include "settings.h"
-#include "desktopmanager.h"
+#include "DesktopManager.h"
+#include "WindowsManager.h"
 #include "transparency.h"
 #include "OnScreenDisplay.h"
 #include <string.h>

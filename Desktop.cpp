@@ -24,6 +24,7 @@
 #include <Shellapi.h>
 #include <assert.h>
 #include "HotkeyManager.h"
+#include "DesktopManager.h"
 #include "WindowsManager.h"
 #include "VirtualDimension.h"
 #include "ZOrderKeeper.h"

@@ -22,6 +22,9 @@
 #include "windowsmanager.h"
 #include "VirtualDimension.h"
 #include "movewindow.h"
+#include "DesktopManager.h"
+
+WindowsManager * winMan;
 
 WindowsManager::WindowsManager(): m_shellhook(vdWindow)
 {
