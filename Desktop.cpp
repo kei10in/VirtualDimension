@@ -361,8 +361,12 @@ void Desktop::Activate(void)
          SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_wallpaper, 0);
    }
 
-   // Activate the Virtual Dimension window (to make the window which has the focus lose it 
+   // Activate the Virtual Dimension window (to make the window which has the focus lose it)
    SetForegroundWindow(vdWindow);
+
+   // Lock the foreground window, to prevent other windows from being activated while they
+   // are being displayed
+   LockSetForegroundWindow(LSFW_LOCK);
 
    // Show the windows
    for(it = winMan->GetIterator(); it; it++)
@@ -385,8 +389,11 @@ void Desktop::Activate(void)
       }
    }
 
+   // Unlock the activation, so that other windows can be activated
+   LockSetForegroundWindow(LSFW_UNLOCK);
+
    // Restore the foreground window
-   SetForegroundWindow(m_foregroundWnd);
+   SetForegroundWindow(Window::GetOwnedWindow(m_foregroundWnd));
 }
 
 void Desktop::Desactivate(void)
@@ -394,9 +401,9 @@ void Desktop::Desactivate(void)
    m_active = false;
 
    // Save the foreground window
-   m_foregroundWnd = GetForegroundWindow();
+   m_foregroundWnd = winMan->GetActiveWindow();
 }
-
+                                                   
 void Desktop::SetHotkey(int hotkey)
 {
    if (m_hotkey != 0)
