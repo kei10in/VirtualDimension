@@ -107,6 +107,9 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
 {
    WallPaperLoader * self = (WallPaperLoader *)lpParameter;
    HANDLE handles[2] = { self->m_hQueueSem, self->m_hStopThread };
+   TCHAR tempPath[MAX_PATH-14];
+
+   GetTempPath(MAX_PATH-14, tempPath);
 
    while(WaitForMultipleObjects( 2, handles, FALSE, INFINITE) == WAIT_OBJECT_0)
    {
@@ -132,7 +135,7 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
 			}
 
 			wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
-			if (GetTempFileName("C:\\", "VDIMG", 0, wallpaper->m_bmpFileName) == 0)
+         if (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0)
 			{
 				picture->Release();
 				continue;
