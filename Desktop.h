@@ -26,6 +26,7 @@
 #include "tooltip.h"
 #include <wininet.h>
 #include <shlobj.h>
+#include <ocidl.h>
 #include "HotKeyManager.h"
 #include "WallPaper.h"
 
