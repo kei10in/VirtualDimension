@@ -43,8 +43,8 @@ UINT Window::m_ShellhookMsg = 0;
 
 Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwnedWnd),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
-                           m_transp(m_hOwnedWnd), m_transpLevel(128),
-                           m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
+                           m_transp(m_hOwnedWnd), m_transpLevel(128), m_autoSaveSettings(false),
+                           m_autosize(false), m_autopos(false), m_autodesk(false),
                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_style(0), m_HookDllHandle(NULL),
                            m_switching(false)
 {
@@ -98,7 +98,18 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
       m_autoSaveSettings = settings.LoadAutoSaveSettings();
       m_autosize = settings.LoadAutoSetSize();
       m_autopos = settings.LoadAutoSetPos();
+      m_autodesk = settings.LoadAutoSetDesk();
 
+      if ( m_autodesk && !IsOnAllDesktops())
+      {
+         Desktop * desk = deskMan->GetDesktop(settings.LoadDesktopIndex());
+         if (desk)
+            //Move the window to its associated desk
+            MoveToDesktop(desk);
+         else if (!m_autoSaveSettings)
+            //Disable auto-move window to desktop (keep enabled if auto-saving settings)
+            settings.SaveAutoSetDesk(m_autodesk = false);
+      }
       if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
          SetWindowPos(m_hOwnedWnd, 0, 
                       rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,

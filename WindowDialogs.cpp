@@ -147,6 +147,8 @@ void Window::SaveSettings()
       if (GetWindowRect(m_hWnd, &rect))
          settings.SavePosition(&rect);
    }
+   if (m_autodesk && GetDesk())
+      settings.SaveDesktopIndex(GetDesk()->GetIndex());
 }
 
 void Window::OnApplySettingsBtn(HWND hDlg)
@@ -274,6 +276,14 @@ void Window::OnInitAutoSettingsDlg(HWND hDlg)
    //Check the appropriate button
    SendMessage(hWnd, BM_SETCHECK, BST_CHECKED, 0);
 
+   //Check auto-set buttons
+   hWnd = GetDlgItem(hDlg, IDC_AUTOSIZE_CHECK);
+   SendMessage(hWnd, BM_SETCHECK, m_autosize ? BST_CHECKED : BST_UNCHECKED, 0);
+   hWnd = GetDlgItem(hDlg, IDC_AUTOPOS_CHECK);
+   SendMessage(hWnd, BM_SETCHECK, m_autopos ? BST_CHECKED : BST_UNCHECKED, 0);
+   hWnd = GetDlgItem(hDlg, IDC_AUTODESK_CHECK);
+   SendMessage(hWnd, BM_SETCHECK, m_autodesk ? BST_CHECKED : BST_UNCHECKED, 0);
+
    //Update the UI
    OnUpdateAutoSettingsUI(hDlg, mode);
 }
@@ -300,6 +310,10 @@ void Window::OnApplyAutoSettingsBtn(HWND hDlg)
    //Auto-set position ?
    hWnd = GetDlgItem(hDlg, IDC_AUTOPOS_CHECK);
    m_autopos = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
+
+   //Auto-set desktop ?
+   hWnd = GetDlgItem(hDlg, IDC_AUTODESK_CHECK);
+   m_autodesk = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
 
    //If loading last saved settings, and no settings already saved, do a save right now
    if (SendMessage(GetDlgItem(hDlg, IDC_SAVED_RATIO), BM_GETCHECK, 0, 0) == BST_CHECKED)
@@ -328,6 +342,7 @@ void Window::OnApplyAutoSettingsBtn(HWND hDlg)
    settings.SaveAutoSaveSettings(m_autoSaveSettings);
    settings.SaveAutoSetSize(m_autosize);
    settings.SaveAutoSetPos(m_autopos);
+   settings.SaveAutoSetDesk(m_autodesk);
 }
 
 void Window::OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode)
@@ -336,6 +351,7 @@ void Window::OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode)
 
    EnableWindow(GetDlgItem(hDlg, IDC_AUTOSIZE_CHECK), mode != ASS_DISABLED);
    EnableWindow(GetDlgItem(hDlg, IDC_AUTOPOS_CHECK), mode != ASS_DISABLED);
+   EnableWindow(GetDlgItem(hDlg, IDC_AUTODESK_CHECK), mode != ASS_DISABLED);
 }
 
 LRESULT CALLBACK Window::AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

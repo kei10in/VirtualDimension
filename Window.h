@@ -247,6 +247,7 @@ protected:
    bool m_autoSaveSettings;
    bool m_autosize;
    bool m_autopos;
+   bool m_autodesk;
 
    TCHAR m_className[30];
    HICON m_hIcon;
