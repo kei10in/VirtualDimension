@@ -43,6 +43,9 @@ void Desktop::DesktopProperties::InitDialog(HWND hDlg)
 {
    HWND hWnd;
 
+   //Setup the color
+   m_bgColor = m_desk->GetBackgroundColor();
+
    //Setup the wallpaper
    hWnd = GetDlgItem(hDlg, IDC_WALLPAPER);
    SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)MAX_PATH, (LPARAM)0);
@@ -71,6 +74,9 @@ bool Desktop::DesktopProperties::Apply(HWND hDlg)
    
    //Set hotkey
    m_desk->SetHotkey((int)SendDlgItemMessage(hDlg, IDC_HOTKEY, HKM_GETHOTKEY, 0, 0));
+
+   //Set background color
+   m_desk->SetBackgroundColor(m_bgColor);
 
    //Disable the APPLY button
    EnableWindow(GetDlgItem(hDlg, IDC_APPLY), FALSE);
@@ -112,7 +118,7 @@ void Desktop::DesktopProperties::OnBrowseWallpaper(HWND hDlg)
       SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)m_wallpaper);
 }
 
-void Desktop::DesktopProperties::OnDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
+void Desktop::DesktopProperties::OnPreviewDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
 {
    LPRECT rect = &lpDrawItem->rcItem;
 
@@ -131,6 +137,38 @@ void Desktop::DesktopProperties::OnDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
    {
       FillRect(lpDrawItem->hDC, rect, GetSysColorBrush(COLOR_BTNFACE));
       DrawText(lpDrawItem->hDC, "No image", -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+   }
+}
+
+void Desktop::DesktopProperties::OnBgColorDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
+{
+   LPRECT rect = &lpDrawItem->rcItem;
+   HBRUSH brush = CreateSolidBrush(m_bgColor);
+
+   FillRect(lpDrawItem->hDC, rect, brush);
+
+   DeleteObject(brush);
+}
+
+void Desktop::DesktopProperties::SelectColor(HWND hDlg)
+{
+   CHOOSECOLOR cc;
+   static COLORREF acrCustClr[16];
+
+   ZeroMemory(&cc, sizeof(CHOOSECOLOR));
+   cc.lStructSize = sizeof(CHOOSECOLOR);
+   cc.hwndOwner = hDlg;
+   cc.rgbResult = m_bgColor;
+   cc.lpCustColors = acrCustClr;
+   cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
+
+   if (ChooseColor(&cc))
+   {
+      m_bgColor = cc.rgbResult;
+      InvalidateRect(GetDlgItem(hDlg, IDC_BGCOLOR_BTN), NULL, FALSE);
+
+      //Enable the APPLY button
+      EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
    }
 }
 
@@ -192,14 +230,31 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
             EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
             break;
          }
+
+      case IDC_BGCOLOR_BTN:
+         switch(HIWORD(wParam))
+         {
+         case STN_CLICKED:
+            //Enable the APPLY button
+            self->SelectColor(hDlg);
+            break;
+         }   
       }
 		break;
 
    case WM_DRAWITEM:
-      self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
-      self->OnDrawItem((LPDRAWITEMSTRUCT)lParam);
-      return TRUE;
+      switch(wParam)
+      {
+      case IDC_BGCOLOR_BTN:
+         self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
+         self->OnBgColorDrawItem((LPDRAWITEMSTRUCT)lParam);
+         return TRUE;
 
+      case IDC_PREVIEW:
+         self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
+         self->OnPreviewDrawItem((LPDRAWITEMSTRUCT)lParam);
+         return TRUE;
+      }
    }
 	return FALSE;
 }
