@@ -75,6 +75,9 @@ void TrayIcon::DelIcon()
    data.hIcon = LoadIcon(hInst, (LPCTSTR)IDI_VIRTUALDIMENSION);
 
    Shell_NotifyIcon(NIM_DELETE, &data);
+
+   /* make sure the window can be seen if we remove the tray icon */
+   ShowWindow(m_hWnd, SW_SHOW);
 }
 
 void TrayIcon::RefreshIcon()
