@@ -667,10 +667,171 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
+extern void GetShortcutName(int shortcut, char* str, int bufLen);
+
+static void InsertItem(HWND hwnd, LPSTR name, int shortcut);
+static void SetItemShortcut(HWND hwnd, int item, int shortcut);
+
+static void InsertItem(HWND hwnd, LPSTR name, int shortcut)
+{
+   LVITEM item;
+
+   item.pszText = name;
+   item.iItem = ListView_GetItemCount(hwnd);
+   item.iSubItem = 0;
+   item.mask = LVIF_TEXT;
+   int index = ListView_InsertItem(hwnd, &item);
+
+   SetItemShortcut(hwnd, index, shortcut);
+}
+
+static void SetItemShortcut(HWND hwnd, int index, int shortcut)
+{
+   char buffer[50];
+   GetShortcutName(shortcut, buffer, sizeof(buffer)/sizeof(char));
+   ListView_SetItemText(hwnd, index, 1, buffer);
+
+   LVITEM lvItem;
+   lvItem.mask = LVIF_PARAM;
+   lvItem.iItem = index;
+   lvItem.iSubItem = 0;
+   lvItem.lParam = (LPARAM)shortcut;
+   ListView_SetItem(hwnd, &lvItem);
+}
+
+static int GetItemShortcut(HWND hwnd, int index)
+{
+   LVITEM lvItem;
+   lvItem.mask = LVIF_PARAM;
+   lvItem.iItem = index;
+   lvItem.iSubItem = 0;
+   ListView_GetItem(hwnd, &lvItem);
+   return (int)lvItem.lParam;
+}
+
+static HWND editCtrl;
+static HWND editedWnd;
+static int editedItem;
+
+static void BeginEdit(HWND hwnd, int item)
+{
+   editedWnd = hwnd;
+   editedItem = item;
+
+   //Set the hotkey
+   SendMessage(editCtrl, HKM_SETHOTKEY, GetItemShortcut(hwnd, item), 0);
+
+   //Display the window at the correct location
+   RECT rect;
+   ListView_GetSubItemRect(hwnd, item, 1, LVIR_BOUNDS, &rect);
+   MoveWindow(editCtrl, rect.left, rect.top-1, rect.right-rect.left+1, rect.bottom-rect.top+1, TRUE);
+   ShowWindow(editCtrl, SW_SHOW);
+
+   //Give the focus to the edit control
+   SetFocus(editCtrl);
+}
+
+static void EndEdit()
+{
+   int key = (LPARAM)SendMessage(editCtrl, HKM_GETHOTKEY, 0, 0);
+
+   //Update the list
+   SetItemShortcut(editedWnd, editedItem, key);
+
+   //Hide the edit control
+   ShowWindow(editCtrl, SW_HIDE);
+}
+
+// Message handler for the shortcuts settings page.
+LRESULT CALLBACK ShortcutsConfiguration(HWND hDlg, UINT message, WPARAM /*wParam*/, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_INITDIALOG:
+      {
+         HWND hwnd = GetDlgItem(hDlg, IDC_SHORTCUTSLIST);
+         LVCOLUMN column;
+
+         ListView_SetExtendedListViewStyleEx(hwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+         column.mask = LVCF_ORDER | LVCF_TEXT;
+         column.iOrder = 0;
+         column.pszText = "Function";
+         ListView_InsertColumn(hwnd, 1, &column);
+
+         column.mask = LVCF_ORDER | LVCF_SUBITEM | LVCF_FMT | LVCF_TEXT;
+         column.pszText = "Shortcut";
+         column.iOrder = 1;
+         column.iSubItem = 0;
+         column.fmt = LVCFMT_LEFT;
+         ListView_InsertColumn(hwnd, 1, &column);
+
+         InsertItem(hwnd, "Skip to next desktop", deskMan->GetSwitchToNextDesktopHotkey());
+         InsertItem(hwnd, "Skip to previous desktop", deskMan->GetSwitchToPreviousDesktopHotkey());
+
+         for(int i=0; i<2; i++)
+            ListView_SetColumnWidth(hwnd, i, -2);
+
+         editCtrl = CreateWindow("AlternateHotKeyControl", "", WS_BORDER | WS_CHILD | WS_TABSTOP, 0, 0, 10, 10, hwnd, NULL, vdWindow, 0);
+      }
+		return TRUE;
+
+   case WM_NOTIFY:
+      LPNMHDR pnmh = (LPNMHDR) lParam;
+      switch (pnmh->code)
+      {
+      case NM_CLICK:
+         {
+            if (GetDlgCtrlID(pnmh->hwndFrom) != IDC_SHORTCUTSLIST)
+               break;
+
+            LPNMITEMACTIVATE lpnmitem = (LPNMITEMACTIVATE) lParam;
+
+            if (IsWindowVisible(editCtrl))
+               EndEdit();
+
+            if ((lpnmitem->iItem == -1) || (lpnmitem->iSubItem != 1))
+               break;
+
+            BeginEdit(pnmh->hwndFrom, lpnmitem->iItem);
+         }   
+         break;
+
+      case NM_SETFOCUS:
+         {
+            if (GetDlgCtrlID(pnmh->hwndFrom) != IDC_SHORTCUTSLIST)
+               break;
+
+            if (IsWindowVisible(editCtrl))
+               EndEdit();
+         }
+         break;
+
+      case PSN_KILLACTIVE:
+         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         return TRUE;
+
+      case PSN_APPLY:
+         {
+            HWND hwnd = GetDlgItem(hDlg, IDC_SHORTCUTSLIST);
+            
+            deskMan->SetSwitchToNextDesktopHotkey(GetItemShortcut(hwnd, 0));
+            deskMan->SetSwitchToPreviousDesktopHotkey(GetItemShortcut(hwnd, 1));
+            
+            //Apply succeeded
+            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         }
+         return TRUE; 
+      }
+      break;
+	}
+	return FALSE;
+}
+
 //Property Sheet initialization
 HWND CreateConfigBox()
 {
-   PROPSHEETPAGE pages[4];
+   PROPSHEETPAGE pages[5];
    PROPSHEETHEADER propsheet;
 
    memset(&pages, 0, sizeof(pages));
@@ -702,6 +863,13 @@ HWND CreateConfigBox()
    pages[3].pfnDlgProc = (DLGPROC)OSDConfiguration;
    pages[3].pszTitle = "OSD";
    pages[3].pszTemplate = MAKEINTRESOURCE(IDD_OSD_SETTINGS);
+
+   pages[4].dwSize = sizeof(PROPSHEETPAGE);
+   pages[4].hInstance = vdWindow;
+   pages[4].dwFlags = PSP_USETITLE ;
+   pages[4].pfnDlgProc = (DLGPROC)ShortcutsConfiguration;
+   pages[4].pszTitle = "Shortcuts";
+   pages[4].pszTemplate = MAKEINTRESOURCE(IDD_SHORTCUT_SETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
