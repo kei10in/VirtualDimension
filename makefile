@@ -30,7 +30,7 @@ SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settin
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
 FastWindow.cpp TrayIconsManager.cpp WindowDialogs.cpp HotKeyControl.cpp \
-OnScreenDisplay.cpp guids.c
+OnScreenDisplay.cpp PlatformHelper.cpp guids.c
 RES_FILE = VirtualDimension.res
 OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
@@ -74,7 +74,7 @@ pre_comp:
 	fi
 
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
-	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 -lpsapi $(CXXFLAGS)
+	g++ $^ -o $@ -mwindows -lcomctl32 -lole32 $(CXXFLAGS)
 ifndef DEBUG
 	strip $@
 endif
