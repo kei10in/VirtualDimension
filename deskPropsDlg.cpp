@@ -25,6 +25,114 @@
 #include "Commdlg.h"
 #include "PlatformHelper.h"
 #include "Desktop.h"
+#include "HotKeyControl.h"
+
+Desktop::DesktopProperties::DesktopProperties(Desktop* desktop): m_desk(desktop), m_picture(NULL)
+{
+   return;
+}
+
+Desktop::DesktopProperties::~DesktopProperties()
+{
+   //Free the image, if any
+   if (m_picture)
+      m_picture->Release();
+}
+
+void Desktop::DesktopProperties::InitDialog(HWND hDlg)
+{
+   HWND hWnd;
+
+   //Setup the wallpaper
+   hWnd = GetDlgItem(hDlg, IDC_WALLPAPER);
+   SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)MAX_PATH, (LPARAM)0);
+   SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)m_desk->GetWallpaper());
+
+   //Setup the desktop's name
+   hWnd = GetDlgItem(hDlg, IDC_NAME);
+   SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)sizeof(m_desk->m_name), (LPARAM)0);
+   SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)m_desk->GetText());
+
+   SendDlgItemMessage(hDlg, IDC_HOTKEY, HKM_SETHOTKEY, (WPARAM)m_desk->GetHotkey(), 0);
+
+   //Disable the APPLY button
+   EnableWindow(GetDlgItem(hDlg, IDC_APPLY), FALSE);
+}
+
+bool Desktop::DesktopProperties::Apply(HWND hDlg)
+{
+   //Change desktop name
+   TCHAR name[80];   
+   GetDlgItemText(hDlg, IDC_NAME, name, sizeof(name));
+   m_desk->Rename(name);
+
+   //Change wallpaper
+   m_desk->SetWallpaper(m_wallpaper);
+   
+   //Set hotkey
+   m_desk->SetHotkey((int)SendDlgItemMessage(hDlg, IDC_HOTKEY, HKM_GETHOTKEY, 0, 0));
+
+   //Disable the APPLY button
+   EnableWindow(GetDlgItem(hDlg, IDC_APPLY), FALSE);
+
+   return true;
+}
+
+void Desktop::DesktopProperties::OnWallpaperChanged(HWND hDlg, HWND ctrl)
+{
+   SendMessage(ctrl, WM_GETTEXT, MAX_PATH, (LPARAM)m_wallpaper);
+   if (m_picture)
+      m_picture->Release();
+   m_picture = PlatformHelper::OpenImage(m_wallpaper);
+   InvalidateRect(GetDlgItem(hDlg, IDC_PREVIEW), NULL, TRUE);
+
+   //Enable the APPLY button
+   EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
+}
+
+void Desktop::DesktopProperties::OnBrowseWallpaper(HWND hDlg)
+{
+   OPENFILENAME ofn;
+
+   // Initialize OPENFILENAME
+   ZeroMemory(&ofn, sizeof(OPENFILENAME));
+   ofn.lStructSize = sizeof(OPENFILENAME);
+   ofn.hwndOwner = hDlg;
+   ofn.lpstrFile = m_wallpaper;
+   ofn.nMaxFile = MAX_PATH;
+   ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
+   ofn.nFilterIndex = 1;
+   ofn.lpstrFileTitle = NULL;
+   ofn.nMaxFileTitle = 0;
+   ofn.lpstrInitialDir = NULL;
+   ofn.lpstrTitle = "Select wallpaper image";
+   ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
+
+   if (GetOpenFileName(&ofn) == TRUE)
+      SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)m_wallpaper);
+}
+
+void Desktop::DesktopProperties::OnDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
+{
+   LPRECT rect = &lpDrawItem->rcItem;
+
+   if (m_picture)
+   {
+      OLE_XSIZE_HIMETRIC width;
+      OLE_YSIZE_HIMETRIC height;
+      m_picture->get_Width(&width);
+      m_picture->get_Height(&height);
+      
+      m_picture->Render( lpDrawItem->hDC, 
+                         rect->left, rect->top, rect->right-rect->left, rect->bottom-rect->top,
+                         0, height, width, -height, NULL);
+   }
+   else
+   {
+      FillRect(lpDrawItem->hDC, rect, GetSysColorBrush(COLOR_BTNFACE));
+      DrawText(lpDrawItem->hDC, "No image", -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+   }
+}
 
 // Message handler for the desktop properties dialog box.
 LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
@@ -34,129 +142,63 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
    switch (message)
 	{
 	case WM_INITDIALOG:
-      {
-         HWND hWnd;
-         self = new DesktopProperties();
-         
-         self->desk = (Desktop *)lParam;
-
-         SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR)self);
-
-         self->m_picture = NULL;
-
-         hWnd = GetDlgItem(hDlg, IDC_WALLPAPER);
-         SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)MAX_PATH, (LPARAM)0);
-         SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)self->desk->GetWallpaper());
-
-         hWnd = GetDlgItem(hDlg, IDC_NAME);
-         SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)sizeof(self->desk->m_name), (LPARAM)0);
-         SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)self->desk->GetText());
-
-         hWnd = GetDlgItem(hDlg, IDC_HOTKEY);
-         SendMessage(hWnd, HKM_SETHOTKEY, (WPARAM)self->desk->GetHotkey(), 0);
-      }
+      self = new DesktopProperties((Desktop *)lParam);
+      SetWindowLongPtr(hDlg, DWLP_USER, (LONG_PTR)self);
+      self->InitDialog(hDlg);
 		return TRUE;
 
 	case WM_COMMAND:
       self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
 		switch(LOWORD(wParam))
 		{
-      case IDOK:
-         {
-            //Change desktop name
-            TCHAR name[80];   
-            GetDlgItemText(hDlg, IDC_NAME, name, sizeof(name));
-            self->desk->Rename(name);
-
-            //Change wallpaper
-            self->desk->SetWallpaper(self->m_wallpaper);
-            
-            //Set hotkey
-            self->desk->SetHotkey((int)SendMessage(GetDlgItem(hDlg, IDC_HOTKEY), HKM_GETHOTKEY, 0, 0));
-         }
-
-      case IDCANCEL:
-         {
-            //Free the image, if any
-            if (self->m_picture)
-               self->m_picture->Release();
-
-            delete self;
-
-            //Close the dialog
-			   EndDialog(hDlg, LOWORD(wParam)); //Return the last pressed button
-			   return TRUE;
-         }
+      case IDC_APPLY:
+         self->Apply(hDlg);
          break;
 
+      case IDOK:
+         self->Apply(hDlg);
+
+      case IDCANCEL:
+         delete self;
+			EndDialog(hDlg, LOWORD(wParam)); //Return the last pressed button
+			return TRUE;
+ 
       case IDC_BROWSE_WALLPAPER:
-         {
-            OPENFILENAME ofn;
-
-            // Initialize OPENFILENAME
-            ZeroMemory(&ofn, sizeof(OPENFILENAME));
-            ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hwndOwner = hDlg;
-            ofn.lpstrFile = self->m_wallpaper;
-            ofn.nMaxFile = MAX_PATH;
-            ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
-            ofn.nFilterIndex = 1;
-            ofn.lpstrFileTitle = NULL;
-            ofn.nMaxFileTitle = 0;
-            ofn.lpstrInitialDir = NULL;
-            ofn.lpstrTitle = "Select wallpaper image";
-            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
-
-            if (GetOpenFileName(&ofn) == TRUE)
-               SendMessage(GetDlgItem(hDlg, IDC_WALLPAPER), WM_SETTEXT, 0, (LPARAM)self->m_wallpaper);
-         }
+         self->OnBrowseWallpaper(hDlg);
          break;
 
       case IDC_WALLPAPER:
          switch(HIWORD(wParam))
          {
          case EN_CHANGE:
-            {
-               self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
-
-               SendMessage((HWND)lParam, WM_GETTEXT, MAX_PATH, (LPARAM)self->m_wallpaper);
-               if (self->m_picture)
-                  self->m_picture->Release();
-               self->m_picture = PlatformHelper::OpenImage(self->m_wallpaper);
-               InvalidateRect(GetDlgItem(hDlg, IDC_PREVIEW), NULL, TRUE);
-            }
+            self->OnWallpaperChanged(hDlg, (HWND)lParam);
             break;
          }
 
+      case IDC_NAME:
+         switch(HIWORD(wParam))
+         {
+         case EN_CHANGE:
+            //Enable the APPLY button
+            EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
+            break;
+         }
+
+      case IDC_HOTKEY:
+         switch(HIWORD(wParam))
+         {
+         case HKN_CHANGE:
+            //Enable the APPLY button
+            EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
+            break;
+         }
       }
 		break;
 
    case WM_DRAWITEM:
-      {
-         LPDRAWITEMSTRUCT lpDrawItem = (LPDRAWITEMSTRUCT) lParam;
-         LPRECT rect = &lpDrawItem->rcItem;
-         self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
-
-         if (self->m_picture)
-         {
-            OLE_XSIZE_HIMETRIC width;
-            OLE_YSIZE_HIMETRIC height;
-            self->m_picture->get_Width(&width);
-            self->m_picture->get_Height(&height);
-            
-            self->m_picture->Render( lpDrawItem->hDC, 
-                                     rect->left, rect->top, rect->right-rect->left, rect->bottom-rect->top,
-                                     0, height, width, -height, NULL);
-         }
-         else
-         {
-            FillRect(lpDrawItem->hDC, rect, GetSysColorBrush(COLOR_BTNFACE));
-            DrawText(lpDrawItem->hDC, "No image", -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-         }
-
-         return TRUE;
-      }
-      break;
+      self = (DesktopProperties *)GetWindowLongPtr(hDlg, DWLP_USER);
+      self->OnDrawItem((LPDRAWITEMSTRUCT)lParam);
+      return TRUE;
 
    }
 	return FALSE;

@@ -74,7 +74,6 @@ public:
 protected:
    void OnHotkey();
 
-   static LRESULT APIENTRY ImageCtrlProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
    static LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
    bool m_active;
@@ -86,9 +85,19 @@ protected:
    WallPaper m_wallpaper;
    TCHAR m_wallpaperFile[MAX_PATH];
 
-   struct DesktopProperties
+   class DesktopProperties
    {
-      Desktop * desk;
+   public:
+      DesktopProperties(Desktop * desktop);
+      ~DesktopProperties();
+      void InitDialog(HWND hDlg);
+      bool Apply(HWND hDlg);
+      void OnWallpaperChanged(HWND hDlg, HWND ctrl);
+      void OnBrowseWallpaper(HWND hDlg);
+      void OnDrawItem(LPDRAWITEMSTRUCT lpDrawItem);
+
+   protected:
+      Desktop * m_desk;
       IPicture * m_picture;
       TCHAR m_wallpaper[MAX_PATH];
    };
