@@ -708,9 +708,15 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       {
       case IDC_HIDINGMETHODEXCEPTIONS_BTN:
          {
+            const LPCTSTR values[] = 
+            {
+               "Hide",
+               "Minimize",
+               "Move"
+            };
             Settings settings;
             Config::Group * group = settings.GetHidingMethodExceptions();
-            ApplicationListDlg dlg(group);
+            ApplicationListDlg dlg(group, settings.LoadSetting(Settings::DefaultHidingMethod), values);
             dlg.ShowDialog(vdWindow, hDlg);
             delete group;
          }

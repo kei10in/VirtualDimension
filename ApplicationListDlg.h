@@ -26,7 +26,7 @@
 class ApplicationListDlg
 {
 public:
-   ApplicationListDlg(Config::Group * group);
+   ApplicationListDlg(Config::Group * group, int defaultValue = 0, const LPCTSTR * values=NULL);
    ~ApplicationListDlg(void);
 
    int ShowDialog(HINSTANCE hinstance, HWND hWndParent);
@@ -39,9 +39,11 @@ protected:
 
    BOOL GetProgramName(LPTSTR filename, DWORD maxlen);
    int FindProgram(LPTSTR filename);
-   void InsertProgram(LPTSTR filename, int idx=-1);
+   void InsertProgram(LPTSTR filename, int value, int idx=-1);
 
    Config::Group * m_appgroup;
+   int m_defaultValue;
+   const LPCTSTR * m_values;
 
    HWND m_hDlg;
    HWND m_hAppListWnd;
