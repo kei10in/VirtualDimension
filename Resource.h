@@ -29,7 +29,7 @@
 #define IDM_EXIT                        105
 #define IDM_CONFIGURE                   106
 #define IDI_VIRTUALDIMENSION            107
-#define IDI_SMALL                       108
+#define IDI_DEFAPP_SMALL                108
 #define IDC_VIRTUALDIMENSION            109
 #define IDR_MAINFRAME                   128
 #define ID_CONFIGURE                    129
