@@ -27,7 +27,10 @@ public:
    AlwaysOnTop(HWND hWnd);
    ~AlwaysOnTop(void);
 
-   void SetAlwaysOnTop(bool ontop);
+   void SetWindow(HWND hWnd);
+
+   void SetAlwaysOnTop(bool onTop)  { if (onTop != m_ontop) ForceAlwaysOnTop(onTop); }
+   void ForceAlwaysOnTop(bool ontop);
    bool IsAlwaysOnTop() const { return m_ontop; }
 
 protected:

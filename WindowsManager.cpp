@@ -19,6 +19,8 @@
  */
 
 #include "StdAfx.h"
+#include <assert.h>
+#include <algorithm>
 #include "windowsmanager.h"
 #include "VirtualDimension.h"
 #include "movewindow.h"
@@ -26,7 +28,7 @@
 
 WindowsManager * winMan;
 
-WindowsManager::WindowsManager(): m_shellhook(vdWindow)
+WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstDelayedUpdateWndIdx(0)
 {
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
@@ -108,18 +110,18 @@ LRESULT WindowsManager::OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPAR
 {
    switch(wParam)
    {
-      case ShellHook::RUDEAPPACTIVATEED:
-      case ShellHook::WINDOWACTIVATED: OnWindowActivated((HWND)lParam); break;
-      case ShellHook::WINDOWREPLACING: OnWindowReplacing((HWND)lParam); break;
-      case ShellHook::WINDOWREPLACED: OnWindowReplaced((HWND)lParam); break;
-      case ShellHook::WINDOWCREATED: OnWindowCreated((HWND)lParam); break;
-      case ShellHook::WINDOWDESTROYED: OnWindowDestroyed((HWND)lParam); break;
-      case ShellHook::ACTIVATESHELLWINDOW: break;
-      case ShellHook::TASKMAN: break;
-      case ShellHook::REDRAW: OnRedraw((HWND)lParam); break;
-      case ShellHook::FLASH: break;
-      case ShellHook::ENDTASK: break;
-      case ShellHook::GETMINRECT: OnGetMinRect((HWND)lParam); break;
+      case ShellHook::RUDEAPPACTIVATEED:     OnWindowActivated((HWND)lParam); break;
+      case ShellHook::WINDOWACTIVATED:       OnWindowActivated((HWND)lParam); break;
+      case ShellHook::WINDOWREPLACING:       OnWindowReplacing((HWND)lParam); break;
+      case ShellHook::WINDOWREPLACED:        OnWindowReplaced((HWND)lParam); break;
+      case ShellHook::WINDOWCREATED:         OnWindowCreated((HWND)lParam); break;
+      case ShellHook::WINDOWDESTROYED:       OnWindowDestroyed((HWND)lParam); break;
+      case ShellHook::ACTIVATESHELLWINDOW:   break;
+      case ShellHook::TASKMAN:               break;
+      case ShellHook::REDRAW:                OnRedraw((HWND)lParam); break;
+      case ShellHook::FLASH:                 break;
+      case ShellHook::ENDTASK:               break;
+      case ShellHook::GETMINRECT:            OnGetMinRect((HWND)lParam); break;
    }
 
    return 0;
@@ -358,6 +360,86 @@ Window * WindowsManager::GetForegroundWindow()
    HWND hwnd2 = ::GetWindow(hwnd, GW_OWNER);
    hwnd = (hwnd2 == NULL ? hwnd : hwnd2);
    return winMan->GetWindow(hwnd);
+}
+
+// Delayed window update
+//**************************************************************************
+
+void WindowsManager::ScheduleDelayedUpdate(Window * win)
+{
+   int idx = AddDelayedUpdateWnd(win);
+   ::SetTimer(vdWindow, FIRST_WINDOW_MANAGER_TIMER+idx, DELAYED_UPDATE_DELAY, OnDelayedUpdateTimer);
+}
+
+void WindowsManager::CancelDelayedUpdate(Window * win)
+{
+   DelayedUdateWndIterator it = find(m_delayedUpdateWndTab.begin()+m_firstDelayedUpdateWndIdx, m_delayedUpdateWndTab.end(), win);
+
+   if (it != m_delayedUpdateWndTab.end())
+   {
+      int idx = distance(m_delayedUpdateWndTab.begin(), it);
+      RemoveDelayedUpdateWnd(idx);
+   }
+}
+
+void CALLBACK WindowsManager::OnDelayedUpdateTimer(HWND /*hwnd*/, UINT /*uMsg*/, UINT_PTR idEvent, DWORD /*dwTime*/)
+{
+   unsigned int idx = idEvent - FIRST_WINDOW_MANAGER_TIMER;
+   winMan->m_delayedUpdateWndTab[idx]->OnDelayUpdate();
+   winMan->RemoveDelayedUpdateWnd(idx);
+}
+
+unsigned int WindowsManager::AddDelayedUpdateWnd(Window * wnd)
+{
+   unsigned int idx;
+
+   //If we reached the end of the allocated space, but there are holes, try to fill them
+   //(circular buffer style)
+   if (m_delayedUpdateWndTab.size() == m_delayedUpdateWndTab.capacity() &&
+       m_delayedUpdateWndCount < m_delayedUpdateWndTab.size())
+      idx = (m_firstDelayedUpdateWndIdx + m_delayedUpdateWndCount) % m_delayedUpdateWndTab.size();
+   else
+      idx = m_firstDelayedUpdateWndIdx;   //make sure the vector gets extended.
+
+   //If there is not space, extend the vector. Else, assign the free element.
+   if (idx >= m_firstDelayedUpdateWndIdx)
+   {
+      idx = m_delayedUpdateWndTab.size();
+      m_delayedUpdateWndTab.push_back(wnd);
+   }
+   else
+   {
+      assert(m_delayedUpdateWndTab[idx] == NULL);
+      m_delayedUpdateWndTab[idx] = wnd;
+   }
+   m_delayedUpdateWndCount++;
+
+   return idx;
+}
+
+void WindowsManager::RemoveDelayedUpdateWnd(unsigned int idx)
+{
+   assert(idx < m_delayedUpdateWndTab.size());
+   assert(idx >= m_firstDelayedUpdateWndIdx);
+   assert(idx < m_firstDelayedUpdateWndIdx + m_delayedUpdateWndCount);
+
+   //Stop the timer
+   ::KillTimer(vdWindow, FIRST_WINDOW_MANAGER_TIMER+idx);
+
+   //Remove the entry
+   m_delayedUpdateWndCount--;
+   m_delayedUpdateWndTab[idx] = NULL;
+
+   //Track the first entry
+   if (m_delayedUpdateWndCount == 0)
+      m_firstDelayedUpdateWndIdx = 0;
+   else if (idx == m_firstDelayedUpdateWndIdx)
+   {
+      //Find the next used entry
+      do {
+         m_firstDelayedUpdateWndIdx++;
+      } while(m_delayedUpdateWndTab[m_firstDelayedUpdateWndIdx] == NULL);
+   }
 }
 
 WindowsManager::MoveWindowToNextDesktopEventHandler::MoveWindowToNextDesktopEventHandler()

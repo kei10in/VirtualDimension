@@ -171,14 +171,14 @@ void Window::OnApplySettingsBtn(HWND hDlg)
    res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
    SetOnAllDesktops(res);
 
+   //Apply transparency level
+   hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
+   SetTransparencyLevel((unsigned char)SendMessage(hWnd, TBM_GETPOS, 0, 0));
+
    //Apply enable transparency
    hWnd = GetDlgItem(hDlg, IDC_ENABLETRANSP_CHECK);
    res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
    SetTransparent(res);
-
-   //Apply transparency level
-   hWnd = GetDlgItem(hDlg, IDC_TRANSP_SLIDER);
-   SetTransparencyLevel((unsigned char)SendMessage(hWnd, TBM_GETPOS, 0, 0));
 }
 
 LRESULT CALLBACK Window::SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

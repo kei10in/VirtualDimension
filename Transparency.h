@@ -27,7 +27,10 @@ public:
    Transparency(HWND hWnd);
    ~Transparency();
 
-   void SetTransparencyLevel(unsigned char level);
+   void SetWindow(HWND hWnd);
+
+   void SetTransparencyLevel(unsigned char level)     { if (level != m_level) ForceTransparencyLevel(level); }
+   void ForceTransparencyLevel(unsigned char level);
    unsigned char GetTransparencyLevel() const;
 
    static bool IsTransparencySupported();

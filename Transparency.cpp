@@ -36,13 +36,40 @@ Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(0xff)
    nbInstance ++;
 }
 
-void Transparency::SetTransparencyLevel(unsigned char level)
+Transparency::~Transparency()
+{
+   nbInstance --;
+   if (nbInstance == 0)
+   {
+      transparency_supported_valid = false;  //to ensure the library would be reloaded before any call to setlayeredattributes
+      FreeLibrary(hinstDLL);
+   }
+}
+
+/** Change the window which the object controls.
+ * The previously selected transparency level is applied to the new window immediatly and automatically.
+ */
+void Transparency::SetWindow(HWND hWnd)
+{
+   if (m_hWnd != hWnd)
+   {
+      m_hWnd = hWnd;
+      ForceTransparencyLevel(m_level);
+   }
+}
+
+/** Set the transparency level.
+ * This function is used to change the transparency level of the window, if supported. The change is 
+ * performed immediatly. The SetTransparencyLevel() should be used instead whenever possible, for better
+ * performance, as it does not do anything if it is not needed.
+ */
+void Transparency::ForceTransparencyLevel(unsigned char level)
 {
    LONG style;
 
-   // If no change, or change not supported, stop now
-   if (!IsTransparencySupported() || (level == m_level))
-      return;  //Nothing to be done
+   // If transparency is not supported, stop now
+   if (!IsTransparencySupported())
+      return;
 
    // Take note of the change
    m_level = level;
@@ -63,16 +90,6 @@ void Transparency::SetTransparencyLevel(unsigned char level)
 
       // Set the actual transparency level
       SetLayeredWindowAttributes(m_hWnd, 0, m_level, LWA_ALPHA);
-   }
-}
-
-Transparency::~Transparency()
-{
-   nbInstance --;
-   if (nbInstance == 0)
-   {
-      transparency_supported_valid = false;  //to ensure the library would be reloaded before any call to setlayeredattributes
-      FreeLibrary(hinstDLL);
    }
 }
 

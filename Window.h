@@ -167,6 +167,8 @@ public:
 
    inline bool CheckExists() const            { return IsWindow(m_hWnd) != 0; }
 
+   void OnDelayUpdate();
+
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnContextMenu();

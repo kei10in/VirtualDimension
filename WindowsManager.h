@@ -22,6 +22,7 @@
 #define __WINDOWSMANAGER_H__
 
 #include <map>
+#include <vector>
 #include "Desktop.h"
 #include "Window.h"
 #include "ShellHook.h"
@@ -29,6 +30,9 @@
 #include "HotkeyConfig.h"
 
 using namespace std;
+
+#define FIRST_WINDOW_MANAGER_TIMER     100
+#define DELAYED_UPDATE_DELAY           1000 /*1sec*/
 
 class WindowsManager
 {
@@ -64,6 +68,9 @@ public:
 
    void RemoveWindow(Window * win)          { OnWindowDestroyed(*win); }
 
+   void ScheduleDelayedUpdate(Window * win);
+   void CancelDelayedUpdate(Window * win);
+
 protected:
    map<HWND, WindowsList::Node*> m_HWNDMap;
    WindowsList m_windows;
@@ -92,6 +99,19 @@ protected:
    void OnWindowReplacing(HWND)           { return; } //window is being replaced
    void OnWindowFlash(HWND hWnd);         //window is flashing
 
+   // Delayed window update
+   //**************************************************************************
+   typedef vector<Window*>::iterator DelayedUdateWndIterator;
+   vector<Window*> m_delayedUpdateWndTab; //List of the windows which have requested delayed update
+   unsigned int m_firstDelayedUpdateWndIdx;
+   unsigned int m_delayedUpdateWndCount;
+
+   unsigned int AddDelayedUpdateWnd(Window * wnd);
+   void RemoveDelayedUpdateWnd(unsigned int idx);
+   static void CALLBACK OnDelayedUpdateTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+
+   // Various hotkeys
+   //**************************************************************************
    class MoveWindowToNextDesktopEventHandler: public ConfigurableHotkey
    {
    public:

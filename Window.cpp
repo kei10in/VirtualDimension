@@ -44,16 +44,15 @@ HidingMethod* Window::s_hiding_methods[] =
    &s_mover_method 
 };
 
-Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwnedWindow(hWnd)),
+Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwnedWnd),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
-                           m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128), m_autoSaveSettings(false),
+                           m_transp(m_hOwnedWnd), m_transpLevel(128), m_autoSaveSettings(false),
                            m_autosize(false), m_autopos(false), m_autodesk(false),
                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_style(0), m_HookDllHandle(NULL),
                            m_switching(false)
 {
    Settings s;
    Settings::Window settings(&s);
-   RECT rect;
 
    //Try to see if there are some special settings for this window
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
@@ -69,14 +68,15 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwn
    SetMinimizeToTray(settings.LoadMinimizeToTray());
    SetAlwaysOnTop(settings.LoadAlwaysOnTop());
 
-   SetTransparent(settings.LoadEnableTransparency());
    SetTransparencyLevel(settings.LoadTransparencyLevel());
+   SetTransparent(settings.LoadEnableTransparency());
 
    m_autoSaveSettings = settings.LoadAutoSaveSettings();
    m_autosize = settings.LoadAutoSetSize();
    m_autopos = settings.LoadAutoSetPos();
    m_autodesk = settings.LoadAutoSetDesk();
 
+   //Auto-switch desktop
    if (m_autodesk && !IsOnAllDesktops())
    {
       Desktop * desk = deskMan->GetDesktop(settings.LoadDesktopIndex());
@@ -87,21 +87,15 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwn
          //Disable auto-move window to desktop (keep enabled if auto-saving settings)
          settings.SaveAutoSetDesk(m_autodesk = false);
    }
-   if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
-      SetWindowPos(m_hOwnedWnd, 0, 
-                     rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
-                     SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
-                     (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
 
-   m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
-
-   m_hOwnedWnd = GetOwnedWindow(hWnd);
-   if (winMan->IsIntegrateWithShell() && !s.LoadDisableShellIntegration(m_className))
-      Hook();
+   //Delay-update
+   winMan->ScheduleDelayedUpdate(this);
 }
 
 Window::~Window(void)
 {
+   winMan->CancelDelayedUpdate(this);
+
    UnHook();
 
    if (m_hMinToTrayEvent)
@@ -114,6 +108,43 @@ Window::~Window(void)
       SaveSettings();
 
    m_hidingMethod->Detach(this);
+}
+
+/** Delay update callback.
+ * This method is called as the final step in the delayed-update process. This process is used to 
+ * fix some issues when VD is called too early after a window has been created. Indeed, sometime
+ * the owned window is not ready, thus the user would not get the VD menu, and many features would
+ * not work (always on top, transparency...).
+ * This function is thus called some time after the constructor (provided a call to 
+ * WindowManager::ScheduleDelayedUpdate() is made). It checks if the owned window has changed,
+ * updates various parameters consequently, and in any case performs auto-size/position and shell 
+ * integration.
+ */
+void Window::OnDelayUpdate()
+{
+   Settings s;
+   Settings::Window settings(&s);
+   RECT rect;
+   HWND hOwnedWnd = GetOwnedWindow(m_hWnd);
+
+   if (hOwnedWnd != m_hOwnedWnd)
+   {
+      m_hOwnedWnd = hOwnedWnd;
+      AlwaysOnTop::SetWindow(m_hOwnedWnd);
+      m_transp.SetWindow(m_hOwnedWnd);
+   }
+
+   //Auto-size/position
+   if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
+      SetWindowPos(m_hOwnedWnd, 0, 
+      rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
+      SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
+      (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
+
+   //Shell integration
+   m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
+   if (winMan->IsIntegrateWithShell() && !s.LoadDisableShellIntegration(m_className))
+      Hook();
 }
 
 void Window::MoveToDesktop(Desktop * desk)

@@ -30,11 +30,25 @@ AlwaysOnTop::~AlwaysOnTop(void)
 {
 }
 
-void AlwaysOnTop::SetAlwaysOnTop(bool onTop)
+/** Change the window which the object controls.
+ * The previously selected state is applied to the new window immediatly and automatically.
+ */
+void AlwaysOnTop::SetWindow(HWND hWnd)
 {
-   if (onTop == m_ontop)
-      return;
+   if (m_hWnd != hWnd)
+   {
+      m_hWnd = hWnd;
+      ForceAlwaysOnTop(m_ontop);
+   }
+}
 
+/** Make a window on-top (or not).
+ * This function is used to change the always-on-top state of the window. The change is 
+ * performed immediatly. The SetAlwaysOnTop() should be used instead whenever possible, for better
+ * performance, as it does not do anything if it is not needed.
+ */
+void AlwaysOnTop::ForceAlwaysOnTop(bool onTop)
+{
    m_ontop = onTop;
 
    if (onTop)
