@@ -22,8 +22,9 @@
 #define __WINDOW_H__
 
 #include "desktop.h"
-#include "shlobj.h"
+#include <shlobj.h>
 #include "TrayIconsManager.h"
+#include "Transparency.h"
 
 #ifdef __GNUC__
 
@@ -82,15 +83,21 @@ public:
 
    void ShowWindow();
    void HideWindow();
-   bool IsHidden() const         { return m_hidden; }
+   bool IsHidden() const                      { return m_hidden; }
 
+   bool IsMinimizeToTray() const              { return m_MinToTray; }
    void ToggleMinimizeToTray();
-   bool IsMinimizeToTray() const { return m_MinToTray; }
-   bool IsIconic() const         { return IsHidden() ? m_iconic : (::IsIconic(m_hWnd) ? true:false); }
-   bool IsInTray() const         { return IsMinimizeToTray() && IsIconic(); }
+   void SetMinimizeToTray(bool totray);
+   bool IsIconic() const                      { return IsHidden() ? m_iconic : (::IsIconic(m_hWnd) ? true:false); }
+   bool IsInTray() const                      { return IsMinimizeToTray() && IsIconic(); }
    void Restore();
 
+   bool IsAlwaysOnTop() const;
+   void SetAlwaysOnTop(bool ontop);
    void ToggleOnTop();
+
+   bool IsOnAllDesktops() const               { return IsOnDesk(NULL); }
+   void SetOnAllDesktops(bool onall);
    void ToggleAllDesktops();
    void Activate();
    void Minimize();
@@ -99,7 +106,15 @@ public:
    void MaximizeWidth();
    void Kill();
 
-   operator HWND()               { return m_hWnd; }
+   void DisplayWindowProperties();
+
+   bool IsTransparent() const                 { return m_transp.GetTransparencyLevel() != 255; }
+   void SetTransparent(bool transp);
+   void ToggleTransparent();
+   unsigned char GetTransparencyLevel() const { return m_transpLevel; }
+   void SetTransparencyLevel(unsigned char level);
+
+   operator HWND()                            { return m_hWnd; }
    
    HICON GetIcon(void);
    char * GetText()
@@ -115,9 +130,17 @@ protected:
    inline void InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str);
    inline HBITMAP LoadBmpRes(int id);
 
+   void OnInitSettingsDlg(HWND hDlg);
+   void OnEraseSettingsBtn(HWND hDlg);
+   void OnSaveSettingsBtn(HWND hDlg);
+   void OnApplySettingsBtn(HWND hDlg);
+   static LRESULT CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+   static LRESULT CALLBACK PropertiesProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
    enum MenuItems {
       VDM_TOGGLEONTOP = WM_USER+1,
       VDM_TOGGLEMINIMIZETOTRAY,
+      VDM_TOGGLETRANSPARENCY,
 
       VDM_TOGGLEALLDESKTOPS,
       VDM_MOVEWINDOW,
@@ -129,7 +152,9 @@ protected:
       VDM_MAXIMIZEHEIGHT,
       VDM_MAXIMIZEWIDTH,
       VDM_CLOSE,
-      VDM_KILL
+      VDM_KILL,
+
+      VDM_PROPERTIES
    };
 
    HWND m_hWnd;
@@ -138,6 +163,9 @@ protected:
    bool m_MinToTray;
    bool m_iconic;
    char m_name[255];
+
+   Transparency m_transp;
+   unsigned char m_transpLevel;
 
    /** Pointer to the COM taskbar interface.
     * This interface is used for the WHM_MINIMIZE hiding method, to add/remove the icons
