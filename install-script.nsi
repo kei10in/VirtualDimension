@@ -40,6 +40,7 @@ Section "MainSection" SEC01
   File "LICENSE.html"
   File "mingw-release\HookDLL.dll"
   File "mingw-release\VirtualDimension.exe"
+  SetOutPath $SYSDIR
   File "C:\Program Files\MinGW\bin\mingwm10.dll"
   CreateDirectory "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}"
   CreateShortCut "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}\Virtual Dimension.lnk" "$INSTDIR\VirtualDimension.exe"
@@ -78,7 +79,7 @@ Section Uninstall
   Delete "$INSTDIR\HookDLL.dll"
   Delete "$INSTDIR\VirtualDimension.exe"
   Delete "$INSTDIR\uninst.exe"
-  Delete "$INSTDIR\mingwm10.dll"
+  Delete "$SYSDIR\mingwm10.dll"
 
   Delete "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}\Virtual Dimension.lnk"
   Delete "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}\Uninstall.lnk"
