@@ -219,9 +219,9 @@ HICON Window::GetIcon(void)
 
      	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
 	   if ( !m_hIcon )
-		   m_hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
-	   if ( !m_hIcon )
 		   SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD) &m_hIcon );
+      if ( !m_hIcon )
+	 	   m_hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
       if ( !m_hIcon )
       {
          TCHAR lpFileName[256];
