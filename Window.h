@@ -243,6 +243,12 @@ protected:
 
    HidingMethod * m_hidingMethod;
    int m_hidingMethodData;
+
+   static HidingMethodHide       s_hider_method;
+   static HidingMethodMinimize   s_minimizer_method;
+   static HidingMethodMove       s_mover_method;
+
+   static HidingMethod* s_hiding_methods[];
 };
 
 HWND Window::GetOwnedWindow(HWND hWnd)

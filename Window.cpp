@@ -32,7 +32,16 @@
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 
-HidingMethodMinimize minimizer;
+HidingMethodHide       Window::s_hider_method;
+HidingMethodMinimize   Window::s_minimizer_method;
+HidingMethodMove       Window::s_mover_method;
+
+HidingMethod* Window::s_hiding_methods[] = 
+{ 
+   &s_hider_method, 
+   &s_minimizer_method, 
+   &s_mover_method 
+};
 
 Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwnedWindow(hWnd)),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
@@ -43,56 +52,50 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwn
 {
    Settings s;
    Settings::Window settings(&s);
-
-   m_hidingMethod = &minimizer;
-   m_hidingMethod->Attach(this);
+   RECT rect;
 
    //Try to see if there are some special settings for this window
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
    OpenSettings(settings, false);
 
-   if (settings.IsValid())
+   //Setup the hiding method to use
+   m_hidingMethod = s_hiding_methods[s.LoadHidingMethod(m_className)];
+   m_hidingMethod->Attach(this);
+
+   //Load settings for this window
+   m_desk = settings.LoadOnAllDesktops() ? NULL : deskMan->GetCurrentDesktop();
+
+   SetMinimizeToTray(settings.LoadMinimizeToTray());
+   SetAlwaysOnTop(settings.LoadAlwaysOnTop());
+
+   SetTransparent(settings.LoadEnableTransparency());
+   SetTransparencyLevel(settings.LoadTransparencyLevel());
+
+   m_autoSaveSettings = settings.LoadAutoSaveSettings();
+   m_autosize = settings.LoadAutoSetSize();
+   m_autopos = settings.LoadAutoSetPos();
+   m_autodesk = settings.LoadAutoSetDesk();
+
+   if (m_autodesk && !IsOnAllDesktops())
    {
-      RECT rect;
-
-      //Load settings for this window
-      m_desk = settings.LoadOnAllDesktops() ? NULL : deskMan->GetCurrentDesktop();
-
-      SetMinimizeToTray(settings.LoadMinimizeToTray());
-      SetAlwaysOnTop(settings.LoadAlwaysOnTop());
-
-      SetTransparent(settings.LoadEnableTransparency());
-      SetTransparencyLevel(settings.LoadTransparencyLevel());
-
-      m_autoSaveSettings = settings.LoadAutoSaveSettings();
-      m_autosize = settings.LoadAutoSetSize();
-      m_autopos = settings.LoadAutoSetPos();
-      m_autodesk = settings.LoadAutoSetDesk();
-
-      if ( m_autodesk && !IsOnAllDesktops())
-      {
-         Desktop * desk = deskMan->GetDesktop(settings.LoadDesktopIndex());
-         if (desk)
-            //Move the window to its associated desk
-            MoveToDesktop(desk);
-         else if (!m_autoSaveSettings)
-            //Disable auto-move window to desktop (keep enabled if auto-saving settings)
-            settings.SaveAutoSetDesk(m_autodesk = false);
-      }
-      if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
-         SetWindowPos(m_hOwnedWnd, 0, 
-                      rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
-                      SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
-                      (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
+      Desktop * desk = deskMan->GetDesktop(settings.LoadDesktopIndex());
+      if (desk)
+         //Move the window to its associated desk
+         MoveToDesktop(desk);
+      else if (!m_autoSaveSettings)
+         //Disable auto-move window to desktop (keep enabled if auto-saving settings)
+         settings.SaveAutoSetDesk(m_autodesk = false);
    }
-   else
-      //Find out on which desktop the window is
-      m_desk = deskMan->GetCurrentDesktop();
+   if ( (m_autosize || m_autopos) && settings.LoadPosition(&rect) )
+      SetWindowPos(m_hOwnedWnd, 0, 
+                     rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
+                     SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
+                     (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
 
    m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
 
    m_hOwnedWnd = GetOwnedWindow(hWnd);
-   if (winMan->IsIntegrateWithShell())
+   if (winMan->IsIntegrateWithShell() && !s.LoadDisableShellIntegration(m_className))
       Hook();
 }
 
