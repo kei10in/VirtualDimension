@@ -119,9 +119,29 @@ protected:
       virtual LPCSTR GetName() const   { return "Move window to some desk"; }
    };
 
+   class MaximizeHeightEventHandler: public ConfigurableHotkey
+   {
+   public:
+      MaximizeHeightEventHandler();
+      virtual ~MaximizeHeightEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Maximize height"; }
+   };
+
+   class MaximizeWidthEventHandler: public ConfigurableHotkey
+   {
+   public:
+      MaximizeWidthEventHandler();
+      virtual ~MaximizeWidthEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Maximize width"; }
+   };
+
    MoveWindowToNextDesktopEventHandler m_moveToNextDeskEH;
    MoveWindowToPrevDesktopEventHandler m_moveToPrevDeskEH;
    MoveWindowToDesktopEventHandler m_moveToDesktopEH;
+   MaximizeHeightEventHandler m_maximizeHeight;
+   MaximizeWidthEventHandler m_maximizeWidth;
 
    static BOOL CALLBACK ListWindowsProc( HWND hWnd, LPARAM lParam );
 };

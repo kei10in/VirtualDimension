@@ -423,3 +423,41 @@ void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
          SetForegroundWindow(window->GetOwnedWindow());
    }
 }
+
+WindowsManager::MaximizeHeightEventHandler::MaximizeHeightEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadMaximizeHeightHotkey());
+}
+
+WindowsManager::MaximizeHeightEventHandler::~MaximizeHeightEventHandler()
+{
+   Settings s;
+   s.SaveMaximizeHeightHotkey(GetHotkey());
+}
+
+void WindowsManager::MaximizeHeightEventHandler::OnHotkey()
+{
+   Window * window = winMan->GetForegroundWindow();
+   if ((window != NULL) && (window->IsOnCurrentDesk()))
+      window->MaximizeHeight();
+}
+
+WindowsManager::MaximizeWidthEventHandler::MaximizeWidthEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadMaximizeWidthHotkey());
+}
+
+WindowsManager::MaximizeWidthEventHandler::~MaximizeWidthEventHandler()
+{
+   Settings s;
+   s.SaveMaximizeWidthHotkey(GetHotkey());
+}
+
+void WindowsManager::MaximizeWidthEventHandler::OnHotkey()
+{
+   Window * window = winMan->GetForegroundWindow();
+   if ((window != NULL) && (window->IsOnCurrentDesk()))
+      window->MaximizeWidth();
+}
