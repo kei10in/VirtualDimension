@@ -22,6 +22,56 @@
 #define __WALLPAPER_H__
 
 #include <list>
+#include <wininet.h>
+#include <shlobj.h>
+
+#ifdef __GNUC__
+
+#define SETWALLPAPER_DEFAULT NULL
+
+#define AD_APPLY_REFRESH 0x4
+
+#define LPWALLPAPEROPT void*
+#define LPCWALLPAPEROPT const void*
+#define LPCOMPONENTSOPT void*
+#define LPCCOMPONENTSOPT const void*
+#define LPCOMPONENT void*
+#define LPCCOMPONENT const void*
+
+#undef INTERFACE
+#define INTERFACE IActiveDesktop
+DECLARE_INTERFACE_(IActiveDesktop, IUnknown)
+{
+	STDMETHOD(QueryInterface)(THIS_ REFIID,PVOID*) PURE;
+	STDMETHOD_(ULONG,AddRef)(THIS) PURE;
+	STDMETHOD_(ULONG,Release)(THIS) PURE;
+   STDMETHOD (ApplyChanges)(THIS_ DWORD dwFlags) PURE;
+   STDMETHOD (GetWallpaper)(THIS_ LPWSTR pwszWallpaper, UINT cchWallpaper, DWORD dwReserved) PURE;
+   STDMETHOD (SetWallpaper)(THIS_ LPCWSTR pwszWallpaper, DWORD dwReserved) PURE;
+   STDMETHOD (GetWallpaperOptions)(THIS_ LPWALLPAPEROPT pwpo, DWORD dwReserved) PURE;
+   STDMETHOD (SetWallpaperOptions)(THIS_ LPCWALLPAPEROPT pwpo, DWORD dwReserved) PURE;
+   STDMETHOD (GetPattern)(THIS_ LPWSTR pwszPattern, UINT cchPattern, DWORD dwReserved) PURE;
+   STDMETHOD (SetPattern)(THIS_ LPCWSTR pwszPattern, DWORD dwReserved) PURE;
+   STDMETHOD (GetDesktopItemOptions)(THIS_ LPCOMPONENTSOPT pco, DWORD dwReserved) PURE;
+   STDMETHOD (SetDesktopItemOptions)(THIS_ LPCCOMPONENTSOPT pco, DWORD dwReserved) PURE;
+   STDMETHOD (AddDesktopItem)(THIS_ LPCCOMPONENT pcomp, DWORD dwReserved) PURE;
+   STDMETHOD (AddDesktopItemWithUI)(THIS_ HWND hwnd, LPCOMPONENT pcomp, DWORD dwReserved) PURE;
+   STDMETHOD (ModifyDesktopItem)(THIS_ LPCCOMPONENT pcomp, DWORD dwFlags) PURE;
+   STDMETHOD (RemoveDesktopItem)(THIS_ LPCCOMPONENT pcomp, DWORD dwReserved) PURE;
+   STDMETHOD (GetDesktopItemCount)(THIS_ LPINT lpiCount, DWORD dwReserved) PURE;
+   STDMETHOD (GetDesktopItem)(THIS_ int nComponent, LPCOMPONENT pcomp, DWORD dwReserved) PURE;
+   STDMETHOD (GetDesktopItemByID)(THIS_ ULONG_PTR dwID, LPCOMPONENT pcomp, DWORD dwReserved) PURE;
+   STDMETHOD (GenerateDesktopItemHtml)(THIS_ LPCWSTR pwszFileName, LPCOMPONENT pcomp, DWORD dwReserved) PURE;
+   STDMETHOD (AddUrl)(THIS_ HWND hwnd, LPCWSTR pszSource, LPCOMPONENT pcomp, DWORD dwFlags) PURE;
+   STDMETHOD (GetDesktopItemBySource)(THIS_ LPCWSTR pwszSource, LPCOMPONENT pcomp, DWORD dwReserved) PURE;
+};
+typedef IActiveDesktop *LPIACTIVEDESKTOP;
+
+extern const GUID CLSID_ActiveDesktop;
+//'75048700-EF F- D0-9888-006097DEACF9}'
+extern const GUID IID_IActiveDesktop;
+//D1:$52502EE0; D2:$EC80; D3:$11D0; D4:($89, $AB, $00, $C0, $4F, $C2, $97, $2D));
+#endif /*__GNUC__*/
 
 using namespace std;
 
@@ -59,8 +109,13 @@ protected:
       HANDLE m_hWallPaperLoaderThread;
    };
 
+   static void InitActiveDesktop();
+
    static WallPaper * m_activeWallPaper;
    static WallPaperLoader m_wallPaperLoader;
+
+   static IActiveDesktop * m_pActiveDesktop;
+   static TCHAR m_defaultWallpaper[MAX_PATH];
 };
 
 #endif /*__WALLPAPER_H__*/

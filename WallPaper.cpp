@@ -24,14 +24,21 @@
 #include "BackgroundColor.h"
 
 WallPaper * WallPaper::m_activeWallPaper = NULL;
+IActiveDesktop * WallPaper::m_pActiveDesktop = NULL;
+TCHAR WallPaper::m_defaultWallpaper[MAX_PATH];
 
 WallPaper::WallPaper()
 {
+   InitActiveDesktop();
+
    m_fileName = m_bmpFileName = NULL;
+   SetImage("");
 }
 
 WallPaper::WallPaper(LPTSTR fileName)
 {
+   InitActiveDesktop();
+
    m_fileName = m_bmpFileName = NULL;
    SetImage(fileName);
 }
@@ -42,6 +49,55 @@ WallPaper::~WallPaper(void)
    {
       DeleteFile(m_bmpFileName);
       delete m_bmpFileName;
+   }
+
+   //Restore default wallpaper if this is the last Wallpaper object
+   if (m_activeWallPaper == this)
+   {
+      //Restore wallpaper set the old way, or remove it if using Active Desktop
+      SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, SETWALLPAPER_DEFAULT, 0);
+
+      //Restore active desktop wallpaper, if any
+      if ((m_pActiveDesktop) && (*m_defaultWallpaper != 0))
+         m_pActiveDesktop->ApplyChanges(AD_APPLY_REFRESH);
+   }
+
+   //Cleanup active desktop interface
+   if (m_pActiveDesktop)
+   {
+      ULONG count;
+      count = m_pActiveDesktop->Release();
+      if (count == 0)
+         m_pActiveDesktop = NULL;
+   }
+}
+
+void WallPaper::InitActiveDesktop()
+{
+   //Create active desktop interface
+   if (m_pActiveDesktop)
+      //Increase ref count
+      m_pActiveDesktop->AddRef();
+   else
+   {
+      WCHAR buffer[MAX_PATH];
+
+      //Get the interface
+      if (CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_INPROC_SERVER, IID_IActiveDesktop, (LPVOID*)&m_pActiveDesktop) != S_OK)
+      {
+         *m_defaultWallpaper = 0;
+         m_pActiveDesktop = NULL;
+      }
+      //Get the default wallpaper
+      else if (m_pActiveDesktop->GetWallpaper(buffer, sizeof(buffer)/sizeof(WCHAR), 0) != S_OK)
+      {
+         *m_defaultWallpaper = 0;
+      }
+      //Get the filename in TCHAR
+      else if (WideCharToMultiByte(CP_OEMCP, 0, buffer, -1, m_defaultWallpaper, sizeof(m_defaultWallpaper), NULL, NULL) == 0)
+      {
+         *m_defaultWallpaper = 0;
+      }
    }
 }
 
@@ -62,7 +118,10 @@ void WallPaper::SetImage(LPTSTR fileName)
       delete m_bmpFileName;
    }
 
-   m_fileName = fileName;
+   if ((fileName != NULL) && (*fileName == 0))
+      m_fileName = m_defaultWallpaper;
+   else
+      m_fileName = fileName;
    m_bmpFileName = NULL;   //lazy image loading: load it the first time it is used
 
    if (m_activeWallPaper == this)
