@@ -40,6 +40,7 @@ public:
    
    void Draw(HDC dc);
    void resize(LPRECT rect);
+   void UpdateLayout();
    Window* GetWindowFromPoint(int x, int y);
    
    void Rename(char * name);
