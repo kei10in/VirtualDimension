@@ -200,7 +200,6 @@ protected:
    HWND m_hOwnedWnd;
    Desktop * m_desk;
    bool m_MinToTray;
-   HANDLE m_hMinToTrayEvent;
    bool m_iconic;
    char m_name[255];
    LONG_PTR m_style;

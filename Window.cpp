@@ -31,7 +31,7 @@
 #include "SharedMenuBuffer.h"
 #include "HookDLL.h"
 
-HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
+HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 
 HidingMethodHide       Window::s_hider_method;
@@ -100,9 +100,6 @@ Window::~Window(void)
 
    UnHook();
 
-   if (m_hMinToTrayEvent)
-      CloseHandle(m_hMinToTrayEvent);
-
    if (m_hDefaulIcon)
       DestroyIcon(m_hDefaulIcon);
 
@@ -148,7 +145,6 @@ void Window::OnDelayUpdate()
       (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
 
    //Shell integration
-   m_hMinToTrayEvent = CreateEvent(NULL, TRUE, m_MinToTray, NULL);
    if (winMan->IsIntegrateWithShell() && !s.LoadDisableShellIntegration(m_className))
       Hook();
 }
@@ -387,11 +383,6 @@ void Window::SetMinimizeToTray(bool totray)
 {
    m_MinToTray = totray;
 
-   if (m_MinToTray)
-      SetEvent(m_hMinToTrayEvent);
-   else
-      ResetEvent(m_hMinToTrayEvent);
-
    if (IsIconic() && IsOnCurrentDesk())
    {
       if (m_MinToTray)
@@ -590,9 +581,9 @@ void Window::Hook()
       return;
 
    GetWindowThreadProcessId(m_hWnd, &m_dwProcessId);
-   m_HookDllHandle = HookWindow(m_hWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
+   m_HookDllHandle = HookWindow(m_hWnd, m_dwProcessId, (int)this);
    if (m_HookDllHandle && m_hWnd != m_hOwnedWnd)
-      HookWindow(m_hOwnedWnd, m_dwProcessId, (int)this, m_hMinToTrayEvent);
+      HookWindow(m_hOwnedWnd, m_dwProcessId, (int)this);
 }
 
 void Window::UnHook()

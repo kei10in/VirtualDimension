@@ -42,7 +42,7 @@ using namespace std;
 
 #define HOOKDLL_API __declspec(dllexport)
 
-HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent);
+HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data);
 HOOKDLL_API DWORD WINAPI doUnHookWindow(DWORD data, HWND hWnd);
 HMENU SetupMenu(HWND hWnd);
 void CleanupMenu(HWND hWnd, HMENU hMenu);
@@ -55,7 +55,6 @@ public:
    WNDPROC m_fnPrevWndProc;
    int m_iData;
    HANDLE m_hMutex;
-   HANDLE m_hMinToTrayEvent;
    bool m_bHookWndProcCalled;
 	HMENU m_hSubMenu;
 };
@@ -93,7 +92,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       {
 		case SC_MINIMIZE:
          //Minimize using VD
-         if (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0)
+         if (SendMessageW(hVDWnd, WM_VD_CHECK_MIN_TO_TRAY, 0, (WPARAM)pData->m_iData))
             res = PostMessageW(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MINIMIZE, (WPARAM)pData->m_iData);
          break;
 
@@ -184,7 +183,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       {
       case SC_MINIMIZE:
          //Minimize using VD
-         if (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0)
+         if (SendMessageA(hVDWnd, WM_VD_CHECK_MIN_TO_TRAY, 0, (WPARAM)pData->m_iData))
             res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MINIMIZE, (WPARAM)pData->m_iData);
          break;
 
@@ -249,7 +248,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
    return res;
 }
 
-HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent)
+HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
 {
    HWNDHookData * pHookData;
    bool unicode = IsWindowUnicode(hWnd) ? true : false;
@@ -263,8 +262,6 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
       // The window was already hooked... This is likely due to a previous VD crash
       // -> free old, unneeded resources, and re-setup various data members properly.
       WaitForSingleObject(pHookData->m_hMutex, INFINITE);
-      CloseHandle(pHookData->m_hMinToTrayEvent);
-      pHookData->m_hMinToTrayEvent = minToTrayEvent;
       pHookData->m_iData = data;
       ReleaseMutex(pHookData->m_hMutex);
 
@@ -285,7 +282,6 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    }
 
    pHookData->m_iData = data;
-   pHookData->m_hMinToTrayEvent = minToTrayEvent;
    pHookData->m_bHookWndProcCalled = false;
    pHookData->m_hSubMenu = NULL;
 
@@ -303,7 +299,6 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
    if (!pHookData->m_fnPrevWndProc)
    {
       CloseHandle(pHookData->m_hMutex);
-      CloseHandle(pHookData->m_hMinToTrayEvent);
       delete pHookData;
       return HOOK_ERROR;
    }
@@ -350,8 +345,6 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
 		//Cleanup the hook information related to this window
 		CloseHandle(pData->m_hMutex);
-		CloseHandle(pData->m_hMinToTrayEvent);
-
 		CleanupMenu(hWnd, pData->m_hSubMenu);
 
       //Remove the hook data from all places where it is referenced

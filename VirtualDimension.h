@@ -132,6 +132,7 @@ protected:
 
    LRESULT OnHookMenuCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnPrepareHookMenu(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnCheckMinToTray(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    static LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/);
 };

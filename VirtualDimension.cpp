@@ -153,8 +153,9 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    SetMessageHandler(WM_VD_HOOK_MENU_COMMAND, this, &VirtualDimension::OnHookMenuCommand);
    SetMessageHandler(WM_VD_PREPARE_HOOK_MENU, this, &VirtualDimension::OnPrepareHookMenu);
+   SetMessageHandler(WM_VD_CHECK_MIN_TO_TRAY, this, &VirtualDimension::OnCheckMinToTray);
 
-	// Compate the window's style
+	// compare the window's style
    m_hasCaption = settings.LoadSetting(Settings::HasCaption);
    dwStyle = WS_POPUP | WS_SYSMENU | (m_hasCaption ? WS_CAPTION : WS_DLGFRAME);
 
@@ -662,6 +663,11 @@ LRESULT VirtualDimension::OnHookMenuCommand(HWND /*hWnd*/, UINT /*message*/, WPA
 LRESULT VirtualDimension::OnPrepareHookMenu(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
    return ((Window*)lParam)->PrepareSysMenu((HANDLE)wParam);
+}
+
+LRESULT VirtualDimension::OnCheckMinToTray(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+{
+   return ((Window*)lParam)->IsMinimizeToTray();
 }
 
 LRESULT VirtualDimension::OnEndSession(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
