@@ -254,7 +254,7 @@ ATOM VirtualDimension::RegisterClass()
    wcex.hbrBackground	= (HBRUSH)GetStockObject(HOLLOW_BRUSH);
 	wcex.lpszMenuName	= 0;
 	wcex.lpszClassName	= m_szWindowClass;
-	wcex.hIconSm		= LoadIcon((HINSTANCE)wcex.hInstance, (LPCTSTR)IDI_VIRTUALDIMENSION);
+   wcex.hIconSm      = NULL;
 
    return FastWindow::RegisterClassEx(&wcex);
 }
@@ -511,7 +511,8 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
 	case WM_INITDIALOG:
       SetDlgItemText(hDlg, IDC_HOMEPAGE_LINK, "http://virt-dimension.sourceforge.net");
       SetDlgItemText(hDlg, IDC_GPL_LINK, "Click here to display the GNU General Public License");
-      return TRUE;
+      SetFocus(GetDlgItem(hDlg, IDOK));
+      return FALSE;
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
