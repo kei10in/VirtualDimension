@@ -25,6 +25,7 @@
 #include <shlobj.h>
 #include "TrayIconsManager.h"
 #include "Transparency.h"
+#include "AlwaysOnTop.h"
 
 #ifdef __GNUC__
 
@@ -48,7 +49,7 @@ DECLARE_INTERFACE_(ITaskbarList, IUnknown)
 
 #endif /*__GNUC__*/
 
-class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler
+class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler, public AlwaysOnTop
 {
 public:
    Window(HWND hWnd);
@@ -92,8 +93,6 @@ public:
    bool IsInTray() const                      { return IsMinimizeToTray() && IsIconic(); }
    void Restore();
 
-   bool IsAlwaysOnTop() const;
-   void SetAlwaysOnTop(bool ontop);
    void ToggleOnTop();
 
    bool IsOnAllDesktops() const               { return IsOnDesk(NULL); }
