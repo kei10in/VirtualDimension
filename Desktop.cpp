@@ -379,8 +379,9 @@ void Desktop::Activate(void)
    /* Set the wallpaper */
    m_wallpaper.Activate();
 
-   //This may help to ensure we can set the foreground window... Doesn't seem to have any effect, though...
-	//SetForegroundWindow(vdWindow);
+   //This helps to ensure we can set the foreground window (theorical), and ensures we got the captions
+   //painted correctly (only one "active" window).
+	SetForegroundWindow(vdWindow);
 
 	// Show/hide the windows
    for(it = winMan->GetIterator(); it; it++)

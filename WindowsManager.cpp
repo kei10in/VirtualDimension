@@ -141,6 +141,7 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
       m_HWNDMap[hWnd] = node;
 
       window = *node;
+      m_zorder.push_back(window);
 
       //Add the tooltip (let the desktop do it)
       if (window->IsOnDesk(NULL))  //on all desktops
@@ -167,6 +168,7 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
    //Update the list
    nIt = WindowsList::Iterator(&m_windows, (*it).second);
    win = nIt;
+   m_zorder.remove(win);
    m_HWNDMap.erase(it);
 
    //Remove tooltip(s)
@@ -208,6 +210,8 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    if (win->IsSwitching())
       return;  //Ignore switching windows
 
+   m_zorder.remove(win);
+   m_zorder.push_back(win);
 
    if (!win->IsOnCurrentDesk())
    {
@@ -354,6 +358,24 @@ Window * WindowsManager::GetForegroundWindow()
    hwnd = (hwnd2 == NULL ? hwnd : hwnd2);
    return winMan->GetWindow(hwnd);
 }
+
+HWND WindowsManager::GetPrevWindow(Window * wnd)
+{
+   ZOrderIterator it = find(m_zorder.begin(), m_zorder.end(), wnd);
+
+   if (it != m_zorder.end())
+   {
+      it++;
+
+      while(it != m_zorder.end() && !(*it)->IsOnAllDesktops() && (*it)->GetDesk()!=wnd->GetDesk())
+         it++;
+   }
+
+   if (it != m_zorder.end())
+      return *(*it);
+   else
+      return ::GetWindow(*wnd, GW_HWNDPREV);
+}		 
 
 // Delayed window update
 //**************************************************************************

@@ -23,6 +23,7 @@
 
 #include <map>
 #include <vector>
+#include <list>
 #include "Desktop.h"
 #include "Window.h"
 #include "ShellHook.h"
@@ -42,7 +43,7 @@ public:
    void PopulateInitialWindowsSet();
 
    void MoveWindow(HWND hWnd, Desktop* desk);
-   inline Window* GetWindow(HWND hWnd);
+   /*inline*/ Window* GetWindow(HWND hWnd);
 
    bool ConfirmKillWindow();
    bool IsConfirmKill() const         { return m_confirmKill; }
@@ -62,6 +63,7 @@ public:
    void SetIntegrateWithShell(bool integ);
 
    void SetTopWindow(Window * top);
+   HWND GetPrevWindow(Window * wnd);
 
    void EnableAnimations();
    void DisableAnimations();
@@ -75,7 +77,10 @@ protected:
    map<HWND, WindowsList::Node*> m_HWNDMap;
    WindowsList m_windows;
 
+   list<Window*> m_zorder;
+
    typedef map<HWND, WindowsList::Node*>::iterator HWNDMapIterator;
+   typedef list<Window*>::iterator ZOrderIterator;
 
    ShellHook m_shellhook;
    bool m_confirmKill;

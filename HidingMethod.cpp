@@ -146,7 +146,7 @@ void HidingMethodMinimize::Show(Window * wnd)
    if (oldstyle != GetWindowLongPtr(*wnd, GWL_EXSTYLE))
    {
       SetWindowLongPtr(*wnd, GWL_EXSTYLE, oldstyle);
-      SetWindowPos(*wnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+      SetWindowPos(*wnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
    }
 
    //Show the icon
@@ -158,6 +158,8 @@ void HidingMethodMinimize::Show(Window * wnd)
       winMan->DisableAnimations();
       ::ShowWindow(*wnd, SW_SHOWNOACTIVATE);
       winMan->EnableAnimations();
+
+      SetWindowPos(*wnd, winMan->GetPrevWindow(wnd), 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
    }
 }
 
@@ -201,7 +203,7 @@ void HidingMethodMove::Show(Window * wnd)
    explorerWrapper->ShowWindowInTaskbar(*wnd);
 
    // Bring back to visible area, SWP_FRAMECHANGED makes it repaint 
-   SetWindowPos(*wnd, 0, aPosition.left, - 10 - aPosition.bottom, 
+   SetWindowPos(*wnd, 0, aPosition.left, - (100 + aPosition.bottom )/2, 
                 0, 0, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE ); 
 
    // Notify taskbar of the change
@@ -214,7 +216,7 @@ void HidingMethodMove::Hide(Window * wnd)
    GetWindowRect(*wnd, &aPosition);
 
    // Move the window off visible area
-   SetWindowPos(*wnd, 0, aPosition.left, - aPosition.bottom - 10, 
+   SetWindowPos(*wnd, 0, aPosition.left, - aPosition.top - aPosition.bottom - 100, 
                 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
 
    // This removes window from taskbar and alt+tab list
