@@ -12,13 +12,14 @@ ATOM g_aPropName = 0;
 int g_iProcessCount = 0;
 
 const UINT g_uiHookMessageId = RegisterWindowMessage("Virtual Dimension Message");
-#pragma data_seg() 
-
-
+#pragma data_seg()
 
 using namespace std;
 
 #define HOOKDLL_API __declspec(dllexport)
+
+HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data);
+HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd);
 
 list<HWND> m_hookedWindows;
 
@@ -205,9 +206,8 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
    }
 }
 
-HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd)
+HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 {
-   LONG_PTR res;
    HWNDHookData* pData;
    BOOL unicode = IsWindowUnicode(hWnd);
 
@@ -223,34 +223,38 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd)
 
    //Unsubclass the window
    if (unicode)
-      res = SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
+      SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
    else
-      res = SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
+      SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
 
    //Release the semaphore
    ReleaseMutex(pData->m_hMutex);
+   Sleep(0); //Let the window proc call terminate
 
-   if (res)
+   //Wait till all calls to the "subclassed" window proc are finished
+   WaitForSingleObject(pData->m_hMutex, INFINITE);
+   Sleep(0); //Let the window proc call terminate
+
+   //Cleanup the hook inforations related to this window
+   CloseHandle(pData->m_hMutex);
+   if (unicode)
+      RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+   else
+      RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+   delete pData;
+
+   m_hookedWindows.remove(hWnd);
+
+   if (hInstance)
    {
-      //Wait till all calls to the "subclassed" window proc are finished
-      WaitForSingleObject(pData->m_hMutex, INFINITE);
-
-      //Cleanup the hook inforations related to this window
-      CloseHandle(pData->m_hMutex);
-      if (unicode)
-         RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
-      else
-         RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
-      delete pData;
-
-      m_hookedWindows.remove(hWnd);
-
-      return TRUE;
+      FreeLibraryAndExitThread(hInstance, TRUE);
+      return FALSE; //if the previous call succeeded, it will not return
    }
    else
-      return FALSE;
+      return TRUE;
 }
 
+extern "C"
 BOOL APIENTRY DllMain( HANDLE /*hModule*/, 
                        DWORD  ul_reason_for_call, 
                        LPVOID /*lpReserved*/
@@ -268,7 +272,7 @@ BOOL APIENTRY DllMain( HANDLE /*hModule*/,
       //Unhook all windows that would still be hooked
       while(!m_hookedWindows.empty())
       {
-         doUnHookWindow(m_hookedWindows.front());
+         doUnHookWindow(NULL, m_hookedWindows.front());
          m_hookedWindows.pop_front();
       }
 
