@@ -64,6 +64,8 @@ public:
    void EnableAnimations();
    void DisableAnimations();
 
+   void RemoveWindow(Window * win)          { OnWindowDestroyed(*win); }
+
 protected:
    map<HWND, WindowsList::Node*> m_HWNDMap;
    WindowsList m_windows;
