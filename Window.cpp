@@ -186,6 +186,8 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
    case VDM_ACTIVATEWINDOW:
       if (!IsOnDesk(deskMan->GetCurrentDesktop()))
          deskMan->SwitchToDesktop(m_desk);
+      if (IsIconic(m_hWnd))
+         OpenIcon(m_hWnd);
       SetForegroundWindow(m_hWnd);
       break;
 
