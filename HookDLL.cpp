@@ -19,6 +19,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data);
 HOOKDLL_API DWORD WINAPI doUnHookWindow(HWND hWnd);
 HMENU SetupMenu(HWND hWnd);
 void CleanupMenu(HWND hWnd, HMENU hMenu);
+void InitPopupMenu(HWND hWnd, HMENU hMenu);
 
 class HWNDHookData
 {
@@ -119,6 +120,11 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       }
       break;   
 
+	case WM_INITMENUPOPUP:
+		if ((HMENU)wParam == pData->m_hSubMenu)
+			InitPopupMenu(hWnd, (HMENU)wParam);
+		break;
+
    case WM_ACTIVATE:
       if (LOWORD(wParam) != WA_INACTIVE)
          PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
@@ -218,6 +224,11 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			break;
       }
       break;   
+
+	case WM_INITMENUPOPUP:
+		if ((HMENU)wParam == pData->m_hSubMenu)
+			InitPopupMenu(hWnd, (HMENU)wParam);
+		break;
 
    case WM_ACTIVATE:
       if (LOWORD(wParam) != WA_INACTIVE)
@@ -396,6 +407,27 @@ void CleanupMenu(HWND hWnd, HMENU hSubMenu)
 	RemoveMenu(hMenu, 0, MF_BYPOSITION);
 
 	DestroyMenu(hSubMenu);
+}
+
+void InitPopupMenu(HWND hWnd, HMENU hMenu)
+{
+	UINT check;
+   HWNDHookData* pData;
+   BOOL unicode = IsWindowUnicode(hWnd);
+
+   if (unicode)
+      pData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+   else
+      pData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
+
+	check = (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_TOPMOST) ? MF_CHECKED : MF_UNCHECKED;
+	CheckMenuItem(hMenu, VDM_SYSBASE+VDM_TOGGLEONTOP, MF_BYCOMMAND | check);
+	
+	check = (WaitForSingleObject(pData->m_hMinToTrayEvent, 0) == WAIT_OBJECT_0) ? MF_CHECKED : MF_UNCHECKED;
+	CheckMenuItem(hMenu, VDM_SYSBASE+VDM_TOGGLEMINIMIZETOTRAY, MF_BYCOMMAND | check);
+
+	check = (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) ? MF_CHECKED : MF_UNCHECKED;
+	CheckMenuItem(hMenu, VDM_SYSBASE+VDM_TOGGLETRANSPARENCY, MF_BYCOMMAND | check);
 }
 
 extern "C"
