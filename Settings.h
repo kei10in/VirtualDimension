@@ -110,6 +110,8 @@ public:
       void SetWallpaper(char * buffer);
       int GetHotkey(int * hotkey);
       void SetHotkey(int hotkey);
+      COLORREF GetColor();
+      void SetColor(COLORREF color);
 
    protected:
       void Init(Settings * settings);
@@ -118,6 +120,7 @@ public:
       static const char regValIndex[];
       static const char regValWallpaper[];
       static const char regValHotkey[];
+      static const char regValColor[];
 
       char m_name[MAX_NAME_LENGTH];
 

@@ -448,6 +448,7 @@ const char Settings::Desktop::regKeyDesktops[] = "Desktops";
 const char Settings::Desktop::regValIndex[] = "DeskIndex";
 const char Settings::Desktop::regValWallpaper[] = "DeskWallpaper";
 const char Settings::Desktop::regValHotkey[] = "DeskHotkey";
+const char Settings::Desktop::regValColor[] = "BackgroundColor";
 
 Settings::Desktop::Desktop(Settings * settings)
 {
@@ -652,6 +653,16 @@ void Settings::Desktop::SetHotkey(int hotkey)
 {
    if (m_keyOpened)
       RegSetValueEx(m_regKey, regValHotkey, 0, REG_DWORD, (LPBYTE)&hotkey, sizeof(hotkey));
+}
+
+COLORREF Settings::Desktop::GetColor()
+{
+   return (COLORREF)LoadDWord(m_regKey, m_keyOpened, regValColor, GetSysColor(COLOR_DESKTOP));
+}
+
+void Settings::Desktop::SetColor(COLORREF color)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValColor, color);
 }
 
 const char Settings::Window::regKeyWindows[] = "Windows";
