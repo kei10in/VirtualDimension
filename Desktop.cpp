@@ -35,7 +35,7 @@ Desktop::Desktop(int i)
    m_active = false;
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
-   *m_wallpaperFile = 0;
+   strcpy(m_wallpaperFile, DESKTOP_WALLPAPER_DEFAULT);
    m_bkColor = GetSysColor(COLOR_DESKTOP);
 
    sprintf(m_name, "Desk%i", i);
