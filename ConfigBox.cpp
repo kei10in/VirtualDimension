@@ -501,6 +501,8 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                }
                deskMan->Sort();
 
+               deskMan->UpdateLayout();
+
                //Refresh the main window
                vdWindow.Refresh();
             }
