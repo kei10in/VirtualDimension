@@ -57,6 +57,7 @@ DEFINE_SETTING(Settings, MaximizeHeightHotkey, int, 0);
 DEFINE_SETTING(Settings, MaximizeWidthHotkey, int, 0);
 DEFINE_SETTING(Settings, AlwaysOnTopHotkey, int, 0);
 DEFINE_SETTING(Settings, TransparencyHotkey, int, 0);
+DEFINE_SETTING(Settings, TogglePreviewWindowHotkey, int, 0);
 DEFINE_SETTING(Settings, DisplayMode, int, 0);
 DEFINE_SETTING(Settings, BackgroundColor, COLORREF, RGB(0xc0,0xc0,0xc0));
 DEFINE_SETTING(Settings, BackgroundPicture, LPTSTR, "");

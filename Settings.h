@@ -60,6 +60,7 @@ public:
    static DECLARE_SETTING(MaximizeWidthHotkey, int);
    static DECLARE_SETTING(AlwaysOnTopHotkey, int);
    static DECLARE_SETTING(TransparencyHotkey, int);
+   static DECLARE_SETTING(TogglePreviewWindowHotkey, int);
    static DECLARE_SETTING(DisplayMode, int);
    static DECLARE_SETTING(BackgroundColor, COLORREF);
    static DECLARE_SETTING(BackgroundPicture, LPTSTR);
