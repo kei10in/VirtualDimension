@@ -419,7 +419,6 @@ void Window::Activate()
    if (IsIconic())
       Restore();
    SetForegroundWindow(m_hWnd);
-   InvalidateRect(vdWindow, NULL, FALSE);
 }
 
 void Window::Restore()
