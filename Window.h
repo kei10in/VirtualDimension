@@ -26,9 +26,12 @@
 #include "TrayIconsManager.h"
 #include "Transparency.h"
 #include "AlwaysOnTop.h"
+#include "HidingMethod.h"
 
 class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler, public AlwaysOnTop
 {
+   friend class HidingMethod;
+
 public:
    /** Constructor.
     * Builds a Window object from the handle of a window. Settings specific to this window are loaded
@@ -109,9 +112,11 @@ public:
    HMENU BuildMenu();
    void OnMenuItemSelected(HMENU menu, int cmdId);
 
-   void ShowWindow();
-   void HideWindow();
-   bool IsHidden() const                      { return m_hidden; }
+   inline void ShowWindow();
+   inline void HideWindow();
+   inline bool IsHidden() const               { return m_hidden; }
+   inline bool CheckCreated()                 { return m_hidingMethod->CheckCreated(this); }
+   inline bool CheckDestroyed()               { return m_hidingMethod->CheckDestroyed(this); }
 
    bool IsMinimizeToTray() const              { return m_MinToTray; }
    void ToggleMinimizeToTray();
@@ -234,14 +239,34 @@ protected:
    HINSTANCE m_HookDllHandle;
    DWORD m_dwProcessId;
 
-   CRITICAL_SECTION m_CriticalSection;
    bool m_switching;
+
+   HidingMethod * m_hidingMethod;
+   int m_hidingMethodData;
 };
 
 HWND Window::GetOwnedWindow(HWND hWnd)
 {
    HWND owned = GetWindow(hWnd, 6/*GW_ENABLEDPOPUP*/);
    return owned ? owned : hWnd;
+}
+
+void Window::ShowWindow()
+{
+   if (m_hidden)
+   {
+      m_hidingMethod->Show(this);
+      m_hidden = false;
+   }
+}
+
+void Window::HideWindow()
+{
+   if (!m_hidden)
+   {
+      m_hidingMethod->Hide(this);
+      m_hidden = true;
+   }
 }
 
 #endif /*__WINDOW_H__*/

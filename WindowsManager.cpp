@@ -148,6 +148,8 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
 
       vdWindow.Refresh();
    }
+   else if (window->CheckCreated())
+      MessageBox(vdWindow, "Existing window created !!!", "Virtual Dimension is puzzled", MB_OK);
 }
 
 void WindowsManager::OnWindowDestroyed(HWND hWnd)
@@ -157,7 +159,7 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
    HWNDMapIterator it = m_HWNDMap.find(hWnd);
    Desktop * desk;
    
-   if (it == m_HWNDMap.end())
+   if (it == m_HWNDMap.end() || !((Window*)*((*it).second))->CheckDestroyed())
       return;
 
    //Update the list

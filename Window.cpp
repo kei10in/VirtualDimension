@@ -32,6 +32,8 @@
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 
+HidingMethodMinimize minimizer;
+
 Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwnedWindow(hWnd)),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128), m_autoSaveSettings(false),
@@ -42,7 +44,8 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(GetOwn
    Settings s;
    Settings::Window settings(&s);
 
-   InitializeCriticalSection(&m_CriticalSection);
+   m_hidingMethod = &minimizer;
+   m_hidingMethod->Attach(this);
 
    //Try to see if there are some special settings for this window
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
@@ -97,8 +100,6 @@ Window::~Window(void)
 {
    UnHook();
 
-   DeleteCriticalSection(&m_CriticalSection);
-
    if (m_hMinToTrayEvent)
       CloseHandle(m_hMinToTrayEvent);
 
@@ -108,12 +109,7 @@ Window::~Window(void)
    if (m_autoSaveSettings)
       SaveSettings();
 
-#ifdef HIDEWINDOW_COMINTERFACE
-   ULONG count;
-   count = m_tasklist->Release();
-   if (count == 0)
-      m_tasklist = NULL;
-#endif
+   m_hidingMethod->Detach(this);
 }
 
 void Window::MoveToDesktop(Desktop * desk)
@@ -153,79 +149,6 @@ void Window::MoveToDesktop(Desktop * desk)
       else
          deskMan->UpdateLayout();
    }
-}
-
-void Window::ShowWindow()
-{
-   EnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
-
-   if (!m_hidden)
-   {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
-      return;
-   }
-
-   //Restore the window's style
-   if (m_setStyle)
-   {
-      SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
-      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-   }
-
-   //Show the icon
-   explorerWrapper->ShowWindowInTaskbar(m_hWnd);
-
-   //Restore the application if needed
-   if (!m_iconic)
-   {
-      winMan->DisableAnimations();
-      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
-      winMan->EnableAnimations();
-   }
-
-   m_hidden = false;
-
-   LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
-}
-
-void Window::HideWindow()
-{
-   EnterCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
-
-   if (m_hidden)
-   {
-      LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
-      return;
-   }
-
-   //Hide from task list, if needed
-   m_setStyle = !winMan->IsShowAllWindowsInTaskList();
-   if (m_setStyle)
-      m_style = GetWindowLongPtr(m_hWnd, GWL_EXSTYLE);
-
-   //Minimize the application
-   m_iconic = IsIconic();
-   if (!m_iconic)
-   {
-      winMan->DisableAnimations();
-      ::ShowWindow(m_hWnd, SW_SHOWMINNOACTIVE);
-      winMan->EnableAnimations();
-   }
-
-   //Hide the icon
-   explorerWrapper->HideWindowInTaskbar(m_hWnd);
-
-   //disable the window so that it does not appear in task list
-   if (m_setStyle)
-   {
-      LONG_PTR style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
-      SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, style);
-      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
-   }
-   
-   m_hidden = true;
-
-   LeaveCriticalSection((LPCRITICAL_SECTION)&m_CriticalSection);
 }
 
 bool Window::IsOnCurrentDesk() const
