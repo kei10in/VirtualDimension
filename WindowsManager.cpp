@@ -419,5 +419,7 @@ void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
    {
       SetForegroundWindow(vdWindow);
       SelectDesktopForWindow(window);
+      if (window->IsOnCurrentDesk())
+         SetForegroundWindow(*window);
    }
 }
