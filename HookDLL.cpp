@@ -59,7 +59,10 @@ enum MenuItems {
    VDM_CLOSE,
    VDM_KILL,
 
-   VDM_PROPERTIES
+   VDM_PROPERTIES,
+
+   VDM_MOVETODESK_SEP,
+   VDM_MOVETODESK
 };
 
 #define VDM_SYSBASE 0xBA55-WM_USER-1
@@ -355,7 +358,7 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 		}
 		while(pData->m_bHookWndProcCalled);
 
-		//Cleanup the hook inforations related to this window
+		//Cleanup the hook information related to this window
 		CloseHandle(pData->m_hMutex);
 		CloseHandle(pData->m_hMinToTrayEvent);
 
@@ -389,9 +392,9 @@ HMENU SetupMenu(HWND hWnd)
 	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
 				  VDM_SYSBASE+VDM_TOGGLETRANSPARENCY, "Transparent");
 	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
-				  VDM_SYSBASE+VDM_MOVEWINDOW, "Change desktop...");
-	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_SEPARATOR, VDM_SYSBASE+VDM_MOVETODESK_SEP, NULL);
+   InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING, 
+      VDM_SYSBASE+VDM_MOVEWINDOW, "Change desktop...");
 	InsertMenu(hSubMenu, (UINT)-1, MF_BYPOSITION | MF_STRING,
 				  VDM_SYSBASE+VDM_PROPERTIES, "Properties");
 
@@ -416,6 +419,7 @@ void InitPopupMenu(HWND hWnd, HMENU hMenu)
 {
 	UINT check;
    HWNDHookData* pData;
+   int i;
    BOOL unicode = IsWindowUnicode(hWnd);
 
    if (unicode)
@@ -431,6 +435,33 @@ void InitPopupMenu(HWND hWnd, HMENU hMenu)
 
 	check = (GetWindowLongPtr(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) ? MF_CHECKED : MF_UNCHECKED;
 	CheckMenuItem(hMenu, VDM_SYSBASE+VDM_TOGGLETRANSPARENCY, MF_BYCOMMAND | check);
+
+   //Remove all "direct" desktop entries
+   for(i=0; i<10; i++)
+      RemoveMenu(hMenu, VDM_SYSBASE+VDM_MOVETODESK+i, MF_BYCOMMAND);
+
+   //Retrieve the list of desktops
+   HANDLE hFileMapping = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 2000, NULL);
+   if (SendMessage(hVDWnd, WM_APP+0x101, (WPARAM)hFileMapping, (LPARAM)GetCurrentProcessId()))
+   {
+      LPVOID viewPtr = MapViewOfFile(hFileMapping, FILE_MAP_READ, 0, 0, 0);
+      char * buffer = (char*)viewPtr;
+      
+      //Find the position where to insert ("ChangeDesktop" item)
+      i=0;
+      while(GetMenuItemID(hMenu, i) != VDM_SYSBASE+VDM_MOVETODESK_SEP)
+         i++;
+      
+      while(*buffer)
+      {
+         //TODO: put a check-mark next to the current desktop
+         //TODO: let user put the window on all desktops
+         InsertMenu(hMenu, i++, MF_BYPOSITION | MF_STRING, VDM_SYSBASE+VDM_MOVETODESK+i, buffer);
+         buffer += strlen(buffer)+1;
+      }
+      UnmapViewOfFile(viewPtr);
+   }
+   CloseHandle(hFileMapping);
 }
 
 extern "C"

@@ -132,6 +132,7 @@ protected:
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnHookWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnHookWindowMessage2(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    static LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/);
 };

@@ -151,6 +151,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	SetMessageHandler(WM_NCHITTEST, this, &VirtualDimension::OnNCHitTest);
 
    SetMessageHandler(WM_APP+0x100, this, &VirtualDimension::OnHookWindowMessage);
+   SetMessageHandler(WM_APP+0x101, this, &VirtualDimension::OnHookWindowMessage2);
 
 	// Compate the window's style
    m_hasCaption = settings.LoadHasCaption();
@@ -650,6 +651,48 @@ LRESULT VirtualDimension::OnHookWindowMessage(HWND /*hWnd*/, UINT /*message*/, W
       SetForegroundWindow(win->GetOwnedWindow());
 
    return TRUE;
+}
+
+LRESULT VirtualDimension::OnHookWindowMessage2(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+{
+   HANDLE hFileMapping;
+   HANDLE hProcess = OpenProcess(PROCESS_DUP_HANDLE, FALSE, (DWORD)lParam);
+   DuplicateHandle(hProcess, (HANDLE)wParam, GetCurrentProcess(), &hFileMapping, FILE_MAP_WRITE, FALSE, 0);
+
+   LPVOID viewPtr = MapViewOfFile(hFileMapping, FILE_MAP_WRITE, 0, 0, 0);
+   if (viewPtr != NULL)
+   {
+      char * buffer = (char*)viewPtr;
+      Desktop * desk = deskMan->GetFirstDesktop();
+      int maxlen = 2000;
+      while(desk != NULL)
+      {
+         char * name = desk->GetText();
+         int len = strlen(name)+1;
+         if (len > maxlen-1)
+            break;
+         memcpy(buffer, name, len);
+         maxlen -= len;
+         buffer += len;
+         desk = deskMan->GetNextDesktop();
+      }
+      *buffer=0;
+      UnmapViewOfFile(viewPtr);
+   }
+   else
+   {
+      LPVOID lpMsgBuf;
+      FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                     NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf,
+                     0, NULL );
+      MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
+      LocalFree( lpMsgBuf );
+   }
+
+   CloseHandle(hProcess);
+   CloseHandle(hFileMapping);
+
+   return viewPtr == NULL ? 0 : 1;
 }
 
 LRESULT VirtualDimension::OnEndSession(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
