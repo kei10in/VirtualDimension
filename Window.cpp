@@ -155,7 +155,7 @@ void Window::ShowWindow()
       return;
 
    //Check if hung before doing anything
-   if (SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
+   if (!SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
       return;
 
    //Restore the window's style
@@ -178,7 +178,7 @@ void Window::HideWindow()
       return;
 
    //Check if hung before doing anything
-   if (SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
+   if (!SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
       return;
 
    if (!winMan->IsShowAllWindowsInTaskList())
