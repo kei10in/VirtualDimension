@@ -48,7 +48,7 @@ public:
    Iterator FirstWindow()                   { return m_windows.first(); }
    Iterator LastWindow()                    { return m_windows.last(); }
 
-   HWND GetActiveWindow() const             { return **(m_windows.front()); }
+   HWND GetActiveWindow();
    bool IsAutoSwitchDesktop() const         { return m_autoSwitch; }
    void SetAutoSwitchDesktop(bool autoSw)   { m_autoSwitch = autoSw; }
    bool IsShowAllWindowsInTaskList() const  { return m_allWindowsInTaskList; }

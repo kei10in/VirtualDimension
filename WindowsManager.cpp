@@ -216,3 +216,18 @@ bool WindowsManager::ConfirmKillWindow()
           (MessageBox(vdWindow, "If you kill the window, you may lose some date. Continue ?",
                       "Warning! Killing is bad", MB_OKCANCEL|MB_ICONWARNING) == IDOK);
 }
+
+HWND WindowsManager::GetActiveWindow()
+{ 
+   WindowsList::Iterator it;
+   
+   for(it = m_windows.begin(); it; it++)\
+   {
+      Window * win = it;
+    
+      if (win->IsOnCurrentDesk())
+         return *win;
+   }
+
+   return NULL;
+}
