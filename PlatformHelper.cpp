@@ -34,7 +34,7 @@ void (*PlatformHelper::AlphaBlend)(HDC hdcDest, int nXOriginDest, int nYOriginDe
 HMODULE PlatformHelper::hMSImg32Lib = NULL;
 PlatformHelper::AlphaBlend_t * PlatformHelper::pAlphaBlend = NULL;
 
-BOOL (WINAPI *PlatformHelper::SetMenuInfo)(HMENU hMenu, LPCMENUINFO lpcmi) = NULL;
+PlatformHelper::SetMenuInfo_t * PlatformHelper::SetMenuInfo = NULL;
 
 PlatformHelper::PlatformHelper(void)
 {
@@ -56,7 +56,7 @@ PlatformHelper::PlatformHelper(void)
 
    SetMenuInfo = (SetMenuInfo_t*)GetProcAddress(GetModuleHandle("User32.dll"), "SetMenuInfo");
    if (SetMenuInfo == NULL)
-      SetMenuInfo = SetMenuInfoDummy;
+      SetMenuInfo = (SetMenuInfo_t*)SetMenuInfoDummy;
 }
 
 PlatformHelper::~PlatformHelper(void)

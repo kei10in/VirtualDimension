@@ -40,7 +40,8 @@ public:
    static IPicture * OpenImage(LPTSTR fileName);
    static bool SaveAsBitmap(IPicture * picture, LPTSTR fileName);
 
-   static BOOL (WINAPI *SetMenuInfo)(HMENU hMenu, LPCMENUINFO lpcmi);
+   typedef BOOL WINAPI SetMenuInfo_t(HMENU, LPCMENUINFO);
+	static SetMenuInfo_t * SetMenuInfo;
 
 protected:
    typedef DWORD WINAPI GetModuleFileNameEx_t(HANDLE,HMODULE,LPTSTR,DWORD);
@@ -63,9 +64,6 @@ protected:
    static void AlphaBlendEmul(HDC hdcDest, int nXOriginDest, int nYOriginDest, 
                               HDC hdcSrc, int nXOriginSrc, int nYOriginSrc, 
                               int nWidth, int nHeight, BYTE sourceAlpha);
-
-
-   typedef BOOL WINAPI SetMenuInfo_t(HMENU, LPCMENUINFO);
 
    static BOOL WINAPI SetMenuInfoDummy(HMENU /*hmenu*/, LPCMENUINFO /*lpcmi*/)    { return 0; }
 };
