@@ -441,29 +441,6 @@ bool DesktopManager::ChooseBackgroundDisplayModeOptions(HWND hWnd)
    return res;
 }
 
-template<int change>
-void DesktopManager::DeskChangeEventHandler<change>::SetHotkey(int key)
-{
-   HotKeyManager * keyMan = HotKeyManager::GetInstance();
-
-   //If we are not changing the hotkey, nothing to do
-   if (key == m_hotkey)
-      return;
-
-   //Unregister the previous hotkey
-   if (m_hotkey != 0)
-      keyMan->UnregisterHotkey(this);
-   
-   m_hotkey = key;
-
-   //Setting the hotkey to 0 removes the shortcut
-   if (m_hotkey == 0)
-      return;
-
-   //Register the new hotkey
-   keyMan->RegisterHotkey(m_hotkey, this);
-}
-
 void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)
 {
    CHOOSEFONT cf; 
@@ -494,4 +471,38 @@ void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)
 
       vdWindow.Refresh();
    }
+}
+
+DesktopManager::NextDesktopEventHandler::NextDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadSwitchToNextDesktopHotkey());
+}
+
+DesktopManager::NextDesktopEventHandler::~NextDesktopEventHandler()
+{
+   Settings s;
+   s.SaveSwitchToNextDesktopHotkey(GetHotkey());
+}
+
+void DesktopManager::NextDesktopEventHandler::OnHotkey()
+{
+   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(1)); 
+}
+
+DesktopManager::PrevDesktopEventHandler::PrevDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadSwitchToPreviousDesktopHotkey());
+}
+
+DesktopManager::PrevDesktopEventHandler::~PrevDesktopEventHandler()
+{
+   Settings s;
+   s.SaveSwitchToPreviousDesktopHotkey(GetHotkey());
+}
+
+void DesktopManager::PrevDesktopEventHandler::OnHotkey()
+{
+   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(-1)); 
 }

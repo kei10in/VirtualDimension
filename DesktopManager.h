@@ -75,60 +75,26 @@ public:
    HFONT GetPreviewWindowFont()               { return m_hPreviewWindowFont; }
    COLORREF GetPreviewWindowFontColor()       { return m_crPreviewWindowFontColor; }
 
-   ConfigurableHotkey* GetSwitchToNextDesktopHotkey()       { return &m_nextDeskEventHandler; }
-   ConfigurableHotkey* GetSwitchToPreviousDesktopHotkey()   { return &m_prevDeskEventHandler; }
-
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-   template<int change>
-   class DeskChangeEventHandler: public HotKeyManager::EventHandler, public ConfigurableHotkey
+   class NextDesktopEventHandler: public ConfigurableHotkey
    {
    public:
-      DeskChangeEventHandler(): m_hotkey(0)  { return; }
-      virtual ~DeskChangeEventHandler()      { if (m_hotkey) HotKeyManager::GetInstance()->UnregisterHotkey(this); }
-      virtual void OnHotkey()                { deskMan->SwitchToDesktop(deskMan->GetOtherDesk(change)); }
-      virtual int GetHotkey() const          { return m_hotkey; }
-      virtual void SetHotkey(int hotkey);
-   protected:
-      int m_hotkey;
-   };
-
-   class NextDesktopEventHandler: public DeskChangeEventHandler<1>
-   {
-   public:
-      NextDesktopEventHandler()
-      {
-         Settings s;
-         SetHotkey(s.LoadSwitchToNextDesktopHotkey());
-      }
-
-      virtual ~NextDesktopEventHandler()
-      {
-         Settings s;
-         s.SaveSwitchToNextDesktopHotkey(GetHotkey());
-      }
-
+      NextDesktopEventHandler();
+      virtual ~NextDesktopEventHandler();
+      virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Skip to next desktop"; }
    };
 
-   class PrevDesktopEventHandler: public DeskChangeEventHandler<-1>
+   class PrevDesktopEventHandler: public ConfigurableHotkey
    {
    public:
-      PrevDesktopEventHandler()
-      {
-         Settings s;
-         SetHotkey(s.LoadSwitchToPreviousDesktopHotkey());
-      }
-
-      virtual ~PrevDesktopEventHandler()
-      {
-         Settings s;
-         s.SaveSwitchToPreviousDesktopHotkey(GetHotkey());
-      }
-
+      PrevDesktopEventHandler();
+      virtual ~PrevDesktopEventHandler();
+      virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Skip to previous desktop"; }
    };
 
