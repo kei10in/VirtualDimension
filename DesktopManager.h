@@ -34,6 +34,7 @@ public:
 
    void paint(HDC hDC);
    void resize(int width, int height);
+   void UpdateLayout();
 
    inline Desktop * AddDesktop();
    void RemoveDesktop(Desktop * desk);
@@ -53,7 +54,6 @@ public:
 
 protected:
    Desktop * AddDesktop(Desktop * desk);
-   void UpdateLayout();
 
    int m_nbColumn;
 
