@@ -37,6 +37,8 @@ public:
    int GetHotkeyData(int id);
 
 protected:
+   LRESULT OnHotkey(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
    static HotKeyManager instance; //the singleton instance
 
    map<int, int> * m_map;
