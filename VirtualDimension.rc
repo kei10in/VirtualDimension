@@ -44,6 +44,17 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Bitmap
+//
+
+IDB_MAXIMIZE_HORIZ      BITMAP                  "maxH.bmp"
+IDB_MAXIMIZE_VERT       BITMAP                  "maxV.bmp"
+IDB_MINIMIZE_TRAY       BITMAP                  "minTray.bmp"
+IDB_KILL                BITMAP                  "kill.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Icon
 //
 
