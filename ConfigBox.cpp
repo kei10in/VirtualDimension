@@ -28,8 +28,32 @@
 #include <prsht.h>
 #include <assert.h>
 
-#ifndef TBM_SETBUDDY
+#ifdef __GNUC__
 #define TBM_SETBUDDY (WM_USER+32)
+
+#define LVS_EX_FULLROWSELECT     0x20  
+#define LVS_EX_GRIDLINES         0x01
+
+#define LVM_GETSUBITEMRECT           (LVM_FIRST+56)
+#define ListView_GetSubItemRect(hWnd, iItem, iSubItem, code, lpRect)       \
+   SendMessage(hWnd, LVM_GETSUBITEMRECT, iItem, (LPARAM)((lpRect)->left = code, (lpRect)->top = iSubItem, lpRect))
+
+#define LVM_SETEXTENDEDLISTVIEWSTYLE (LVM_FIRST+54)
+#define ListView_SetExtendedListViewStyleEx(hWnd, dwExMask, dwExStyle)     \
+   SendMessage(hwnd, LVM_SETEXTENDEDLISTVIEWSTYLE, dwExMask, dwExStyle)
+
+typedef struct tagNMITEMACTIVATE {
+    NMHDR hdr;
+    int iItem;
+    int iSubItem;
+    UINT uNewState;
+    UINT uOldState;
+    UINT uChanged;
+    POINT ptAction;
+    LPARAM lParam;
+    UINT uKeyFlags;
+} NMITEMACTIVATE,*LPNMITEMACTIVATE;
+
 #endif
 
 extern char desk_name[80];
@@ -754,14 +778,12 @@ LRESULT CALLBACK ShortcutsConfiguration(HWND hDlg, UINT message, WPARAM /*wParam
 
          ListView_SetExtendedListViewStyleEx(hwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-         column.mask = LVCF_ORDER | LVCF_TEXT;
-         column.iOrder = 0;
+         column.mask = LVCF_TEXT;
          column.pszText = "Function";
          ListView_InsertColumn(hwnd, 1, &column);
 
-         column.mask = LVCF_ORDER | LVCF_SUBITEM | LVCF_FMT | LVCF_TEXT;
+         column.mask = LVCF_SUBITEM | LVCF_FMT | LVCF_TEXT;
          column.pszText = "Shortcut";
-         column.iOrder = 1;
          column.iSubItem = 0;
          column.fmt = LVCFMT_LEFT;
          ListView_InsertColumn(hwnd, 1, &column);
