@@ -172,7 +172,7 @@ bool Settings::LoadAlwaysOnTop()
    return alwaysOnTop ? true : false;
 }
 
-void Settings::SavewAlwaysOnTop(bool val)
+void Settings::SaveAlwaysOnTop(bool val)
 {
    DWORD wVal;
    wVal = val;

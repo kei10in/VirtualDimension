@@ -38,7 +38,7 @@ public:
    bool LoadShowWindow();
    void SaveShowWindow(bool val);
    bool LoadAlwaysOnTop();
-   void SavewAlwaysOnTop(bool val);
+   void SaveAlwaysOnTop(bool val);
    unsigned char LoadTransparencyLevel();
    void SaveTransparencyLevel(unsigned char level);
 
