@@ -57,6 +57,10 @@ public:
    void SaveAllWindowsInTaskList(bool all);
    bool LoadIntegrateWithShell();
    void SaveIntegrateWithShell(bool integ);
+   int LoadSwitchToNextDesktopHotkey();
+   void SaveSwitchToNextDesktopHotkey(int hotkey);
+   int LoadSwitchToPreviousDesktopHotkey();
+   void SaveSwitchToPreviousDesktopHotkey(int hotkey);
 
    int LoadDisplayMode();
    void SaveDisplayMode(int mode);
@@ -208,6 +212,8 @@ protected:
    static const char regValAutoSwitchDesktop[];
    static const char regValAllWindowsInTaskList[];
    static const char regValIntegrateWithShell[];
+   static const char regValSwitchToNextDesktopHotkey[];
+   static const char regValSwitchToPreviousDesktopHotkey[];
    static const char regValDisplayMode[];
    static const char regValBackgroundColor[];
    static const char regValBackgroundImage[];

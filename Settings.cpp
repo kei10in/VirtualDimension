@@ -36,6 +36,8 @@ const char Settings::regValCloseToTray[] = "CloseToTray";
 const char Settings::regValAutoSwitchDesktop[] = "AutoSwitchDesktop";
 const char Settings::regValAllWindowsInTaskList[] = "AllWindowsInTaskList";
 const char Settings::regValIntegrateWithShell[] = "IntegrateWithShell";
+const char Settings::regValSwitchToNextDesktopHotkey[] = "SwitchToNextDesktopHotkey";
+const char Settings::regValSwitchToPreviousDesktopHotkey[] = "SwitchToPreviousDesktopHotkey";
 const char Settings::regValDisplayMode[] = "DisplayMode";
 const char Settings::regValBackgroundColor[] = "BackgroundColor";
 const char Settings::regValBackgroundImage[] = "BackgroundPicture";
@@ -251,6 +253,26 @@ bool Settings::LoadIntegrateWithShell()
 void Settings::SaveIntegrateWithShell(bool integ)
 {
    SaveDWord(m_regKey, m_keyOpened, regValIntegrateWithShell, integ);
+}
+
+int Settings::LoadSwitchToNextDesktopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToNextDesktopHotkey, 0);
+}
+
+void Settings::SaveSwitchToNextDesktopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValSwitchToNextDesktopHotkey, hotkey);
+}
+
+int Settings::LoadSwitchToPreviousDesktopHotkey()
+{
+   return (int)LoadDWord(m_regKey, m_keyOpened, regValSwitchToPreviousDesktopHotkey, 0);
+}
+
+void Settings::SaveSwitchToPreviousDesktopHotkey(int hotkey)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValSwitchToPreviousDesktopHotkey, hotkey);
 }
 
 int Settings::LoadDisplayMode()
