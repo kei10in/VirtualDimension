@@ -21,14 +21,6 @@
 #ifndef __PLATFORMHELPER_H__
 #define __PLATFORMHELPER_H__
 
-#ifndef __STDCALL__ 
-#ifdef __GNUG__
-#define __STDCALL__ 
-#else
-#define __STDCALL__ WINAPI
-#endif
-#endif
-
 class PlatformHelper
 {
 public:
@@ -38,8 +30,10 @@ public:
    static DWORD (*GetWindowFileName)(HWND hWnd, LPTSTR lpFileName, int iBufLen);
 
 protected:
+   typedef DWORD WINAPI GetModuleFileNameEx_t(HANDLE,HMODULE,LPTSTR,DWORD);
+
    static HMODULE hPSAPILib;
-   static DWORD (__STDCALL__ *pGetModuleFileNameEx)(HANDLE,HMODULE,LPTSTR,DWORD);
+   static GetModuleFileNameEx_t * pGetModuleFileNameEx;
 
    static DWORD GetWindowFileNameNT(HWND hWnd, LPTSTR lpFileName, int iBufLen);
    static DWORD GetWindowFileName9x(HWND hWnd, LPTSTR lpFileName, int iBufLen);

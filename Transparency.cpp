@@ -29,7 +29,7 @@
 
 bool Transparency::transparency_supported = false;
 bool Transparency::transparency_supported_valid = false;
-BOOL (__STDCALL__ * Transparency::SetLayeredWindowAttributes)(HWND,COLORREF,BYTE,DWORD) = NULL;
+Transparency::SetLayeredWindowAttributes_t * Transparency::SetLayeredWindowAttributes = NULL;
 HINSTANCE Transparency::hinstDLL = NULL;
 int Transparency::nbInstance = 0;
 
@@ -87,7 +87,7 @@ bool Transparency::IsTransparencySupported()
    {
       hinstDLL = LoadLibrary((LPCSTR)"user32.dll");
       if (hinstDLL != NULL)
-         SetLayeredWindowAttributes = (BOOL (__STDCALL__*)(HWND,COLORREF,BYTE,DWORD))GetProcAddress(hinstDLL, "SetLayeredWindowAttributes");
+         SetLayeredWindowAttributes = (SetLayeredWindowAttributes_t*)GetProcAddress(hinstDLL, "SetLayeredWindowAttributes");
 
       transparency_supported = (SetLayeredWindowAttributes != NULL);
       transparency_supported_valid = true;

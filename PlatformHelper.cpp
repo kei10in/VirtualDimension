@@ -25,13 +25,12 @@ PlatformHelper instance;
 
 DWORD (*PlatformHelper::GetWindowFileName)(HWND hWnd, LPTSTR lpFileName, int iBufLen) = NULL;
 HMODULE PlatformHelper::hPSAPILib = NULL;
-DWORD (__STDCALL__ *PlatformHelper::pGetModuleFileNameEx)(HANDLE,HMODULE,LPTSTR,DWORD) = NULL;
+PlatformHelper::GetModuleFileNameEx_t * PlatformHelper::pGetModuleFileNameEx = NULL;
 
 PlatformHelper::PlatformHelper(void)
 {
    hPSAPILib = LoadLibrary("psapi.dll");
-   pGetModuleFileNameEx = (DWORD (__STDCALL__ *)(HANDLE,HMODULE,LPTSTR,DWORD))
-      GetProcAddress(hPSAPILib, "GetModuleFileNameExA");
+   pGetModuleFileNameEx = (GetModuleFileNameEx_t *)GetProcAddress(hPSAPILib, "GetModuleFileNameExA");
 
    if (pGetModuleFileNameEx)
       GetWindowFileName = GetWindowFileNameNT;
