@@ -77,6 +77,9 @@ public:
    HFONT GetPreviewWindowFont()               { return m_hPreviewWindowFont; }
    COLORREF GetPreviewWindowFontColor()       { return m_crPreviewWindowFontColor; }
 
+   LONG GetWindowWidth() const                { return m_width; }
+   LONG GetWindowHeight() const               { return m_height; }
+
 protected:
    Desktop * AddDesktop(Desktop * desk);
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
