@@ -112,10 +112,10 @@ void DesktopManager::UpdateLayout()
       RECT rect;
 
       // Calculate boundign rectangle for the current desktop representation
-      rect.top = y+2;
-      rect.bottom = y+deltaY-2;
-      rect.left = x+2;
-      rect.right = x+deltaX-2;
+      rect.top = y;
+      rect.bottom = y+deltaY;
+      rect.left = x;
+      rect.right = x+deltaX;
 
       // Draw the desktop
       (*it)->resize(&rect);
