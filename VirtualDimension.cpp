@@ -146,6 +146,10 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	SetMessageHandler(WM_TIMER, this, &VirtualDimension::OnTimer);
 	SetMessageHandler(WM_ACTIVATEAPP, this, &VirtualDimension::OnActivateApp);
 
+	SetMessageHandler(WM_MOUSEHOVER, this, &VirtualDimension::OnMouseHover);
+	SetMessageHandler(WM_MOUSELEAVE, this, &VirtualDimension::OnMouseLeave);
+	SetMessageHandler(WM_NCHITTEST, this, &VirtualDimension::OnNCHitTest);
+
    SetMessageHandler(WM_APP+0x100, this, &VirtualDimension::OnHookWindowMessage);
 
 	// Compate the window's style
@@ -195,6 +199,8 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	m_snapSize = settings.LoadSnapSize();
 	m_autoHideDelay = settings.LoadAutoHideDelay();
 	m_shrinked = false;
+
+	m_tracking = false;
 
    // Setup the system menu
    m_pSysMenu = GetSystemMenu(hWnd, FALSE);
@@ -738,6 +744,42 @@ LRESULT VirtualDimension::OnSize(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam,
 		deskMan->ReSize(LOWORD(lParam), HIWORD(lParam));
 
 	return 0;
+}
+
+LRESULT VirtualDimension::OnMouseHover(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	//Un-shring the window
+	UnShrink();
+
+	//Prepare to auto-hide
+	if (m_autoHideDelay > 0)
+		SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
+
+	m_tracking = false;
+	return 0;
+}
+
+LRESULT VirtualDimension::OnMouseLeave(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	m_tracking = false;
+	return 0;
+}
+
+LRESULT VirtualDimension::OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if (m_shrinked && !m_tracking)
+	{
+		//Setup mouse tracking
+		TRACKMOUSEEVENT tme;
+
+		tme.cbSize = sizeof(TRACKMOUSEEVENT);
+		tme.dwFlags = TME_HOVER | TME_LEAVE;
+		tme.dwHoverTime = 1000;
+		tme.hwndTrack = m_hWnd;
+		m_tracking = TrackMouseEvent(&tme) ? true : false;
+	}
+
+	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 void VirtualDimension::Shrink(void)

@@ -86,7 +86,9 @@ protected:
 	int m_dockedBorders;
 
 	int m_snapSize;
-	
+
+	bool m_tracking;
+
 	bool m_shrinked;
    bool m_lockPreviewWindow;
    bool m_hasCaption;
@@ -122,6 +124,10 @@ protected:
 
 	LRESULT OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnTimer(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	LRESULT OnMouseHover(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT OnMouseLeave(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
