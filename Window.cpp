@@ -54,6 +54,8 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwn
    else
       m_tasklist->AddRef();
 
+   m_mutex = CreateMutex(NULL, FALSE, NULL);
+
    //Try to see if there are some special settings for this window
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
    OpenSettings(settings, false);
@@ -95,6 +97,9 @@ Window::~Window(void)
    ULONG count;
 
    UnHook();
+
+   WaitForSingleObject(m_mutex, INFINITE);
+   CloseHandle(m_mutex);
 
    if (m_hMinToTrayEvent)
       CloseHandle(m_hMinToTrayEvent);
@@ -151,36 +156,44 @@ void Window::MoveToDesktop(Desktop * desk)
 
 void Window::ShowWindow()
 {
-   if (!m_hidden)
-      return;
+   WaitForSingleObject(m_mutex, INFINITE);
 
-   //Check if hung before doing anything
-   if (!SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
+   if (!m_hidden)
+   {
+      ReleaseMutex(m_mutex);
       return;
+   }
 
    //Restore the window's style
    if (m_style)
+   {
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
+      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+   }
 
    //Show the icon
    m_tasklist->AddTab(m_hWnd);
 
    //Restore the application if needed
    if (!m_iconic)
-      ::ShowWindowAsync(m_hWnd, SW_SHOWNOACTIVATE);
+      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
 
    m_hidden = false;
+
+   ReleaseMutex(m_mutex);
 }
 
 void Window::HideWindow()
 {
+   WaitForSingleObject(m_mutex, INFINITE);
+
    if (m_hidden)
+   {
+      ReleaseMutex(m_mutex);
       return;
+   }
 
-   //Check if hung before doing anything
-   if (!SendMessageTimeout(m_hWnd, (int)NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 500, NULL))
-      return;
-
+   //Hide from task list, if needed
    if (!winMan->IsShowAllWindowsInTaskList())
       m_style = GetWindowLongPtr(m_hWnd, GWL_EXSTYLE);
    else
@@ -199,9 +212,12 @@ void Window::HideWindow()
    {
       LONG_PTR style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, style);
+      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
    }
    
    m_hidden = true;
+
+   ReleaseMutex(m_mutex);
 }
 
 bool Window::IsOnCurrentDesk() const
@@ -451,9 +467,11 @@ void Window::Activate()
 {
    if (IsIconic())
       Restore();
+   winMan->SetTopWindow(this);
    if (!IsOnCurrentDesk())
       deskMan->SwitchToDesktop(m_desk);
-   SetForegroundWindow(m_hOwnedWnd);
+   else
+      SetForegroundWindow(m_hOwnedWnd);
 }
 
 void Window::Restore()

@@ -178,6 +178,14 @@ public:
    inline HWND GetOwnedWindow() const         { return m_hOwnedWnd; }
    inline static HWND GetOwnedWindow(HWND hWnd);
 
+   inline bool IsMutexLocked() const          
+   { 
+      bool res = WaitForSingleObject(m_mutex, 0) == WAIT_TIMEOUT;
+      if (!res)
+         ReleaseMutex(m_mutex);
+      return res;
+   }
+
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnContextMenu();
@@ -248,6 +256,8 @@ protected:
 
    HINSTANCE m_HookDllHandle;
    DWORD m_dwProcessId;
+
+   HANDLE m_mutex;
 
    /** Pointer to the COM taskbar interface.
     * This interface is used to add/remove the icons from the taskbar, when showing/hiding
