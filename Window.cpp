@@ -198,7 +198,7 @@ void Window::ShowWindow()
    if (m_setStyle)
    {
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, m_style);
-      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
    }
 
    //Show the icon
@@ -212,7 +212,7 @@ void Window::ShowWindow()
    if (!m_iconic)
    {
       winMan->DisableAnimations();
-      ::ShowWindow(m_hWnd, SW_RESTORE);
+      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
       winMan->EnableAnimations();
    }
 
@@ -257,7 +257,7 @@ void Window::HideWindow()
    {
       LONG_PTR style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
       SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, style);
-      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+      SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
    }
    
    m_hidden = true;
