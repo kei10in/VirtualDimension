@@ -21,6 +21,7 @@
 #include "StdAfx.h"
 #include "WallPaper.h"
 #include "PlatformHelper.h"
+#include "BackgroundColor.h"
 
 WallPaper * WallPaper::m_activeWallPaper = NULL;
 
@@ -50,7 +51,7 @@ void WallPaper::Activate()
       return;
 
    m_activeWallPaper = this;
-   Reload();
+   m_wallPaperLoader.LoadImageAsync(this);
 }
 
 void WallPaper::SetImage(LPTSTR fileName)
@@ -65,15 +66,18 @@ void WallPaper::SetImage(LPTSTR fileName)
    m_bmpFileName = NULL;   //lazy image loading: load it the first time it is used
 
    if (m_activeWallPaper == this)
-      Reload();
+      m_wallPaperLoader.LoadImageAsync(this);
 }
 
-void WallPaper::Reload()
+void WallPaper::SetColor(COLORREF bkColor)
 {
-   if (m_fileName)
-   {
-		m_wallPaperLoader.LoadImageAsync(this);
-   }
+   if (bkColor == m_bkColor)
+      return;
+
+   m_bkColor = bkColor;
+
+   if (m_activeWallPaper == this)
+      m_wallPaperLoader.LoadImageAsync(this);
 }
 
 WallPaper::WallPaperLoader WallPaper::m_wallPaperLoader;
@@ -121,37 +125,43 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
          if (wallpaper == m_activeWallPaper)
             SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
       }
-      else if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
+      else if (wallpaper->m_fileName) 
       {
-         wallpaper->m_bmpFileName = wallpaper->m_fileName;
+         if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
+         {
+            wallpaper->m_bmpFileName = wallpaper->m_fileName;
 
-			if (wallpaper == m_activeWallPaper)
-				SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+			   if (wallpaper == m_activeWallPaper)
+				   SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+         }
+         else
+         {
+			   IPicture * picture = PlatformHelper::OpenImage(wallpaper->m_fileName);
+			   if (!picture)
+			   {
+				   wallpaper->m_fileName = NULL;
+				   continue;
+			   }
+
+			   wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
+            if ( (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0) ||
+               (!PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName)) )
+			   {
+               delete wallpaper->m_bmpFileName;
+               wallpaper->m_bmpFileName = NULL;
+				   picture->Release();
+				   continue;
+			   }
+
+			   if (wallpaper == m_activeWallPaper)
+				   SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+   			
+			   picture->Release();
+		   }
       }
-      else
-      {
-			IPicture * picture = PlatformHelper::OpenImage(wallpaper->m_fileName);
-			if (!picture)
-			{
-				wallpaper->m_fileName = NULL;
-				continue;
-			}
 
-			wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
-         if ( (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0) ||
-              (!PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName)) )
-			{
-            delete wallpaper->m_bmpFileName;
-            wallpaper->m_bmpFileName = NULL;
-				picture->Release();
-				continue;
-			}
-
-			if (wallpaper == m_activeWallPaper)
-				SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
-			
-			picture->Release();
-		}
+      // Set the background color
+      BackgroundColor::GetInstance().SetColor(wallpaper->m_bkColor);
    }
 
    ExitThread(0);

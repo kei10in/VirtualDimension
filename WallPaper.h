@@ -34,12 +34,13 @@ public:
 
    void Activate();
    void SetImage(LPTSTR fileName);
+   void SetColor(COLORREF bkColor);
 
 protected:
-   void Reload();
-
    LPTSTR m_fileName;
    LPTSTR m_bmpFileName;
+
+   COLORREF m_bkColor;
 
    class WallPaperLoader
    {
