@@ -53,11 +53,9 @@ static HINSTANCE WINAPI RemoteStartup (RemoteStartupArgs* args)
 
    fnFunc = (DWORD (WINAPI *)(HWND,int,HANDLE))args->fnGetProcAddress(hinstLib, (LPCSTR)MAKEINTRESOURCE(args->fnIndex));
 
-   if (fnFunc)
-   {
-      fnFunc(args->hWnd, args->data, args->minToTrayEvent);
+   if (fnFunc &&
+		 fnFunc(args->hWnd, args->data, args->minToTrayEvent))
       return hinstLib;
-   }
    else
    {
       args->fnFreeLibrary(hinstLib);
@@ -147,12 +145,11 @@ static BOOL FreeProcessMemory (HANDLE hProcess, PVOID pvMem)
 	return res;
 }
 
-HINSTANCE HookWindow(HWND hWnd, int data, HANDLE minToTrayEvent)
+HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data, HANDLE minToTrayEvent)
 {
    const int cbCodeSize = ((LPBYTE)AfterRemoteStartup - (LPBYTE)RemoteStartup);
 	const DWORD cbMemSize = cbCodeSize + sizeof(RemoteStartupArgs) + 3;
    HANDLE hProcess;
-   DWORD dwProcessId;
 	HINSTANCE hinstKrnl = GetModuleHandle("Kernel32");
 	PDWORD pdwCodeRemote = NULL;
    RemoteStartupArgs args;
@@ -162,7 +159,6 @@ HINSTANCE HookWindow(HWND hWnd, int data, HANDLE minToTrayEvent)
    DWORD dwOldProtect;
    HINSTANCE res;
 
-   GetWindowThreadProcessId(hWnd, &dwProcessId);
    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
    if (!hProcess)
       return NULL;
@@ -239,12 +235,11 @@ HINSTANCE HookWindow(HWND hWnd, int data, HANDLE minToTrayEvent)
    return res;
 }
 
-bool UnHookWindow(HINSTANCE hInstance, HWND hWnd)
+bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd)
 {
    const int cbCodeSize = ((LPBYTE)AfterRemoteCleanup - (LPBYTE)RemoteCleanup);
 	const DWORD cbMemSize = cbCodeSize + sizeof(RemoteCleanupArgs) + 3;
    HANDLE hProcess;
-   DWORD dwProcessId;
 	HINSTANCE hinstKrnl = GetModuleHandle("Kernel32");
 	PDWORD pdwCodeRemote = NULL;
    RemoteCleanupArgs args;
@@ -254,7 +249,6 @@ bool UnHookWindow(HINSTANCE hInstance, HWND hWnd)
 	BOOL res;
    DWORD dwOldProtect;
 
-   GetWindowThreadProcessId(hWnd, &dwProcessId);
    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
    if (!hProcess)
       return false;
