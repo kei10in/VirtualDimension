@@ -33,7 +33,22 @@ TrayIconsManager::TrayIconsManager()
 
 TrayIconsManager::~TrayIconsManager()
 {
+   NOTIFYICONDATA data;
+	set<TrayIconHandler*>::iterator it;
 
+   data.cbSize = sizeof(data);
+   data.hWnd = vdWindow;
+   data.uFlags = 0;
+
+   //Delte all remaining icons
+	for( it = m_registered_handlers.begin();
+		 it != m_registered_handlers.end();
+		 it ++)
+	{
+      data.uID = (UINT)*it;
+      Shell_NotifyIcon(NIM_DELETE, &data);
+	}
+   m_registered_handlers.clear();
 }
 
 bool TrayIconsManager::AddIcon(TrayIconHandler* handler)
@@ -54,7 +69,7 @@ bool TrayIconsManager::AddIcon(TrayIconHandler* handler)
    // Add the actual tray icon
    data.cbSize = sizeof(data);
    data.hWnd = vdWindow;
-   data.uID = handler->m_callbackMessage;
+   data.uID = (UINT)handler;
    data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
    data.uCallbackMessage = handler->m_callbackMessage;
    data.hIcon = handler->GetIcon();
@@ -76,7 +91,7 @@ bool TrayIconsManager::DelIcon(TrayIconHandler* handler)
    // Remove the actual tray icon
    data.cbSize = sizeof(data);
    data.hWnd = vdWindow;
-   data.uID = handler->m_callbackMessage;
+   data.uID = (UINT)handler;
    data.uFlags = 0; /*NIF_ICON | NIF_MESSAGE | NIF_TIP;
    data.uCallbackMessage = handler->m_callbackMessage;
    data.hIcon = handler->GetIcon();
