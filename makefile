@@ -78,13 +78,13 @@ pre_comp:
 	fi
 
 VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
-	g++ $^ -o $@ -mwindows -mthread -lcomctl32 -lole32 -lolepro32 -lmsimg32 $(CXXFLAGS)
+	g++ $^ -o $@ -mwindows -mthread -lcomctl32 -lole32 -lolepro32 -luuid -lmsimg32 $(CXXFLAGS)
 ifndef DEBUG
 	strip $@
 endif
 
 HookDLL.dll: HookDLL.o
-	g++ -shared -o $@ $^ $(CXXFLAGS)
+	g++ -shared -mwindows -o $@ $^ $(CXXFLAGS)
 ifndef DEBUG
 	strip $@
 endif
