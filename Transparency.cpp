@@ -22,11 +22,6 @@
 #include "transparency.h"
 #include "settings.h"
 
-#ifdef __GNUC__
-#define LWA_COLORKEY            0x00000001
-#define LWA_ALPHA               0x00000002
-#endif
-
 bool Transparency::transparency_supported = false;
 bool Transparency::transparency_supported_valid = false;
 Transparency::SetLayeredWindowAttributes_t * Transparency::SetLayeredWindowAttributes = NULL;
