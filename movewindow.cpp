@@ -115,7 +115,6 @@ LRESULT CALLBACK MoveWindowProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /
 			return TRUE;
 
       case IDC_DESK_LIST:
-         CheckDlgButton(hDlg, IDC_ALLDESKS_CHECK, FALSE);
          switch (HIWORD(wParam))
          {
          case LBN_DBLCLK:
@@ -123,6 +122,7 @@ LRESULT CALLBACK MoveWindowProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM /
             break;
 
          case LBN_SELCHANGE:
+            CheckDlgButton(hDlg, IDC_ALLDESKS_CHECK, FALSE);
             EnableWindow(GetDlgItem(hDlg, IDC_APPLY), TRUE);
             break;
          }
