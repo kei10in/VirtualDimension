@@ -217,7 +217,7 @@ void Window::ShowWindow()
    if (!m_iconic)
    {
       winMan->DisableAnimations();
-      ::ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
+      ::ShowWindow(m_hWnd, SW_RESTORE);
       winMan->EnableAnimations();
    }
 
