@@ -130,12 +130,26 @@ protected:
    inline void InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str);
    inline HBITMAP LoadBmpRes(int id);
 
+   enum AutoSettingsModes {
+      ASS_DISABLED,
+      ASS_AUTOSAVE,
+      ASS_SAVED
+   };
+
+   void OpenSettings(Settings::Window &settings, bool create=false);
+   void EraseSettings();
+   void SaveSettings();
+
+   static LRESULT CALLBACK PropertiesProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
    void OnInitSettingsDlg(HWND hDlg);
-   void OnEraseSettingsBtn(HWND hDlg);
-   void OnSaveSettingsBtn(HWND hDlg);
    void OnApplySettingsBtn(HWND hDlg);
    static LRESULT CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-   static LRESULT CALLBACK PropertiesProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
+   void OnInitAutoSettingsDlg(HWND hDlg);
+   void OnApplyAutoSettingsBtn(HWND hDlg);
+   void OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode);
+   static LRESULT CALLBACK AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
    enum MenuItems {
       VDM_TOGGLEONTOP = WM_USER+1,
@@ -167,6 +181,10 @@ protected:
 
    Transparency m_transp;
    unsigned char m_transpLevel;
+
+   bool m_autoSaveSettings;
+   bool m_autosize;
+   bool m_autopos;
 
    /** Pointer to the COM taskbar interface.
     * This interface is used for the WHM_MINIMIZE hiding method, to add/remove the icons
