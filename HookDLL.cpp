@@ -178,7 +178,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
 {
    HWNDHookData * pHookData = new HWNDHookData;
 
-   pHookData->m_hMutex = CreateMutex(NULL, FALSE, NULL);
+   pHookData->m_hMutex = CreateMutex(NULL, TRUE, NULL);
    if (!pHookData->m_hMutex)
    {
       delete pHookData;
@@ -202,12 +202,15 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data, HANDLE minToTrayEvent
 
    if (!pHookData->m_fnPrevWndProc)
    {
+      CloseHandle(pHookData->m_hMutex);
+      CloseHandle(pHookData->m_hMinToTrayEvent);
       delete pHookData;
       return FALSE;
    }
    else
    {
       m_hookedWindows.push_front(hWnd);
+      ReleaseMutex(pHookData->m_hMutex);
       return TRUE;
    }
 }
@@ -225,7 +228,8 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
       return FALSE;
 
    //Get the mutex for this window
-   WaitForSingleObject(pData->m_hMutex, INFINITE);
+   if (WaitForSingleObject(pData->m_hMutex, INFINITE) == WAIT_FAILED)
+      return FALSE;
 
    //Unsubclass the window
    if (unicode)
