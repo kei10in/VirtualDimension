@@ -28,6 +28,7 @@
 #include "hotkeymanager.h"
 #include "shellhook.h"
 #include "movewindow.h"
+#include "tooltip.h"
 #include <objbase.h>
 
 #define MAX_LOADSTRING 100
@@ -44,6 +45,7 @@ WindowsManager * winMan;
 Transparency * transp;
 TrayIcon * trayIcon;
 AlwaysOnTop * ontop;
+ToolTip * tooltip;
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -385,10 +387,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
          // Cleanup always on top state
          delete ontop;
 
-         //Destroy the desktop manager
+         // Destroy the tooltip
+         delete tooltip;
+
+         // Destroy the desktop manager
          delete deskMan;
 
-         //Destroy the windows manager
+         // Destroy the windows manager
          delete winMan;
       }
 		PostQuitMessage(0);
@@ -416,6 +421,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
          // Initialize always on top state
          ontop = new AlwaysOnTop(hWnd);
+
+         // Create the tooltip
+         tooltip = new ToolTip(hWnd);
 
          // Create the windows manager
          winMan = new WindowsManager(hWnd);
