@@ -28,10 +28,6 @@
 #include "VirtualDimension.h"
 #include "BackgroundColor.h"
 
-#ifdef USE_IACTIVEDESKTOP
-IActiveDesktop * Desktop::m_ActiveDesktop = NULL;
-#endif /*USE_IACTIVEDESKTOP*/
-
 #ifdef __GNUC__
 #define MIM_STYLE 0x10
 #define MNS_CHECKORBMP 0x04000000
