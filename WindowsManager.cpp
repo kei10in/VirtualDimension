@@ -461,3 +461,41 @@ void WindowsManager::MaximizeWidthEventHandler::OnHotkey()
    if ((window != NULL) && (window->IsOnCurrentDesk()))
       window->MaximizeWidth();
 }
+
+WindowsManager::ToggleAlwaysOnTopEventHandler::ToggleAlwaysOnTopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadAlwaysOnTopHotkey());
+}
+
+WindowsManager::ToggleAlwaysOnTopEventHandler::~ToggleAlwaysOnTopEventHandler()
+{
+   Settings s;
+   s.SaveAlwaysOnTopHotkey(GetHotkey());
+}
+
+void WindowsManager::ToggleAlwaysOnTopEventHandler::OnHotkey()
+{
+   Window * window = winMan->GetForegroundWindow();
+   if ((window != NULL) && (window->IsOnCurrentDesk()))
+      window->ToggleOnTop();
+}
+
+WindowsManager::ToggleTransparencyEventHandler::ToggleTransparencyEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadTransparencyHotkey());
+}
+
+WindowsManager::ToggleTransparencyEventHandler::~ToggleTransparencyEventHandler()
+{
+   Settings s;
+   s.SaveTransparencyHotkey(GetHotkey());
+}
+
+void WindowsManager::ToggleTransparencyEventHandler::OnHotkey()
+{
+   Window * window = winMan->GetForegroundWindow();
+   if ((window != NULL) && (window->IsOnCurrentDesk()))
+      window->ToggleTransparent();
+}

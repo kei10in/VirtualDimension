@@ -137,11 +137,31 @@ protected:
       virtual LPCSTR GetName() const   { return "Maximize width"; }
    };
 
+   class ToggleAlwaysOnTopEventHandler: public ConfigurableHotkey 
+   {
+   public:
+      ToggleAlwaysOnTopEventHandler();
+      virtual ~ToggleAlwaysOnTopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Toggle always on top"; }
+   };
+
+   class ToggleTransparencyEventHandler: public ConfigurableHotkey
+   {
+   public:
+      ToggleTransparencyEventHandler();
+      virtual ~ToggleTransparencyEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Toggle transparency"; }
+   };
+
    MoveWindowToNextDesktopEventHandler m_moveToNextDeskEH;
    MoveWindowToPrevDesktopEventHandler m_moveToPrevDeskEH;
    MoveWindowToDesktopEventHandler m_moveToDesktopEH;
-   MaximizeHeightEventHandler m_maximizeHeight;
-   MaximizeWidthEventHandler m_maximizeWidth;
+   MaximizeHeightEventHandler m_maximizeHeightEH;
+   MaximizeWidthEventHandler m_maximizeWidthEH;
+   ToggleAlwaysOnTopEventHandler m_toggleAlwaysOnTopEH;
+   ToggleTransparencyEventHandler m_toggleTransparencyEH;
 
    static BOOL CALLBACK ListWindowsProc( HWND hWnd, LPARAM lParam );
 };
