@@ -23,11 +23,12 @@
 
 #include <list>
 #include "settings.h"
+#include "tooltip.h"
 
 using namespace std;
 class Window;
 
-class Desktop
+class Desktop: public ToolTip::Tool
 {
 public:
    Desktop(void);
@@ -49,6 +50,9 @@ public:
    void Desactivate(void);
 
    void SetHotkey(int hotkey);
+
+   char * GetText()           { return m_name; }
+   void GetRect(LPRECT rect)  { *rect = m_rect; }
 
 public:
    bool m_active;
