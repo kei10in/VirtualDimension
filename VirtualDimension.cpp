@@ -181,6 +181,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // Initialize always on top state
    ontop = new AlwaysOnTop(hWnd);
+   ontop->SetAlwaysOnTop(settings.LoadAlwaysOnTop());
 
    // Create the tooltip
    tooltip = new ToolTip(hWnd);
@@ -315,7 +316,7 @@ LRESULT VirtualDimension::OnLeftButtonDown(HWND hWnd, UINT /*message*/, WPARAM /
    return 0;
 }
 
-LRESULT VirtualDimension::OnLeftButtonUp(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
+LRESULT VirtualDimension::OnLeftButtonUp(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
    POINT pt;
 
@@ -432,6 +433,7 @@ LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam
    delete transp;
 
    // Cleanup always on top state
+   settings.SaveAlwaysOnTop(ontop->IsAlwaysOnTop());
    delete ontop;
 
    // Destroy the tooltip
