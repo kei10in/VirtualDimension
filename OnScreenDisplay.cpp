@@ -26,7 +26,7 @@
 
 ATOM OnScreenDisplayWnd::s_classAtom = 0;
 
-OnScreenDisplayWnd::OnScreenDisplayWnd(): m_transp(NULL), m_shadeBackground(false)
+OnScreenDisplayWnd::OnScreenDisplayWnd(): m_transp(NULL)
 {
    Settings settings;
 
@@ -35,9 +35,13 @@ OnScreenDisplayWnd::OnScreenDisplayWnd(): m_transp(NULL), m_shadeBackground(fals
 
    SetDefaultTimeout(settings.LoadOSDTimeout());
    m_fgColor = settings.LoadOSDFgColor();
+   m_bgColor = settings.LoadOSDBgColor();
    settings.LoadOSDPosition(&m_position);
+   m_transpLevel = settings.LoadOSDTransparencyLevel();
+   m_hasBackground = settings.LoadOSDHasBackground();
+   m_isTransparent = settings.LoadOSDIsTransparent();
 
-   m_bgBrush = CreateSolidBrush(RGB(255, 255, 255));
+   m_bgBrush = m_hasBackground ? CreateSolidBrush(m_bgColor) : (HBRUSH)GetStockObject(HOLLOW_BRUSH);
 }
 
 OnScreenDisplayWnd::~OnScreenDisplayWnd()
@@ -47,9 +51,11 @@ OnScreenDisplayWnd::~OnScreenDisplayWnd()
    settings.SaveOSDTimeout(m_timeout);
    settings.SaveOSDFont(&m_lf);
    settings.SaveOSDFgColor(m_fgColor);
+   settings.SaveOSDBgColor(m_bgColor);
    settings.SaveOSDPosition(&m_position);
-   if (m_transp)
-      settings.SaveOSDTransparencyLevel(m_transp->GetTransparencyLevel());
+   settings.SaveOSDHasBackground(m_hasBackground);
+   settings.SaveOSDIsTransparent(m_isTransparent);
+   settings.SaveOSDTransparencyLevel(m_transpLevel);
 
    DeleteObject(m_bgBrush);
    DeleteObject(m_font);
@@ -61,14 +67,14 @@ void OnScreenDisplayWnd::Create()
 {
    RegisterClass();
 
-   m_hWnd = CreateWindowEx( WS_EX_TOPMOST|WS_EX_TRANSPARENT, (LPSTR)s_classAtom, "OSD", WS_POPUP, 
+   m_hWnd = CreateWindowEx( WS_EX_TOPMOST | (m_isTransparent ? WS_EX_TRANSPARENT : 0) | WS_EX_TOOLWINDOW, 
+                            (LPSTR)s_classAtom, "OSD", WS_POPUP, 
                             m_position.x, m_position.y, 0, 0, 
-                            vdWindow, NULL, vdWindow, this);
+                            NULL, NULL, vdWindow, this);
    ShowWindow(m_hWnd, SW_HIDE);
 
-   Settings settings;
    m_transp = new Transparency(m_hWnd);
-   m_transp->SetTransparencyLevel(settings.LoadOSDTransparencyLevel());
+   m_transp->SetTransparencyLevel(m_hasBackground ? m_transpLevel : (unsigned char)255 );
 }
 
 void OnScreenDisplayWnd::Display(char * str, int timeout)
@@ -89,7 +95,7 @@ void OnScreenDisplayWnd::Display(char * str, int timeout)
 
    SetWindowPos(m_hWnd, NULL, 0, 0, size.cx+10, size.cy+10, 
                 SWP_NOMOVE|SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_NOREPOSITION);
-   InvalidateRect(m_hWnd, NULL, FALSE);
+   InvalidateRect(m_hWnd, NULL, TRUE);
 
    ShowWindow(m_hWnd, SW_SHOW);
    m_lastTimeout = timeout;
@@ -127,6 +133,77 @@ void OnScreenDisplayWnd::SelectFont()
    }
 }
 
+void OnScreenDisplayWnd::SelectBgColor()
+{
+   CHOOSECOLOR cc;
+   static COLORREF acrCustClr[16];
+
+   ZeroMemory(&cc, sizeof(CHOOSECOLOR));
+   cc.lStructSize = sizeof(CHOOSECOLOR);
+   cc.hwndOwner = vdWindow;
+   cc.rgbResult = m_bgColor;
+   cc.lpCustColors = acrCustClr;
+   cc.Flags = CC_RGBINIT | CC_ANYCOLOR | CC_FULLOPEN;
+
+   if (ChooseColor(&cc))
+      SetBgColor(cc.rgbResult);
+}
+
+void OnScreenDisplayWnd::SetBgColor(COLORREF color)
+{
+   m_bgColor = color;
+
+   if (!m_hasBackground)
+   {
+      DeleteObject(m_bgBrush);
+      m_bgBrush = CreateSolidBrush(m_bgColor);
+   }
+}
+
+void OnScreenDisplayWnd::EnableBackground(bool background)
+{
+   if (m_hasBackground == background)
+      return;
+
+   m_hasBackground = background;
+
+   DeleteObject(m_bgBrush);
+   m_bgBrush = m_hasBackground ? CreateSolidBrush(m_bgColor) : (HBRUSH)GetStockObject(HOLLOW_BRUSH);
+
+   //Make sure the window is not translucent if it is displayed without background
+   m_transp->SetTransparencyLevel(m_hasBackground ? (unsigned char)255 : m_transpLevel);
+}
+
+void OnScreenDisplayWnd::MakeTransparent(bool transp)
+{
+   LONG_PTR style;
+
+   if (m_isTransparent == transp)
+      return;
+
+   m_isTransparent = transp;
+
+   //Make the window transparent to user input
+   style = GetWindowLongPtr(m_hWnd, GWL_EXSTYLE);
+   if (m_isTransparent)
+      style |= WS_EX_TRANSPARENT;
+   else
+      style &= ~WS_EX_TRANSPARENT;
+   SetWindowLongPtr(m_hWnd, GWL_EXSTYLE, style);
+}
+
+void OnScreenDisplayWnd::SetTransparencyLevel(unsigned char level)
+{
+   if (m_transpLevel == level)
+      return;
+
+   m_transpLevel = level;
+
+   //Update the display only if the windows displays a background
+   if (!m_hasBackground)
+      m_transp->SetTransparencyLevel(m_transpLevel);
+}
+
 void OnScreenDisplayWnd::paint(HDC hdc)
 {
    RECT rect;
@@ -136,12 +213,16 @@ void OnScreenDisplayWnd::paint(HDC hdc)
 
    defFont = (HFONT)SelectObject(hdc, m_font);
    SetTextColor(hdc, m_fgColor);
-   if (m_shadeBackground)
-      FillRect(hdc, &rect, m_bgBrush);
-   else
-      SetBkMode(hdc, TRANSPARENT);
+   SetBkMode(hdc, TRANSPARENT);
    DrawTextEx(hdc, m_text, -1, &rect, DT_SINGLELINE|DT_CENTER|DT_VCENTER|DT_NOPREFIX, NULL);
    SelectObject(hdc, defFont);
+}
+
+void OnScreenDisplayWnd::eraseBackground(HDC hdc)
+{
+   RECT rect;
+   GetClientRect(m_hWnd, &rect);
+   FillRect(hdc, &rect, m_bgBrush);  
 }
 
 void OnScreenDisplayWnd::OnLeftButtonDown(LPARAM lParam)
@@ -185,7 +266,7 @@ void OnScreenDisplayWnd::RegisterClass()
 	wcex.hInstance		  = (HINSTANCE)vdWindow;
 	wcex.hIcon			  = NULL;
 	wcex.hCursor		  = LoadCursor(NULL, IDC_ARROW);
-   wcex.hbrBackground  = (HBRUSH)GetStockObject(HOLLOW_BRUSH);
+   wcex.hbrBackground  = NULL;
 	wcex.lpszMenuName	  = NULL;
 	wcex.lpszClassName  = "OSDWindow";
 	wcex.hIconSm		  = NULL;
@@ -203,6 +284,11 @@ LRESULT CALLBACK OnScreenDisplayWnd::osdProc(HWND hWnd, UINT message, WPARAM wPa
 	{
    case WM_CREATE:
       SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)((LPCREATESTRUCT)lParam)->lpCreateParams);
+      break;
+
+   case WM_ERASEBKGND:
+      osd = (OnScreenDisplayWnd*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+      osd->eraseBackground((HDC)wParam);
       break;
 
 	case WM_PAINT:
