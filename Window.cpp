@@ -133,6 +133,9 @@ void Window::ShowWindow()
    //Show the icon
    m_tasklist->AddTab(m_hWnd);
 
+   //Restore the window's style
+   SetWindowLong(m_hWnd, GWL_EXSTYLE, m_style);
+
    m_hidden = false;
 }
 
@@ -148,6 +151,12 @@ void Window::HideWindow()
 
    //Hide the icon
    m_tasklist->DeleteTab(m_hWnd);
+
+   //Save the window's style, and make the window a palette so that it does not
+   //appear in task list
+   m_style = GetWindowLong(m_hWnd, GWL_EXSTYLE);
+   SetWindowLong(m_hWnd, GWL_EXSTYLE, WS_EX_PALETTEWINDOW);
+   
 
    m_hidden = true;
 }
