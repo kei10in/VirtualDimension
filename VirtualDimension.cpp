@@ -239,13 +239,13 @@ ATOM VirtualDimension::RegisterClass()
 
 	wcex.cbSize = sizeof(WNDCLASSEX); 
 
-	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_SAVEBITS;
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= m_hInstance;
 	wcex.hIcon			= LoadIcon(m_hInstance, (LPCTSTR)IDI_VIRTUALDIMENSION);
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+   wcex.hbrBackground	= (HBRUSH)GetStockObject(HOLLOW_BRUSH);
 	wcex.lpszMenuName	= 0;
 	wcex.lpszClassName	= m_szWindowClass;
 	wcex.hIconSm		= LoadIcon((HINSTANCE)wcex.hInstance, (LPCTSTR)IDI_VIRTUALDIMENSION);
