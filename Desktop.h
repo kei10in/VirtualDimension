@@ -46,16 +46,12 @@ public:
    void SetHotkey(int hotkey);
 
 public:
-   list<HWND> m_windows;
    bool m_active;
 
    int m_index;
    char m_name[80];
    char m_wallpaper[256];
    int m_hotkey;
-
-protected:
-   static BOOL CALLBACK SaveWindowsProc(HWND hWnd, LPARAM lParam);
 };
 
 #endif /*__DESKTOP_H__*/

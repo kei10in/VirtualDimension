@@ -22,6 +22,8 @@
 #include "desktop.h"
 #include <string>
 #include "hotkeymanager.h"
+#include "windowsmanager.h"
+#include "virtualdimension.h"
 
 Desktop::Desktop(void)
 {
@@ -31,13 +33,17 @@ Desktop::Desktop(void)
 
 Desktop::~Desktop(void)
 {
-   /* Show the hidden windows, if any */
-   while(!m_windows.empty())
-   {
-      HWND hWnd = m_windows.front();
-      m_windows.pop_front();
+   Desktop * curDesk;
+   WindowsManager::Iterator it;
 
-      ShowWindow(hWnd, SW_SHOW);
+   /* Show the hidden windows, if any */
+   curDesk = deskMan->GetCurrentDesktop();
+   for(it = winMan->GetIterator(); it; it++)
+   {
+      Window * win = it;
+
+      if (win->IsOnDesk(this))
+         win->MoveToDesktop(curDesk);
    }
 
    //Unregister the hotkey
@@ -60,17 +66,19 @@ Desktop::Desktop(Settings::Desktop * desktop)
 
 void Desktop::BuildMenu(HMENU menu)
 {
-   if (m_windows.empty())
-      return;
+   WindowsManager::Iterator it;
 
    AppendMenu(menu, MF_SEPARATOR, 0, 0);
 
-   list<HWND>::const_iterator it;
-   for(it = m_windows.begin(); it != m_windows.end(); it++)
+   for(it = winMan->GetIterator(); it; it++)
    {
       TCHAR buffer[40];
+      Window * win = it;
 
-      SendMessage(*it, WM_GETTEXT, (WPARAM)sizeof(buffer), (LPARAM)buffer);
+      if (!win->IsOnDesk(this))
+         continue;
+
+      SendMessage(*win, WM_GETTEXT, (WPARAM)sizeof(buffer), (LPARAM)buffer);
       AppendMenu(menu, MF_DISABLED, 0, buffer);
    }
 }
@@ -131,6 +139,8 @@ void Desktop::Save()
 
 void Desktop::Activate(void)
 {
+   WindowsManager::Iterator it;
+
    m_active = true;
 
    /* Set the wallpaper */
@@ -138,38 +148,20 @@ void Desktop::Activate(void)
       SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_wallpaper, 0);
 
    /* Show the windows */
-   while(!m_windows.empty())
+   for(it = winMan->GetIterator(); it; it++)
    {
-      HWND hWnd = m_windows.front();
-      m_windows.pop_front();
+      Window * win = it;
 
-      ShowWindowAsync(hWnd, SW_SHOW);
+      if (win->IsOnDesk(this))
+         win->ShowWindow();
+      else
+         win->HideWindow();
    }
-}
-
-BOOL CALLBACK Desktop::SaveWindowsProc( HWND hWnd, LPARAM lParam )
-{
-   if ( (GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE) && 
-       !(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) )
-   {
-      Desktop * desk = (Desktop *)lParam;
-
-      // Save to the list for next time we use this desktop (so that we can restore them)
-      desk->m_windows.push_back(hWnd);
-
-      // Hide it (unset the "WS_VISIBLE" flag)
-      ShowWindowAsync(hWnd, SW_HIDE);
-   }
-
-   return TRUE;
 }
 
 void Desktop::Desactivate(void)
 {
    m_active = false;
-
-   /* List the windows to hide, and hide them */
-   EnumWindows(SaveWindowsProc, (LPARAM)this);
 }
 
 void Desktop::SetHotkey(int hotkey)
