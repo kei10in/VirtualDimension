@@ -56,6 +56,12 @@ public:
    void SaveDesktopNameOSD(bool osd);
    int LoadOSDTimeout();
    void SaveOSDTimeout(int timeout);
+   void LoadOSDFont(LPLOGFONT lf);
+   void SaveOSDFont(LPLOGFONT lf);
+   COLORREF LoadOSDFgColor();
+   void SaveOSDFgColor(COLORREF col);
+   void LoadOSDPosition(LPPOINT pt);
+   void SaveOSDPosition(LPPOINT pt);
 
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
@@ -177,10 +183,15 @@ protected:
    static const char regValCloseToTray[];
    static const char regValDesktopNameOSD[];
    static const char regValOSDTimeout[];
+   static const char regValOSDFont[];
+   static const char regValOSDFgColor[];
+   static const char regValOSDPosition[];
    static const char regValStartWithWindows[];
 
    static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);
    static void SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value);
+   static bool LoadBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length);
+   static void SaveBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length);
 
    HKEY m_regKey;
    bool m_keyOpened;

@@ -35,6 +35,9 @@ const char Settings::regValAutoSaveWindowsSettings[] = "AutoSaveWindowSettings";
 const char Settings::regValCloseToTray[] = "CloseToTray";
 const char Settings::regValDesktopNameOSD[] = "DesktopNameOSD";
 const char Settings::regValOSDTimeout[] = "OSDTimeout";
+const char Settings::regValOSDFont[] = "OSDFont";
+const char Settings::regValOSDFgColor[] = "OSDFgColor";
+const char Settings::regValOSDPosition[] = "OSDPosition";
 
 Settings::Settings(void)
 {
@@ -75,14 +78,25 @@ void Settings::SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD 
       RegSetValueEx(regKey, entry, 0, REG_DWORD, (LPBYTE)&value, sizeof(value));
 }
 
-void Settings::LoadPosition(LPRECT rect)
+bool Settings::LoadBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length)
 {
    DWORD size;
 
-   if ( (!m_keyOpened) || 
-        (RegQueryValueEx(m_regKey, regValPosition, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
-        (size != sizeof(*rect)) || 
-        (RegQueryValueEx(m_regKey, regValPosition, NULL, NULL, (LPBYTE)rect, &size) != ERROR_SUCCESS) )
+   return (keyOpened) &&
+          (RegQueryValueEx(regKey, entry, NULL, NULL, NULL, &size) == ERROR_SUCCESS) &&
+          (size == length) && 
+          (RegQueryValueEx(regKey, entry, NULL, NULL, buffer, &size) == ERROR_SUCCESS);
+}
+
+void Settings::SaveBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length)
+{
+   if (keyOpened)
+      RegSetValueEx(regKey, entry, 0, REG_BINARY, buffer, length);
+}
+
+void Settings::LoadPosition(LPRECT rect)
+{
+   if (!LoadBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect)))
    {  
       // Cannot load the position from registry
       // --> set default values
@@ -96,8 +110,7 @@ void Settings::LoadPosition(LPRECT rect)
 
 void Settings::SavePosition(LPRECT rect)
 {
-   if (m_keyOpened)
-      RegSetValueEx(m_regKey, regValPosition, 0, REG_BINARY, (LPBYTE)rect, sizeof(*rect));
+   SaveBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect));
 }
 
 bool Settings::LoadLockPreviewWindow()
@@ -218,6 +231,52 @@ int Settings::LoadOSDTimeout()
 void Settings::SaveOSDTimeout(int timeout)
 {
    SaveDWord(m_regKey, m_keyOpened, regValOSDTimeout, timeout);
+}
+
+void Settings::LoadOSDFont(LPLOGFONT lf)
+{
+   if (!LoadBinary(m_regKey, m_keyOpened, regValOSDFont, (LPBYTE)lf, sizeof(*lf)))
+   {  
+      // Cannot load the font from registry
+      // --> set default value
+
+      memset(lf, 0, sizeof(*lf));
+      lf->lfHeight = 30;
+      lf->lfWeight = FW_BOLD;
+      lf->lfItalic = TRUE;
+      strcpy(lf->lfFaceName,"Arial");
+   }
+}
+
+void Settings::SaveOSDFont(LPLOGFONT lf)
+{
+   SaveBinary(m_regKey, m_keyOpened, regValOSDFont, (LPBYTE)lf, sizeof(*lf));
+}
+
+COLORREF Settings::LoadOSDFgColor()
+{
+   return LoadDWord(m_regKey, m_keyOpened, regValOSDFgColor, RGB(0,0,0));
+}
+
+void Settings::SaveOSDFgColor(COLORREF col)
+{
+   SaveDWord(m_regKey, m_keyOpened, regValOSDFgColor, col);
+}
+
+void Settings::LoadOSDPosition(LPPOINT pt)
+{
+   if (!LoadBinary(m_regKey, m_keyOpened, regValOSDPosition, (LPBYTE)pt, sizeof(*pt)))
+   {  
+      // Cannot load the position from registry
+      // --> set default values
+
+      pt->x = pt->y = 50;
+   }
+}
+
+void Settings::SaveOSDPosition(LPPOINT pt)
+{
+   SaveBinary(m_regKey, m_keyOpened, regValOSDPosition, (LPBYTE)pt, sizeof(*pt));
 }
 
 const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
@@ -646,12 +705,7 @@ void Settings::Window::SaveAutoSaveSettings(bool autosave)
 
 bool Settings::Window::LoadPosition(LPRECT rect)
 {
-   DWORD size;
-
-   if ( (!m_keyOpened) || 
-        (RegQueryValueEx(m_regKey, regValPosition, NULL, NULL, NULL, &size) != ERROR_SUCCESS) ||
-        (size != sizeof(*rect)) || 
-        (RegQueryValueEx(m_regKey, regValPosition, NULL, NULL, (LPBYTE)rect, &size) != ERROR_SUCCESS) )
+   if (!LoadBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect)))
    {  
       // Cannot load the position from registry
       // --> set default values
@@ -669,8 +723,7 @@ bool Settings::Window::LoadPosition(LPRECT rect)
 
 void Settings::Window::SavePosition(LPRECT rect)
 {
-   if (m_keyOpened)
-      RegSetValueEx(m_regKey, regValPosition, 0, REG_BINARY, (LPBYTE)rect, sizeof(*rect));
+   SaveBinary(m_regKey, m_keyOpened, regValPosition, (LPBYTE)rect, sizeof(*rect));
 }
 
 bool Settings::Window::LoadAutoSetSize()
