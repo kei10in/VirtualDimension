@@ -129,6 +129,7 @@ protected:
    void OnContextMenu();
    inline void InsertMenuItem(HMENU menu, MENUITEMINFO& mii, HBITMAP bmp, UINT id, LPSTR str);
    inline HBITMAP LoadBmpRes(int id);
+   inline static HWND GetOwnedWindow(HWND hWnd);
 
    enum AutoSettingsModes {
       ASS_DISABLED,
@@ -196,5 +197,11 @@ protected:
     */
    static ITaskbarList* m_tasklist;
 };
+
+HWND Window::GetOwnedWindow(HWND hWnd)
+{
+   HWND owned = GetWindow(hWnd, 6/*GW_ENABLEDPOPUP*/);
+   return owned ? owned : hWnd;
+}
 
 #endif /*__WINDOW_H__*/
