@@ -178,7 +178,7 @@ protected:
    bool m_MinToTray;
    bool m_iconic;
    char m_name[255];
-   LONG m_style;
+   BOOL m_enabled;
 
    Transparency m_transp;
    unsigned char m_transpLevel;

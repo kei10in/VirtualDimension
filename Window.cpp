@@ -39,7 +39,7 @@ Window::Window(HWND hWnd): AlwaysOnTop(GetOwnedWindow(hWnd)),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(GetOwnedWindow(hWnd)), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false),
-                           m_hIcon(NULL), m_ownIcon(false), m_style(0)
+                           m_hIcon(NULL), m_ownIcon(false), m_enabled(FALSE)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -150,8 +150,8 @@ void Window::ShowWindow()
       return;
 
    //Restore the window's style
-   if (m_style)
-      SetWindowLong(m_hWnd, GWL_STYLE, m_style);
+   if (m_enabled)
+      EnableWindow(m_hWnd, TRUE);
 
    //Restore the application if needed
    if (!m_iconic)
@@ -172,9 +172,9 @@ void Window::HideWindow()
 
    //Save the window's style
    if (!winMan->IsShowAllWindowsInTaskList())
-      m_style = GetWindowLong(m_hWnd, GWL_STYLE);
+      m_enabled = IsWindowEnabled(m_hWnd);
    else
-      m_style = 0;
+      m_enabled = FALSE;
 
    //Minimize the application
    m_iconic = IsIconic();
@@ -186,10 +186,7 @@ void Window::HideWindow()
 
    //make the window a tool window so that it does not appear in task list
    if (!winMan->IsShowAllWindowsInTaskList())
-   {
-      style = m_style | WS_DISABLED;
-      SetWindowLong(m_hWnd, GWL_STYLE, style);
-   }
+      EnableWindow(m_hWnd, FALSE);
 
    m_hidden = true;
 }
