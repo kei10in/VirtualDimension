@@ -138,14 +138,16 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
 			}
 
 			wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
-         if (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0)
+         if ( (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0) ||
+              (!PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName)) )
 			{
+            delete wallpaper->m_bmpFileName;
+            wallpaper->m_bmpFileName = NULL;
 				picture->Release();
 				continue;
 			}
 
-			if (PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName) && 
-				 (wallpaper == m_activeWallPaper))
+			if (wallpaper == m_activeWallPaper)
 				SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
 			
 			picture->Release();
