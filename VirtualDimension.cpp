@@ -784,8 +784,18 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 
 LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-	Shrink();
-	return 0;
+   POINT pt;
+
+   //Do not shrink and let the timer run if the mouse is over the window -> it will be hidden later, when
+   //mouse is not on window anymore.
+   GetCursorPos(&pt);
+   if (!IsPointInWindow(pt))
+   {
+      KillTimer(m_autoHideTimerId);
+	   Shrink();
+   }
+
+   return 0;
 }
 
 LRESULT VirtualDimension::OnActivateApp(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
@@ -989,6 +999,13 @@ void VirtualDimension::UnShrink(void)
 	Refresh();
 
 	m_shrinked = false;
+}
+
+bool VirtualDimension::IsPointInWindow(POINT pt)
+{
+   RECT rect;
+   GetWindowRect(vdWindow, &rect);
+   return PtInRect(&rect, pt) ? true : false;
 }
 
 // Message handler for about box.

@@ -58,7 +58,10 @@ DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID /*lpParameter*/)
 
       //Compute new warp location
       GetCursorPos(&pt);
-      if (pt.x < screenRect.left + 3)
+
+      if (vdWindow.IsPointInWindow(pt))
+         newWarpLoc = warpLoc;   //ignore the mouse if it is over the preview window
+      else if (pt.x < screenRect.left + 3)
          newWarpLoc = WARP_LEFT;
       else if (pt.x > screenRect.right - 3)
          newWarpLoc = WARP_RIGHT;

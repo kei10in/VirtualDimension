@@ -65,6 +65,8 @@ public:
 	void Shrink(void);
 	void UnShrink(void);
 
+   bool IsPointInWindow(POINT pt);
+
 protected:
    Window * m_draggedWindow;
    HCURSOR m_dragCursor;
