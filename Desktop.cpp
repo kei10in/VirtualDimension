@@ -27,7 +27,9 @@
 #include "windowsmanager.h"
 #include "virtualdimension.h"
 
+#ifdef USE_IACTIVEDESKTOP
 IActiveDesktop * Desktop::m_ActiveDesktop = NULL;
+#endif /*USE_IACTIVEDESKTOP*/
 
 Desktop::Desktop(void)
 {
@@ -35,10 +37,12 @@ Desktop::Desktop(void)
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
 
+#ifdef USE_IACTIVEDESKTOP
    if (m_ActiveDesktop)
       m_ActiveDesktop->AddRef();
    else
-      CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_ALL, IID_IActiveDesktop, (LPVOID*)&m_ActiveDesktop);
+      CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_INPROC_SERVER, IID_IActiveDesktop, (LPVOID*)&m_ActiveDesktop);
+#endif /*USE_IACTIVEDESKTOP*/
 }
 
 Desktop::Desktop(Settings::Desktop * desktop)
@@ -53,10 +57,12 @@ Desktop::Desktop(Settings::Desktop * desktop)
    if (m_hotkey != 0)
       HotKeyManager::GetInstance()->RegisterHotkey(m_hotkey, (int)this);
 
+#ifdef USE_IACTIVEDESKTOP
    if (m_ActiveDesktop)
       m_ActiveDesktop->AddRef();
    else
       CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_ALL, IID_IActiveDesktop, (LPVOID*)&m_ActiveDesktop);
+#endif /*USE_IACTIVEDESKTOP*/
 }
 
 Desktop::~Desktop(void)
@@ -79,6 +85,7 @@ Desktop::~Desktop(void)
    //Remove the tooltip tool
    tooltip->UnsetTool(this);
 
+#ifdef USE_IACTIVEDESKTOP
    //Release the active desktop
    if (m_ActiveDesktop)
    {
@@ -87,6 +94,7 @@ Desktop::~Desktop(void)
       if (count == 0)
          m_ActiveDesktop = NULL;
    }
+#endif /*USE_IACTIVEDESKTOP*/
 }
 
 void Desktop::BuildMenu(HMENU menu)
@@ -312,6 +320,7 @@ void Desktop::Activate(void)
    /* Set the wallpaper */
    if (*m_wallpaper != '\0')
    {
+#ifdef USE_IACTIVEDESKTOP
       if (m_ActiveDesktop)
       {
          WCHAR wallpaper[sizeof(m_wallpaper)];
@@ -320,6 +329,7 @@ void Desktop::Activate(void)
          m_ActiveDesktop->ApplyChanges(AD_APPLY_SAVE);
       }
       else
+#endif /*USE_IACTIVEDESKTOP*/
          SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, m_wallpaper, 0);
    }
 
