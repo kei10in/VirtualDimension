@@ -25,6 +25,7 @@
 #include "Desktop.h"
 #include "Window.h"
 #include "ShellHook.h"
+#include "WindowsList.h"
 
 using namespace std;
 
@@ -36,46 +37,31 @@ public:
    void PopulateInitialWindowsSet();
 
    void MoveWindow(HWND hWnd, Desktop* desk);
-   Window* GetWindow(HWND hWnd);
+   inline Window* GetWindow(HWND hWnd);
 
    bool ConfirmKillWindow();
    bool IsConfirmKill() const         { return m_confirmKill; }
    void SetConfirmKill(bool confirm)  { m_confirmKill = confirm; }
 
-   class Iterator
-   {
-      friend class WindowsManager;
+   typedef WindowsList::Iterator Iterator;
+   Iterator GetIterator()                   { return m_windows.begin(); }
+   Iterator FirstWindow()                   { return m_windows.first(); }
+   Iterator LastWindow()                    { return m_windows.last(); }
 
-   public:
-      Iterator(): m_list(NULL)   { return; }
-      operator Window*()         { return (*m_iterator).second; }
-      operator Window&()         { return *((*m_iterator).second); }
-      Iterator& operator ++(int) { Iterator * tmp = this; m_iterator++; return *tmp; }
-      Iterator& operator ++()    { m_iterator++; return *this; }
-      operator bool()            { return m_iterator != m_list->end() ; }
-      void Erase()               { delete (*m_iterator).second; m_list->erase(m_iterator); }
-
-   protected:
-      Iterator(map<HWND, Window*>& list): m_list(&list)
-      { m_iterator = m_list->begin(); }
-
-      map<HWND, Window*> * m_list;
-      map<HWND, Window*>::iterator m_iterator;
-   };
-
-   Iterator GetIterator()                   { return (Iterator(m_windows)); }
-
-   HWND GetActiveWindow() const             { return m_activeWindow; }
+   HWND GetActiveWindow() const             { return **(m_windows.front()); }
    bool IsAutoSwitchDesktop() const         { return m_autoSwitch; }
    void SetAutoSwitchDesktop(bool autoSw)   { m_autoSwitch = autoSw; }
    bool IsShowAllWindowsInTaskList() const  { return m_allWindowsInTaskList; }
    void ShowAllWindowsInTaskList(bool all)  { m_allWindowsInTaskList = all; }
 
 protected:
-   map<HWND, Window*> m_windows;
+   map<HWND, WindowsList::Node*> m_HWNDMap;
+   WindowsList m_windows;
+
+   typedef map<HWND, WindowsList::Node*>::iterator HWNDMapIterator;
+
    ShellHook m_shellhook;
    bool m_confirmKill;
-   HWND m_activeWindow;
    bool m_autoSwitch;
    bool m_allWindowsInTaskList;
 

@@ -22,7 +22,7 @@
 #include "windowsmanager.h"
 #include "VirtualDimension.h"
 
-WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_activeWindow(NULL)
+WindowsManager::WindowsManager(): m_shellhook(vdWindow)
 {
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
@@ -42,9 +42,9 @@ WindowsManager::~WindowsManager(void)
    {
       Window* win = it;
       win->ShowWindow();
-      delete win;
    }
    m_windows.clear();
+   m_HWNDMap.clear();
 
    settings.SaveConfirmKilling(m_confirmKill);
    settings.SaveAutoSwitchDesktop(m_autoSwitch);
@@ -63,12 +63,12 @@ void WindowsManager::MoveWindow(HWND hWnd, Desktop* desk)
 
 Window* WindowsManager::GetWindow(HWND hWnd)
 {
-   map<HWND, Window*>::iterator it = m_windows.find(hWnd);
+   HWNDMapIterator it = m_HWNDMap.find(hWnd);
    
-   if (it == m_windows.end())
+   if (it == m_HWNDMap.end())
       return NULL;
    else
-      return (*it).second;
+      return *((*it).second);
 }
 
 LRESULT WindowsManager::OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
@@ -94,14 +94,18 @@ LRESULT WindowsManager::OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPAR
 
 void WindowsManager::OnWindowCreated(HWND hWnd)
 {
-   Window * window;
-   map<HWND, Window*>::iterator it = m_windows.find(hWnd);
+   Window * window = GetWindow(hWnd);
 
-   if (it == m_windows.end())
+   if (!window)
    {
+      WindowsList::Node * node;
+
       //Update the list
-      window = new Window(hWnd);
-      m_windows[hWnd] = window;
+      node = new WindowsList::Node(hWnd);
+      m_windows.push_back(node);
+      m_HWNDMap[hWnd] = node;
+
+      window = *node;
 
       //Add the tooltip (let the desktop do it)
       if (window->IsOnDesk(NULL))  //on all desktops
@@ -113,8 +117,6 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
    }
    else
    {
-      window = (*it).second;
-
       if (window->IsHidden())
          window->HideWindow();
    }
@@ -122,16 +124,17 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
 
 void WindowsManager::OnWindowDestroyed(HWND hWnd)
 {
-   map<HWND, Window*>::iterator it = m_windows.find(hWnd);
    Window * win;
-
-   if (it == m_windows.end())
+   Iterator nIt;
+   HWNDMapIterator it = m_HWNDMap.find(hWnd);
+   
+   if (it == m_HWNDMap.end())
       return;
 
-   win = (*it).second;
-
    //Update the list
-   m_windows.erase(it);
+   nIt = WindowsList::Iterator(&m_windows, (*it).second);
+   win = nIt;
+   m_HWNDMap.erase(it);
 
    //Remove tooltip(s)
    tooltip->UnsetTool(win);
@@ -143,25 +146,26 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
    //Delete the object
    if (win->IsInTray())
       trayManager->DelIcon(win);
-   delete win;
+   nIt.Erase();
 
    vdWindow.Refresh();
 }
 
 void WindowsManager::OnWindowActivated(HWND hWnd)
 {
-   if (hWnd != vdWindow)
-      m_activeWindow = hWnd;
-
    //Try to see if some window that should not be on this desktop has
    //been activated. If so, move it to the current desktop
-   map<HWND, Window*>::iterator it = m_windows.find(hWnd);
-   Window * win;
-
-   if (it == m_windows.end())
+   HWNDMapIterator it = m_HWNDMap.find(hWnd);
+   
+   if (it == m_HWNDMap.end())
       return;
 
-   win = (*it).second;
+   WindowsList::Node * node = (*it).second;
+   WindowsList::Iterator wIt(&m_windows, node);
+   Window * win = *node;
+   
+   wIt.MoveToBegin();
+
    if (!win->IsOnCurrentDesk())
    {
       if (m_autoSwitch)
@@ -171,6 +175,8 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
          //Auto move window
          win->MoveToDesktop(deskMan->GetCurrentDesktop());
    }
+   else
+      vdWindow.Refresh();
 }
 
 void WindowsManager::OnGetMinRect(HWND /*hWnd*/)
@@ -194,10 +200,11 @@ BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )
        !(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) &&
         (::GetWindow(hWnd, GW_OWNER) == NULL) )
    {
-      Window * win = new Window(hWnd);
+      WindowsList::Node * node = new WindowsList::Node(hWnd);
       WindowsManager * man = (WindowsManager*)lParam;
 
-      man->m_windows[hWnd] = win;
+      man->m_windows.push_back(node);
+      man->m_HWNDMap[hWnd] = node;
    }
 
    return TRUE;
