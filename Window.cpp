@@ -30,7 +30,9 @@
 
 ITaskbarList* Window::m_tasklist = NULL;
 
-Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), m_transp(hWnd), m_transpLevel(128)
+Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
+                           m_transp(hWnd), m_transpLevel(128),
+                           m_autoSaveSettings(false), m_autosize(false), m_autopos(false)
 {
    Settings s;
    Settings::Window settings(&s);
@@ -51,22 +53,28 @@ Window::Window(HWND hWnd): m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), m_
 
    if (settings.IsValid())
    {
+      RECT rect;
+
       //Load settings for this window
       m_desk = settings.LoadOnAllDesktops() ? NULL : deskMan->GetCurrentDesktop();
 
-/*      m_MinToTray = settings.LoadMinimizeToTray();
-      if (IsIconic() && IsOnCurrentDesk() && m_MinToTray)
-      {
-         trayManager->AddIcon(this);
-         HideWindow();
-      }
-*/
       SetMinimizeToTray(settings.LoadMinimizeToTray());
-
       SetAlwaysOnTop(settings.LoadAlwaysOnTop());
 
       SetTransparent(settings.LoadEnableTransparency());
       SetTransparencyLevel(settings.LoadTransparencyLevel());
+
+      m_autoSaveSettings = settings.LoadAutoSaveSettings();
+      m_autosize = settings.LoadAutoSetSize();
+      m_autopos = settings.LoadAutoSetPos();
+
+      if (m_autosize || m_autopos)
+      {
+         settings.LoadPosition(&rect);
+         SetWindowPos(m_hWnd, 0, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
+                      SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
+                      (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
+      }
    }
    else
       //Find out on which desktop the window is
@@ -80,6 +88,9 @@ Window::~Window(void)
    count = m_tasklist->Release();
    if (count == 0)
       m_tasklist = NULL;
+
+   if (m_autoSaveSettings)
+      SaveSettings();
 }
 
 void Window::MoveToDesktop(Desktop * desk)
@@ -181,11 +192,11 @@ HICON Window::GetIcon(void)
 {
    HICON hIcon = NULL;
 
-  	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 50, (LPDWORD) &hIcon );
+  	SendMessageTimeout( m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 200, (LPDWORD) &hIcon );
 	if ( !hIcon )
 		hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
 	if ( !hIcon )
-		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 50, (LPDWORD) &hIcon );
+		SendMessageTimeout( m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 200, (LPDWORD) &hIcon );
    if ( !hIcon )
       hIcon = (HICON) LoadImage(vdWindow, MAKEINTRESOURCE(IDI_DEFAPP_SMALL), IMAGE_ICON, 16, 16, LR_SHARED);
 
