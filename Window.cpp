@@ -151,7 +151,7 @@ void Window::ShowWindow()
 
    //Restore the window's style
    if (m_style)
-      SetWindowLong(m_hWnd, GWL_EXSTYLE, m_style);
+      SetWindowLong(m_hWnd, GWL_STYLE, m_style);
 
    //Restore the application if needed
    if (!m_iconic)
@@ -172,7 +172,7 @@ void Window::HideWindow()
 
    //Save the window's style
    if (!winMan->IsShowAllWindowsInTaskList())
-      m_style = GetWindowLong(m_hWnd, GWL_EXSTYLE);
+      m_style = GetWindowLong(m_hWnd, GWL_STYLE);
    else
       m_style = 0;
 
@@ -187,8 +187,8 @@ void Window::HideWindow()
    //make the window a tool window so that it does not appear in task list
    if (!winMan->IsShowAllWindowsInTaskList())
    {
-      style = (m_style & ~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW;
-      SetWindowLong(m_hWnd, GWL_EXSTYLE, style);
+      style = m_style | WS_DISABLED;
+      SetWindowLong(m_hWnd, GWL_STYLE, style);
    }
 
    m_hidden = true;
