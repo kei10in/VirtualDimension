@@ -119,6 +119,9 @@ protected:
 	LRESULT OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnTimer(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+   LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+   LRESULT OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
    LRESULT OnHookWindowMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
    static LRESULT CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM /*lParam*/);

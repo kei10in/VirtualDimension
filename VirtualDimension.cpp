@@ -166,13 +166,6 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	m_snapSize = settings.LoadSnapSize();
 	m_autoHideDelay = settings.LoadAutoHideDelay();
 
-   // Show window if needed
-   if (settings.LoadShowWindow())
-   {
-      ShowWindow(hWnd, nCmdShow);
-      Refresh();
-   }
-
    // Setup the system menu
    m_pSysMenu = GetSystemMenu(hWnd, FALSE);
 	if (m_pSysMenu != NULL)
@@ -224,6 +217,17 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    //Update tray icon tooltip
    trayIcon->Update();
+
+	//Bind some additional message handlers (which need the desktop manager)
+   SetMessageHandler(WM_SIZE, this, &VirtualDimension::OnSize);
+   SetMessageHandler(WM_PAINT, this, &VirtualDimension::OnPaint);
+
+   // Show window if needed
+   if (settings.LoadShowWindow())
+   {
+      ShowWindow(hWnd, nCmdShow);
+      Refresh();
+   }
 
    return true;
 }
@@ -600,7 +604,7 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
    WINDOWPOS * lpwndpos = (WINDOWPOS*)lParam;
 
 	// Get work area dimensions
-	SystemParametersInfo(SPI_GETWORKAREA, NULL, &deskRect, 0);
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
 
    // Snap to screen border
 	m_dockedBorders = 0;
@@ -636,19 +640,29 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
    return TRUE;
 }
 
-LRESULT VirtualDimension::OnTimer(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnTimer(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	ShowWindow(hWnd, SW_HIDE);	
 	return 0;
 }
 
-LRESULT VirtualDimension::OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnActivateApp(HWND hWnd, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
 {
 	if (wParam == TRUE)
 		KillTimer(hWnd, TIMERID_AUTOHIDE);
 	else if (m_autoHideDelay > 0)
 		SetTimer(hWnd, TIMERID_AUTOHIDE, m_autoHideDelay, NULL);
 	return 0;
+}
+
+LRESULT VirtualDimension::OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	return deskMan->OnPaint(hWnd, message, wParam, lParam);
+}
+
+LRESULT VirtualDimension::OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	return deskMan->OnSize(hWnd, message, wParam, lParam);
 }
 
 // Message handler for about box.
