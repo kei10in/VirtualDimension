@@ -62,7 +62,7 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 
 void GetShortcutName(int shortcut, char* str, int bufLen)
 {
-   BuildDisplayString((char)((shortcut>>8)&0xff), (char)(shortcut&0xff), (short)(shortcut>>16), str, bufLen);
+   BuildDisplayString((char)((shortcut>>8)&0xff), (char)(shortcut&0xff), (short)((shortcut>>16)&0xffff), str, bufLen);
 }
 
 static void BuildDisplayString(char mods, char vk, short scancode, char* str, int bufLen)
@@ -80,7 +80,7 @@ static void BuildDisplayString(char mods, char vk, short scancode, char* str, in
    if (scancode == 0)
       scancode = (short)MapVirtualKey(vk, 0);
    char keyName[20];
-   GetKeyNameText((scancode << 16) | (1<<25), keyName, 20);
+   GetKeyNameText(scancode << 16, keyName, 20);
    strncat(str, keyName, bufLen);
 }
 
@@ -151,8 +151,8 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
    case HKM_SETHOTKEY:
       hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
-      hkCtrl->key = (short)(wParam);
-      BuildDisplayString((char)(hkCtrl->key>>8), (char)(hkCtrl->key&0xff), (short)(hkCtrl->key>>16),
+      hkCtrl->key = (int)(wParam);
+      BuildDisplayString((char)(hkCtrl->key>>8), (char)(hkCtrl->key&0xff), (short)((hkCtrl->key>>16)&0xffff),
                          hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
       if (GetFocus() == hWnd)
          RepositionCaret(hWnd, hkCtrl->text);
