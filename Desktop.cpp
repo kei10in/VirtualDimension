@@ -37,6 +37,9 @@ Desktop::Desktop(int i)
    strcpy(m_wallpaperFile, DESKTOP_WALLPAPER_DEFAULT);
    m_bkColor = GetSysColor(COLOR_DESKTOP);
 
+   m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));
+   m_wallpaper.SetColor(m_bkColor);
+
    sprintf(m_name, "Desk%i", i);
 }
 
