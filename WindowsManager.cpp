@@ -55,6 +55,8 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstDelayedUpdateWnd
 
 WindowsManager::~WindowsManager(void)
 {
+   TRACE("~WindowsManager - started");
+
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
 
@@ -83,6 +85,8 @@ WindowsManager::~WindowsManager(void)
 
       SystemParametersInfo(SPI_SETANIMATION, sizeof(ANIMATIONINFO), &info, 0);
    }
+
+   TRACE("~WindowsManager - ended");
 }
 
 void WindowsManager::PopulateInitialWindowsSet()
@@ -406,6 +410,7 @@ void CALLBACK WindowsManager::OnDelayedUpdateTimer(HWND /*hwnd*/, UINT /*uMsg*/,
 {
    unsigned int idx = idEvent - FIRST_WINDOW_MANAGER_TIMER;
    assert(winMan->m_delayedUpdateWndTab[idx] != NULL);
+   TRACE("DelayedUpdateTimer");
    winMan->m_delayedUpdateWndTab[idx]->OnDelayUpdate();
    winMan->RemoveDelayedUpdateWnd(idx);
 }

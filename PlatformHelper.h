@@ -119,6 +119,12 @@ extern "C" const GUID IID_ITaskbarList;
 
 #endif /*__GNUC__*/
 
+#ifdef DEBUG
+#define TRACE(str) OutputDebugString(str)
+#else
+#define TRACE(str) 
+#endif
+
 class PlatformHelper
 {
 public:
