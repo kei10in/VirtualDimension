@@ -39,8 +39,8 @@ OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
 
 ifdef DEBUG
-CXXFLAGS = -g
-CFLAGS = -g
+CXXFLAGS = -g -O3 -DDEBUG
+CFLAGS = -g -O3 -DDEBUG
 else
 CXXFLAGS = -fexpensive-optimizations -O3 -ffast-math
 CFLAGS = -fexpensive-optimizations -O3 -ffast-math
