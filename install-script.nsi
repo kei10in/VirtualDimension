@@ -2,93 +2,99 @@
 
 !include "MUI.nsh"
 
-!define MUI_PRODUCT "Virtual Dimension"
-!define MUI_VERSION "0.92"
+  ;Name and file
+  Name "Virtual Dimension"
+  OutFile "Setup.exe"
 
-!define MUI_WELCOMEPAGE
-!define MUI_LICENSEPAGE
-!define MUI_DIRECTORYPAGE
-!define MUI_STARTMENUPAGE
-!define MUI_INSTFILESPAGE
-!define MUI_FINISHPAGE
+  ;Default installation folder
+  InstallDir "$PROGRAMFILES\Virtual Dimension"
 
-!define MUI_UNINSTALLER
-!define MUI_UNCONFIRMPAGE
-  
-!define MUI_LICENSEPAGE_RADIOBUTTONS
-!define MUI_STARTMENUPAGE_NODISABLE
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Virtual Dimension"
-!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKLM"
-!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension"
-!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "NSIS:StartMenuDir"
-!define MUI_ABORTWARNING
-!define MUI_ICON "${NSISDIR}\Contrib\Icons\Setup.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Icons\normal-uninstall.ico"
+  ;Get installation folder from registry if available
+  InstallDirRegKey  HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\VirtualDimension.exe" ""
 
-!insertmacro MUI_LANGUAGE "English"
+;--------------------------------
+;Interface Settings
 
-OutFile "Setup.exe"
-InstallDir "$PROGRAMFILES\Virtual Dimension"
-InstallDirRegKey  HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\VirtualDimension.exe" ""
+  !define MUI_ABORTWARNING
+
+;--------------------------------
+;Pages
+
+  ;Pages options
+  !define MUI_LICENSEPAGE_RADIOBUTTONS
+  !define MUI_STARTMENUPAGE_NODISABLE
+  !define MUI_STARTMENUPAGE_DEFAULTFOLDER "Virtual Dimension"
+  !define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKLM"
+  !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension"
+  !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "NSIS:StartMenuDir"
+  !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\orange-install.ico"
+  !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\orange-uninstall.ico"
+
+  ;Pages
+  !insertmacro MUI_PAGE_WELCOME
+  !insertmacro MUI_PAGE_LICENSE "License.txt"
+  !insertmacro MUI_PAGE_DIRECTORY
+  Var STARTMENU_FOLDER
+  !insertmacro MUI_PAGE_STARTMENU "VirtualDimension" $STARTMENU_FOLDER
+  !insertmacro MUI_PAGE_INSTFILES
+  !insertmacro MUI_PAGE_FINISH
+
+  !insertmacro MUI_UNPAGE_WELCOME
+  !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_INSTFILES
+  !insertmacro MUI_UNPAGE_FINISH
+
+;--------------------------------
+;Languages
+
+  !insertmacro MUI_LANGUAGE "English"
+
 LicenseData "LICENSE.txt"
 ShowInstDetails show
 ShowUnInstDetails show
 
+;--------------------------------
+;Installer Sections
+
 Section "MainSection" SEC01
+  ;Regular files
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   File "LICENSE.html"
   File "mingw-release\HookDLL.dll"
   File "mingw-release\VirtualDimension.exe"
+
+  ;Create uninstaller
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+  
   SetOutPath $SYSDIR
   File "C:\Program Files\MinGW\bin\mingwm10.dll"
-  CreateDirectory "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}"
-  CreateShortCut "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}\Virtual Dimension.lnk" "$INSTDIR\VirtualDimension.exe"
+  
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN VirtualDimension
+  CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Virtual Dimension.lnk" "$INSTDIR\VirtualDimension.exe"
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\License.lnk" "$INSTDIR\LICENSE.html"
+  CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+  !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
-
-Section -AdditionalIcons
-  CreateShortCut "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}\Uninstall.lnk" "$INSTDIR\uninst.exe"
-SectionEnd
-
-Section -Post
-  WriteUninstaller "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\VirtualDimension.exe" "" "$INSTDIR\VirtualDimension.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "DisplayName" "${MUI_PRODUCT} ${MUI_VERSION}"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "UninstallString" "$INSTDIR\uninst.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "DisplayIcon" "$INSTDIR\VirtualDimension.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "DisplayVersion" "${MUI_VERSION}"
-  WriteRegStr "${MUI_STARTMENUPAGE_REGISTRY_ROOT}" "${MUI_STARTMENUPAGE_REGISTRY_KEY}" "${MUI_STARTMENUPAGE_REGISTRY_VALUENAME}" "${MUI_STARTMENUPAGE_VARIABLE}"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "URLInfoAbout" "http://virt-dimension.sourceforge.net"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "Publisher" "Typz Software"
-SectionEnd
-
-
-Function un.onUninstSuccess
-  HideWindow
-  MessageBox MB_ICONINFORMATION|MB_OK "${MUI_PRODUCT} ${MUI_VERSION} was successfully removed from your computer."
-FunctionEnd
-
-Function un.onInit
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove ${MUI_PRODUCT} ${MUI_VERSION} and all of its components?" IDYES +2
-  Abort
-FunctionEnd
 
 Section Uninstall
-  ReadRegStr ${MUI_STARTMENUPAGE_VARIABLE} "${MUI_STARTMENUPAGE_REGISTRY_ROOT}" "${MUI_STARTMENUPAGE_REGISTRY_KEY}" "${MUI_STARTMENUPAGE_REGISTRY_VALUENAME}"
   Delete "$INSTDIR\LICENSE.html"
   Delete "$INSTDIR\HookDLL.dll"
   Delete "$INSTDIR\VirtualDimension.exe"
-  Delete "$INSTDIR\uninst.exe"
+  Delete "$INSTDIR\Uninstall.exe"
   Delete "$SYSDIR\mingwm10.dll"
 
-  Delete "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}\Virtual Dimension.lnk"
-  Delete "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}\Uninstall.lnk"
+  !insertmacro MUI_STARTMENU_GETFOLDER VirtualDimension $STARTMENU_FOLDER
 
-  RMDir "$SMPROGRAMS\${MUI_STARTMENUPAGE_VARIABLE}"
+  Delete "$SMPROGRAMS\$STARTMENU_FOLDER\Virtual Dimension.lnk"
+  Delete "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk"
+  Delete "$SMPROGRAMS\$STARTMENU_FOLDER\License.lnk"
+
+  RMDir "$SMPROGRAMS\$STARTMENU_FOLDER"
   RMDir "$INSTDIR"
 
-  DeleteRegValue "${MUI_STARTMENUPAGE_REGISTRY_ROOT}" "${MUI_STARTMENUPAGE_REGISTRY_KEY}" "${MUI_STARTMENUPAGE_REGISTRY_VALUENAME}"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension"
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\VirtualDimension.exe"
+
   SetAutoClose true
 SectionEnd
