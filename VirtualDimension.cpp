@@ -219,11 +219,11 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
       RemoveMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND);
       RemoveMenu(m_pSysMenu, 0, MF_BYCOMMAND);
 
-   	AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
+   	  AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
       AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
       AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, "&Lock the window");
       AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, "S&how the caption");
-		AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, "&About");
+	  AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, "&About");
 
       CheckMenuItem(m_pSysMenu, IDM_SHOWCAPTION, m_hasCaption ? MF_CHECKED : MF_UNCHECKED );
    }
@@ -269,7 +269,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
 	//Bind some additional message handlers (which need the desktop manager)
    SetMessageHandler(WM_SIZE, this, &VirtualDimension::OnSize);
-	SetMessageHandler(WM_PAINT, deskMan, &DesktopManager::OnPaint);
+   SetMessageHandler(WM_PAINT, deskMan, &DesktopManager::OnPaint);
 
    // Show window if needed
    if (settings.LoadSetting(Settings::ShowWindow))
@@ -387,7 +387,7 @@ LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam
 {
    Settings settings;
 
-	//Save the snapsize
+	//Save the snap size
 	settings.SaveSetting(Settings::SnapSize, m_snapSize);
 
 	//Save the auto-hide delay
