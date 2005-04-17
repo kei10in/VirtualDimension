@@ -25,7 +25,7 @@ BUILDDIR = mingw-release
 endif
 endif
 
-TARGET = VirtualDimension.exe HookDLL.dll
+TARGET = VirtualDimension.exe HookDLL.dll langEN.dll
 SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp \
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
@@ -33,7 +33,7 @@ FastWindow.cpp TrayIconsManager.cpp WindowDialogs.cpp HotKeyControl.cpp \
 OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp WindowsList.cpp  \
 WallPaper.cpp BackgroundDisplayMode.cpp BackgroundColor.cpp TaskPool.cpp \
 LinkControl.cpp HotkeyConfig.cpp guids.c ExplorerWrapper.cpp HidingMethod.cpp \
-SharedMenuBuffer.cpp MouseWarp.cpp Config.cpp ApplicationListDlg.cpp
+SharedMenuBuffer.cpp MouseWarp.cpp Config.cpp ApplicationListDlg.cpp Locale.cpp
 RES_FILE = VirtualDimension.res
 OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
 OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
@@ -90,11 +90,20 @@ ifndef DEBUG
 	strip --strip-all $@
 endif
 
+%.res: %.rc
+	windres -i $< -I rc -o $@ -O coff --include-dir=..
+
+%.dll: %.res
+	g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
+ifndef DEBUG
+	strip --strip-all $@
+endif	
+
 libtransp.a: Transp.def
 	dlltool --def $< --dllname user32.dll  --output-lib $@
 
-VirtualDimension.res: VirtualDimension.rc
-	windres -i $< -I rc -o $@ -O coff --include-dir=..
+##VirtualDimension.res: VirtualDimension.rc
+##	windres -i $< -I rc -o $@ -O coff --include-dir=..
 
 %.o: %.cpp
 	@-$(MAKEDEPEND); \
