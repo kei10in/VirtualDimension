@@ -71,7 +71,6 @@
 #define IDC_INSERTAPPL_BTN              1007
 #define IDC_EDITAPPL_BTN                1008
 #define IDC_COLUMN_SPIN                 1009
-
 #define IDC_REMOVEAPPL_BTN              1009
 #define IDC_COLUMN_NUMBER               1010
 #define IDC_APPLY                       1014
