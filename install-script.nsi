@@ -62,6 +62,7 @@ Section "MainSection" SEC01
   SetOverwrite ifnewer
   File "LICENSE.html"
   File "mingw-release\HookDLL.dll"
+  File "mingw-release\langEN.dll"
   File "mingw-release\VirtualDimension.exe"
 
   ;Create uninstaller
@@ -80,6 +81,7 @@ SectionEnd
 
 Section Uninstall
   Delete "$INSTDIR\LICENSE.html"
+  Delete "$INSTDIR\langEN.dll"
   Delete "$INSTDIR\HookDLL.dll"
   Delete "$INSTDIR\VirtualDimension.exe"
   Delete "$INSTDIR\Uninstall.exe"
