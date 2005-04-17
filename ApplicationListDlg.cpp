@@ -386,24 +386,6 @@ INT_PTR CALLBACK ApplicationListDlg::DlgProc(HWND hDlg, UINT message, WPARAM wPa
          break;
       }
       break;
-
-/*
-   case WM_PARENTNOTIFY:
-      if (LOWORD(wParam) == WM_RBUTTONDOWN)
-      {
-         HMENU hMenu = CreatePopupMenu();
-         InsertMenu(hMenu, 0, MF_BYPOSITION, ID_ADDAPPL_CMD, "&Add application...");
-         InsertMenu(hMenu, 1, MF_BYPOSITION, ID_DELAPPL_CMD, "&Del application...");
- 
-         HMENU hMenu = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDM_APPSLIST_CTXMENU));
-         POINT pos = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-         ClientToScreen(hDlg, &pos);
-         TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_LEFTBUTTON, pos.x, pos.y, 0, hDlg, NULL);
-         PostMessage(hDlg, WM_NULL, 0, 0);
-         DestroyMenu(hMenu);
-      }
-      break;
- */
    }
 
    return FALSE;
