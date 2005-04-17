@@ -245,6 +245,12 @@ Settings::SubkeyList::SubkeyList(Settings * settings, const char regKey[], char 
    Open(name, create);
 }
 
+bool Settings::SubkeyList::Open(const char * name, bool create)
+{
+	strcpy(m_name, name);
+	return Config::RegistryGroup::Open(m_group, name, create);
+}
+
 bool Settings::SubkeyList::Open(int index)
 {
    DWORD length;

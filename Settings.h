@@ -100,7 +100,7 @@ public:
       SubkeyList(Settings * settings, const char regKey[], char * name, bool create=true);
 
       virtual bool Open(int index);
-      virtual bool Open(const char * name, bool create=true)     { return Config::RegistryGroup::Open(m_group, name, create); }
+      virtual bool Open(const char * name, bool create=true);
 
       bool IsValid();
       void Destroy();
