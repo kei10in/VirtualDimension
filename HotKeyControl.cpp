@@ -20,7 +20,6 @@
 
 #include "StdAfx.h"
 #include "HotKeyControl.h"
-#include "VirtualDimension.h"
 
 static ATOM RegisterHotkeyClass(HINSTANCE hInstance);
 static LRESULT CALLBACK	HotKeyWndProc(HWND, UINT, WPARAM, LPARAM);
@@ -29,7 +28,7 @@ static void RepositionCaret(HWND hWnd, char * str);
 
 void InitHotkeyControl()
 {
-   RegisterHotkeyClass(vdWindow);
+   RegisterHotkeyClass(GetModuleHandle(NULL));
 }
 
 typedef struct HKControl {
@@ -45,7 +44,7 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 
 	wcex.cbSize = sizeof(WNDCLASSEX); 
 
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
+	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_GLOBALCLASS;
 	wcex.lpfnWndProc	= (WNDPROC)HotKeyWndProc;
 	wcex.cbClsExtra   = 0;
    wcex.cbWndExtra	= sizeof(HKControl*);
