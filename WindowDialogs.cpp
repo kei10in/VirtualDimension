@@ -22,6 +22,7 @@
 #include "window.h"
 #include "VirtualDimension.h"
 #include "Settings.h"
+#include "Locale.h"
 
 #ifndef TBM_SETBUDDY
 #define TBM_SETBUDDY (WM_USER+32)
@@ -425,34 +426,25 @@ LRESULT CALLBACK Window::AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam
 
 void Window::DisplayWindowProperties()
 {
-   PROPSHEETPAGE pages[3];
+   PROPSHEETPAGE pages[2];
    PROPSHEETHEADER propsheet;
+	HINSTANCE hresinst = Locale::GetInstance();
 
    memset(&pages, 0, sizeof(pages));
-/*
-   pages[0].dwSize = sizeof(PROPSHEETPAGE);
-   pages[0].hInstance = vdWindow;
-   pages[0].dwFlags = PSP_USETITLE ;
-   pages[0].pfnDlgProc = (DLGPROC)PropertiesProc;
-   pages[0].lParam = (LPARAM)this;
-   pages[0].pszTitle = "Properties";
-   pages[0].pszTemplate = MAKEINTRESOURCE(IDD_GLOBAL_SETTINGS);
-*/
-   pages[1].dwSize = sizeof(PROPSHEETPAGE);
-   pages[1].hInstance = vdWindow;
-   pages[1].dwFlags = PSP_USETITLE ;
-   pages[1].pfnDlgProc = (DLGPROC)SettingsProc;
-   pages[1].lParam = (LPARAM)this;
-   pages[1].pszTitle = "Settings";
-   pages[1].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_SETTINGS);
 
-   pages[2].dwSize = sizeof(PROPSHEETPAGE);
-   pages[2].hInstance = vdWindow;
-   pages[2].dwFlags = PSP_USETITLE ;
-   pages[2].pfnDlgProc = (DLGPROC)AutoSettingsProc;
-   pages[2].lParam = (LPARAM)this;
-   pages[2].pszTitle = "Auto-Settings";
-   pages[2].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_AUTOSETTINGS);
+   pages[0].dwSize = sizeof(PROPSHEETPAGE);
+	pages[0].hInstance = hresinst;
+   pages[0].dwFlags = PSP_DEFAULT;
+   pages[0].pfnDlgProc = (DLGPROC)SettingsProc;
+   pages[0].lParam = (LPARAM)this;
+   pages[0].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_SETTINGS);
+
+   pages[1].dwSize = sizeof(PROPSHEETPAGE);
+   pages[1].hInstance = hresinst;
+   pages[1].dwFlags = PSP_DEFAULT;
+   pages[1].pfnDlgProc = (DLGPROC)AutoSettingsProc;
+   pages[1].lParam = (LPARAM)this;
+   pages[1].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_AUTOSETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
@@ -460,8 +452,8 @@ void Window::DisplayWindowProperties()
    propsheet.hwndParent = vdWindow;
    propsheet.hInstance = vdWindow;
    propsheet.pszCaption = "Window Properties";
-   propsheet.nPages = 2;//sizeof(pages)/sizeof(PROPSHEETPAGE);
-   propsheet.ppsp = &pages[1];
+   propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
+   propsheet.ppsp = &pages[0];
 
    PropertySheet(&propsheet);
 }

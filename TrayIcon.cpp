@@ -23,6 +23,7 @@
 #include "settings.h"
 #include "VirtualDimension.h"
 #include "DesktopManager.h"
+#include "Locale.h"
 
 TrayIcon::TrayIcon(HWND hWnd): m_hWnd(hWnd), m_iconLoaded(false)
 {
@@ -100,7 +101,7 @@ void TrayIcon::OnContextMenu()
    Desktop * desk;
 
    //Get the "base" menu
-   hMenu = LoadMenu(vdWindow, (LPCTSTR)IDC_VIRTUALDIMENSION);
+   hMenu = Locale::GetInstance().LoadMenu(IDC_VIRTUALDIMENSION);
    if (hMenu == NULL)
       return;
    hmenuTrackPopup = GetSubMenu(hMenu, 0);

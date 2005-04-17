@@ -40,7 +40,7 @@
 #define ID_CONFIGURE                    129
 #define IDD_SETTINGS                    130
 #define IDD_DESKS_SETTINGS              130
-#define IDD_DEKSTOPPROPS                131
+#define IDD_DESKTOPPROPS                131
 #define ID_ABOUT                        132
 #define ID_POPUPMENU_CONFIGURE          133
 #define ID_POPUPMENU_EXIT               134

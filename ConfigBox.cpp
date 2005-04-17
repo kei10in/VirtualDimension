@@ -30,6 +30,7 @@
 #include <assert.h>
 #include "HotkeyConfig.h"
 #include "ApplicationListDlg.h"
+#include "Locale.h"
 
 extern char desk_name[80];
 extern char desk_wallpaper[256];
@@ -718,7 +719,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
             Settings settings;
             Config::Group * group = settings.GetHidingMethodExceptions();
             ApplicationListDlg dlg(group, "Method", settings.LoadSetting(Settings::DefaultHidingMethod), values);
-            dlg.ShowDialog(vdWindow, hDlg);
+				dlg.ShowDialog(Locale::GetInstance(), hDlg);
             delete group;
          }
          break;
@@ -728,7 +729,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
             Settings settings;
             Config::Group * group = settings.GetShellIntegrationExceptions();
             ApplicationListDlg dlg(group);
-            dlg.ShowDialog(vdWindow, hDlg);
+            dlg.ShowDialog(Locale::GetInstance(), hDlg);
             delete group;
          }
          break;
@@ -772,49 +773,44 @@ HWND CreateConfigBox()
 {
    PROPSHEETPAGE pages[6];
    PROPSHEETHEADER propsheet;
+	HINSTANCE hresinst = Locale::GetInstance();
 
    memset(&pages, 0, sizeof(pages));
 
    pages[0].dwSize = sizeof(PROPSHEETPAGE);
-   pages[0].hInstance = vdWindow;
-   pages[0].dwFlags = PSP_USETITLE ;
+   pages[0].hInstance = hresinst;
+   pages[0].dwFlags = PSP_DEFAULT;
    pages[0].pfnDlgProc = (DLGPROC)SettingsConfiguration;
-   pages[0].pszTitle = "Settings";
    pages[0].pszTemplate = MAKEINTRESOURCE(IDD_GLOBAL_SETTINGS);
 
    pages[1].dwSize = sizeof(PROPSHEETPAGE);
-   pages[1].hInstance = vdWindow;
-   pages[1].dwFlags = PSP_USETITLE ;
+   pages[1].hInstance = hresinst;
+   pages[1].dwFlags = PSP_DEFAULT;
    pages[1].pfnDlgProc = (DLGPROC)DisplayConfiguration;
-   pages[1].pszTitle = "Display";
    pages[1].pszTemplate = MAKEINTRESOURCE(IDD_DISPLAY_SETTINGS);
 
    pages[2].dwSize = sizeof(PROPSHEETPAGE);
-   pages[2].hInstance = vdWindow;
-   pages[2].dwFlags = PSP_USETITLE ;
+   pages[2].hInstance = hresinst;
+   pages[2].dwFlags = PSP_DEFAULT;
    pages[2].pfnDlgProc = (DLGPROC)DeskConfiguration;
-   pages[2].pszTitle = "Desktops";
    pages[2].pszTemplate = MAKEINTRESOURCE(IDD_DESKS_SETTINGS);
 
    pages[3].dwSize = sizeof(PROPSHEETPAGE);
-   pages[3].hInstance = vdWindow;
-   pages[3].dwFlags = PSP_USETITLE ;
+   pages[3].hInstance = hresinst;
+   pages[3].dwFlags = PSP_DEFAULT;
    pages[3].pfnDlgProc = (DLGPROC)OSDConfiguration;
-   pages[3].pszTitle = "OSD";
    pages[3].pszTemplate = MAKEINTRESOURCE(IDD_OSD_SETTINGS);
 
    pages[4].dwSize = sizeof(PROPSHEETPAGE);
-   pages[4].hInstance = vdWindow;
-   pages[4].dwFlags = PSP_USETITLE ;
+   pages[4].hInstance = hresinst;
+   pages[4].dwFlags = PSP_DEFAULT;
    pages[4].pfnDlgProc = ShortcutsConfigurationDlg::GetWindowProc();
-   pages[4].pszTitle = "Shortcuts";
    pages[4].pszTemplate = MAKEINTRESOURCE(IDD_SHORTCUT_SETTINGS);
 
    pages[5].dwSize = sizeof(PROPSHEETPAGE);
-   pages[5].hInstance = vdWindow;
-   pages[5].dwFlags = PSP_USETITLE ;
+   pages[5].hInstance = hresinst;
+   pages[5].dwFlags = PSP_DEFAULT;
    pages[5].pfnDlgProc = (DLGPROC)TroubleShootingConfiguration;
-   pages[5].pszTitle = "Advanced";
    pages[5].pszTemplate = MAKEINTRESOURCE(IDD_TROUBLESHOOTING_SETTINGS);
 
    memset(&propsheet, 0, sizeof(propsheet));

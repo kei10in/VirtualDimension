@@ -26,6 +26,7 @@
 #include "PlatformHelper.h"
 #include "Desktop.h"
 #include "HotKeyControl.h"
+#include "Locale.h"
 
 Desktop::DesktopProperties::DesktopProperties(Desktop* desktop): m_desk(desktop), m_picture(NULL)
 {
@@ -130,7 +131,7 @@ void Desktop::DesktopProperties::OnBrowseWallpaper(HWND hDlg)
 void Desktop::DesktopProperties::OnChooseWallpaper(HWND hDlg)
 {
    RECT rect;
-   HMENU hMenu = LoadMenu(vdWindow, MAKEINTRESOURCE(IDM_WALLPAPER_CTXMENU));
+	HMENU hMenu = Locale::GetInstance().LoadMenu(IDM_WALLPAPER_CTXMENU);
    HMENU hPopupMenu = GetSubMenu(hMenu, 0);
 
    //Prepare the menu
@@ -309,5 +310,5 @@ LRESULT CALLBACK Desktop::DeskProperties(HWND hDlg, UINT message, WPARAM wParam,
 
 bool Desktop::Configure(HWND hDlg)
 {
-   return DialogBoxParam(vdWindow, (LPCTSTR)IDD_DEKSTOPPROPS, hDlg, (DLGPROC)DeskProperties, (LPARAM)this) == IDOK;
+	return DialogBoxParam(Locale::GetInstance(), MAKEINTRESOURCE(IDD_DESKTOPPROPS), hDlg, (DLGPROC)&DeskProperties, (LPARAM)this) == IDOK;
 }

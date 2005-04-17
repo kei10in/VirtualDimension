@@ -22,6 +22,7 @@
 #include "movewindow.h"
 #include "VirtualDimension.h"
 #include "DesktopManager.h"
+#include "Locale.h"
 
 Window * movedWindow;
 
@@ -144,5 +145,5 @@ void SelectDesktopForWindow(Window * window)
 {
    movedWindow = window;
    
-   DialogBox(vdWindow, MAKEINTRESOURCE(IDD_MOVEWINDOW), vdWindow, (DLGPROC)MoveWindowProc);
+	DialogBox(Locale::GetInstance(), MAKEINTRESOURCE(IDD_MOVEWINDOW), vdWindow, (DLGPROC)MoveWindowProc);
 }
