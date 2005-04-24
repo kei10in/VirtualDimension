@@ -66,6 +66,7 @@ protected:
    HCURSOR m_dragCursor;
 
    HMENU m_pSysMenu;
+	HMENU m_pLangMenu;
 
    HINSTANCE m_hInstance;
 
@@ -99,6 +100,8 @@ protected:
    void ShowCaption(bool caption);
 
    ATOM RegisterClass();
+
+	bool CreateLangMenu();
 
    LRESULT OnCmdAbout(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdLockPreviewWindow(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

@@ -130,6 +130,7 @@
 #define IDC_SNAPSIZE_SPIN               1079
 #define IDC_AUTOHIDEDELAY_SPIN          1082
 #define IDC_AUTOHIDEDELAY_EDIT          1083
+#define IDS_LANGUAGE                    17325
 #define IDC_DEFAULT_WALLPAPER           32774
 #define IDC_NO_WALLPAPER                32775
 #define IDC_PREVIOUS_WALLPAPER          32778

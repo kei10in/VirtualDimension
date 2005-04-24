@@ -45,5 +45,23 @@ protected:
 	HINSTANCE m_resDll;
 };
 
+class LocalesIterator
+{
+public:
+	LocalesIterator();
+	~LocalesIterator();
+	bool GetNext();
+
+	/** Get the language name, and optionally the icon.
+	 * hIcon can be NULL if the icon is not needed. It is the responsibility
+	 * of the caller to free the icon once he doesn't need it anymore.
+	 */
+	string GetLanguage(HICON * hSmIcon, HICON * hLgIcon);
+	string GetLanguageCode();
+
+protected:
+	WIN32_FIND_DATA m_FindFileData;
+	HANDLE m_hFind;
+};
 
 #endif /*__LOCALE_H__*/

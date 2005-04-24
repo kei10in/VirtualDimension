@@ -37,6 +37,7 @@
 #include <shellapi.h>
 #include <assert.h>
 #include "HookDLL.h"
+#include "Locale.h"
 
 // Global Variables:
 HWND configBox = NULL;
@@ -219,11 +220,14 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
       RemoveMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND);
       RemoveMenu(m_pSysMenu, 0, MF_BYCOMMAND);
 
-   	  AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
+   	AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
       AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
       AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, "&Lock the window");
       AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, "S&how the caption");
-	  AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, "&About");
+
+		if (CreateLangMenu())
+			AppendMenu(m_pSysMenu, MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, "L&anguage");
+	   AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, "&About");
 
       CheckMenuItem(m_pSysMenu, IDM_SHOWCAPTION, m_hasCaption ? MF_CHECKED : MF_UNCHECKED );
    }
@@ -1010,6 +1014,37 @@ bool VirtualDimension::IsPointInWindow(POINT pt)
    RECT rect;
    GetWindowRect(vdWindow, &rect);
    return PtInRect(&rect, pt) ? true : false;
+}
+
+bool VirtualDimension::CreateLangMenu()
+{
+	LocalesIterator it;
+	int count = 0;
+
+	//Create the menu
+	m_pLangMenu = CreatePopupMenu();
+
+	//Add the entries
+	while(it.GetNext())
+	{
+		string name;
+		HICON hicon;
+		name = it.GetLanguage(&hicon, NULL);
+		if (!name.empty())
+		{
+			MENUITEMINFO iteminfo;
+			count++;
+			iteminfo.cbSize = sizeof(MENUITEMINFO);
+			iteminfo.fMask = MIIM_DATA|MIIM_STRING|MIIM_FTYPE|MIIM_BITMAP;
+			iteminfo.dwTypeData = (LPSTR)name.c_str();
+			iteminfo.fType = MFT_STRING;
+			iteminfo.dwItemData = (ULONG_PTR)hicon;
+			iteminfo.hbmpItem = HBMMENU_CALLBACK;
+			InsertMenuItem(m_pLangMenu, 100+count, FALSE, &iteminfo);
+		}
+	}
+	
+	return count > 1;
 }
 
 // Message handler for about box.
