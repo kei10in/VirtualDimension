@@ -23,7 +23,6 @@
 #include "Locale.h"
 
 
-#define LANGUAGE_MAX_LENGTH	50
 #define LANGUAGE_CODE_LENGTH	2
 
 
@@ -37,6 +36,23 @@ Locale::Locale(void)
 Locale::~Locale(void)
 {
 	::FreeLibrary(m_resDll);
+}
+
+String Locale::GetString(HINSTANCE hinst, UINT uID)
+{
+	String str;
+
+	//Get resource length (actually, length of string table block)
+	HRSRC hrsrc = FindResource(hinst, MAKEINTRESOURCE((uID>>4)+1), RT_STRING);
+	if (hrsrc == NULL)
+		return str;
+	DWORD size = SizeofResource(hinst, hrsrc);
+
+	//Load the resource
+	LoadString(hinst, uID, str.GetBuffer(size), size/sizeof(TCHAR));
+	str.ReleaseBuffer();
+
+	return str;
 }
 
 LocalesIterator::LocalesIterator()
@@ -77,15 +93,13 @@ bool LocalesIterator::GetNext()
 	}
 }
 
-string LocalesIterator::GetLanguage(HICON * hSmIcon, HICON * hLgIcon)
+String LocalesIterator::GetLanguage(HICON * hSmIcon, HICON * hLgIcon)
 {
-	string res;
+	String res;
 	HINSTANCE hInst = LoadLibrary(m_FindFileData.cFileName);
 	if (hInst)
 	{
-		char buffer[LANGUAGE_MAX_LENGTH];
-		if (LoadString(hInst, IDS_LANGUAGE, buffer, LANGUAGE_MAX_LENGTH) > 0)
-			res = buffer;
+		res = Locale::GetString(hInst, IDS_LANGUAGE);
 		if (hLgIcon)
 			*hLgIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDS_LANGUAGE), IMAGE_ICON, 32, 32, LR_LOADTRANSPARENT|LR_LOADMAP3DCOLORS);
 		if (hSmIcon)
@@ -95,8 +109,8 @@ string LocalesIterator::GetLanguage(HICON * hSmIcon, HICON * hLgIcon)
 	return res;
 }
 
-string LocalesIterator::GetLanguageCode()
+String LocalesIterator::GetLanguageCode()
 {
-	string res(m_FindFileData.cFileName + 4, LANGUAGE_CODE_LENGTH);
+	String res(m_FindFileData.cFileName + 4, LANGUAGE_CODE_LENGTH);
 	return res;
 }

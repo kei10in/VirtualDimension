@@ -21,9 +21,8 @@
 #ifndef __LOCALE_H__
 #define __LOCALE_H__
 
-#include <string>
-
-using namespace std;
+#include "StdString.h"
+typedef CStdString String;
 
 class Locale
 {
@@ -38,6 +37,9 @@ public:
 
 	HMENU LoadMenu(UINT uID)				{ return LoadMenu(MAKEINTRESOURCE(uID)); }
 	HMENU LoadMenu(LPCTSTR lpMenuName)	{ return ::LoadMenu(m_resDll, lpMenuName); }
+
+	String GetString(UINT uID)				{ return GetString(m_resDll, uID); }
+	static String GetString(HINSTANCE hinst, UINT uID);
 
 protected:
 	static Locale m_instance;
@@ -56,8 +58,8 @@ public:
 	 * hIcon can be NULL if the icon is not needed. It is the responsibility
 	 * of the caller to free the icon once he doesn't need it anymore.
 	 */
-	string GetLanguage(HICON * hSmIcon, HICON * hLgIcon);
-	string GetLanguageCode();
+	String GetLanguage(HICON * hSmIcon, HICON * hLgIcon);
+	String GetLanguageCode();
 
 protected:
 	WIN32_FIND_DATA m_FindFileData;
