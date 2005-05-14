@@ -1027,7 +1027,7 @@ bool VirtualDimension::CreateLangMenu()
 	//Add the entries
 	while(it.GetNext())
 	{
-		string name;
+		String name;
 		HICON hicon;
 		name = it.GetLanguage(&hicon, NULL);
 		if (!name.empty())
@@ -1050,13 +1050,15 @@ bool VirtualDimension::CreateLangMenu()
 // Message handler for about box.
 LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-   static IPicture * picture;
+   static IPicture * picture;	
+	LPTSTR text;
 
 	switch (message)
 	{
 	case WM_INITDIALOG:
       SetDlgItemText(hDlg, IDC_HOMEPAGE_LINK, "http://virt-dimension.sourceforge.net");
-      SetDlgItemText(hDlg, IDC_GPL_LINK, "Click here to display the GNU General Public License");
+		locGetString(text, IDS_LICENSE_LINK);
+      SetDlgItemText(hDlg, IDC_GPL_LINK, text);
       SetFocus(GetDlgItem(hDlg, IDOK));
       picture = PlatformHelper::OpenImage(MAKEINTRESOURCE(IDI_VIRTUALDIMENSION));
 

@@ -22,6 +22,7 @@
 #include "HotkeyConfig.h"
 #include "VirtualDimension.h"
 #include "Resource.h"
+#include "Locale.h"
 
 list<ConfigurableHotkey*> ShortcutsConfigurationDlg::m_hotkeys;
 
@@ -135,6 +136,7 @@ void ShortcutsConfigurationDlg::EndEdit()
 ShortcutsConfigurationDlg::ShortcutsConfigurationDlg(HWND hDlg)
 {
    LVCOLUMN column;
+	String text;
 
    m_hDlg = hDlg;
 
@@ -144,14 +146,18 @@ ShortcutsConfigurationDlg::ShortcutsConfigurationDlg(HWND hDlg)
                                        LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
    column.mask = LVCF_TEXT;
-   column.pszText = "Function";
+	text = Locale::GetInstance().GetString(IDS_COLUMN_FUNCTION);
+   column.pszText = text.GetBuffer();
    ListView_InsertColumn(m_listViewWnd, 1, &column);
+	text.ReleaseBuffer();
 
    column.mask = LVCF_SUBITEM | LVCF_FMT | LVCF_TEXT;
-   column.pszText = "Shortcut";
+	text = Locale::GetInstance().GetString(IDS_COLUMN_SHORTCUT);
+	column.pszText = text.GetBuffer();
    column.iSubItem = 0;
    column.fmt = LVCFMT_LEFT;
    ListView_InsertColumn(m_listViewWnd, 1, &column);
+	text.ReleaseBuffer();
 
    //Add all registered shortcuts
    for(list<ConfigurableHotkey*>::iterator it = m_hotkeys.begin(); it != m_hotkeys.end(); it++)
@@ -196,9 +202,8 @@ void ShortcutsConfigurationDlg::OnClick(LPNMITEMACTIVATE lpnmitem)
 
 void ShortcutsConfigurationDlg::OnRightClick(LPNMITEMACTIVATE lpnmitem)
 {
-   HMENU menu = CreatePopupMenu();
-   AppendMenu(menu, 0, 1, "&Clear");
-   AppendMenu(menu, 0, 2, "&Reset");
+	HMENU hMenu = Locale::GetInstance().LoadMenu(IDM_SHORTCUTS_CTXMENU);
+	HMENU hPopupMenu = GetSubMenu(hMenu, 0);
 
    if (lpnmitem->iItem == -1)
       return;
@@ -206,15 +211,15 @@ void ShortcutsConfigurationDlg::OnRightClick(LPNMITEMACTIVATE lpnmitem)
    POINT pt = { lpnmitem->ptAction.x, lpnmitem->ptAction.y };
    ClientToScreen(m_listViewWnd, &pt);
 
-   switch(TrackPopupMenu(menu, TPM_NONOTIFY | TPM_RETURNCMD | TPM_RIGHTBUTTON, 
+   switch(TrackPopupMenu(hPopupMenu, TPM_NONOTIFY | TPM_RETURNCMD | TPM_RIGHTBUTTON, 
                          pt.x, pt.y, 0, 
                          m_hDlg, NULL))
    {
-   case 1:
+   case IDC_CLEAR_SHORTCUT:
       SetItemShortcut(lpnmitem->iItem, 0);
       break;
 
-   case 2:
+   case IDC_RESET_SHORTCUT:
       SetItemShortcut(lpnmitem->iItem, GetItemHotkey(lpnmitem->iItem)->GetHotkey());
       break;
 
@@ -222,7 +227,7 @@ void ShortcutsConfigurationDlg::OnRightClick(LPNMITEMACTIVATE lpnmitem)
       break;
    }
 
-   DestroyMenu(menu);
+   DestroyMenu(hMenu);
 }
 
 void ShortcutsConfigurationDlg::OnSetFocus()

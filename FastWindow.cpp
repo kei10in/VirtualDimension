@@ -65,11 +65,7 @@ HWND FastWindow::Create( DWORD dwStyleEx, LPCTSTR lpClassName, LPCTSTR lpWindowN
 ATOM FastWindow::RegisterClassEx(LPWNDCLASSEX lpwcex)
 {
    lpwcex->lpfnWndProc = (WNDPROC)WndProc;
-   if (lpwcex->cbWndExtra != 0)
-   {
-      MessageBox(NULL, "FastWindow does not support user data", "error", MB_OK);
-      return 0;
-   }
+   assert(lpwcex->cbWndExtra == 0 /* FastWindow does not support user data */);
    lpwcex->cbWndExtra = sizeof(FastWindow*);
    return ::RegisterClassEx(lpwcex);
 }
@@ -77,11 +73,7 @@ ATOM FastWindow::RegisterClassEx(LPWNDCLASSEX lpwcex)
 ATOM FastWindow::RegisterClass(LPWNDCLASS lpwc)
 {
    lpwc->lpfnWndProc	= (WNDPROC)WndProc;
-   if (lpwc->cbWndExtra != 0)
-   {
-      MessageBox(NULL, "FastWindow does not support user data", "error", MB_OK);
-      return 0;
-   }
+   assert(lpwc->cbWndExtra == 0 /* FastWindow does not support user data */);
    lpwc->cbWndExtra = sizeof(FastWindow*);
    return ::RegisterClass(lpwc);
 }

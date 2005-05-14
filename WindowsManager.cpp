@@ -25,6 +25,7 @@
 #include "VirtualDimension.h"
 #include "movewindow.h"
 #include "DesktopManager.h"
+#include "Locale.h"
 
 WindowsManager * winMan;
 
@@ -161,7 +162,10 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
       vdWindow.Refresh();
    }
    else if (window->CheckCreated())
-      MessageBox(vdWindow, "Existing window created !!!", "Virtual Dimension is puzzled", MB_OK);
+	{
+#pragma message("Warning: Need to do better reporting in this case")
+		TRACE("VD puzzled: existing window created !!!");
+	}
 }
 
 void WindowsManager::OnWindowDestroyed(HWND hWnd)
@@ -267,8 +271,7 @@ BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )
 bool WindowsManager::ConfirmKillWindow()
 {
    return (!m_confirmKill) ||
-          (MessageBox(vdWindow, "If you kill the window, you may lose some date. Continue ?",
-                      "Warning! Killing is bad", MB_OKCANCEL|MB_ICONWARNING) == IDOK);
+          (locMessageBox(vdWindow, IDS_CONFIRMKILL, IDS_KILLWARNING, MB_OKCANCEL|MB_ICONWARNING) == IDOK);
 }
 
 void WindowsManager::SetIntegrateWithShell(bool integ)

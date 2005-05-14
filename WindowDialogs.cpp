@@ -130,8 +130,7 @@ void Window::SaveSettings()
    OpenSettings(settings, true);
    if (!settings.IsValid())
    {
-      MessageBox( vdWindow, "Access to the registry failed. Auto-settings will not be saved.",
-                  "Unexpected registry error", MB_OK|MB_ICONERROR);
+      locMessageBox(vdWindow, IDS_AUTOSETTINGS_ERROR, IDS_ERROR, MB_OK|MB_ICONERROR);
       return;
    }
 
@@ -333,8 +332,7 @@ void Window::OnApplyAutoSettingsBtn(HWND hDlg)
 
       if (!settings.IsValid())
       {
-         MessageBox( hDlg, "Access to the registry failed. Auto-settings may not be saved.",
-                     "Unexpected registry error", MB_OK|MB_ICONERROR);
+         locMessageBox(hDlg, IDS_AUTOSETTINGS_ERROR, IDS_ERROR, MB_OK|MB_ICONERROR);
          return;
       }
    }
@@ -451,7 +449,7 @@ void Window::DisplayWindowProperties()
    propsheet.dwFlags = PSH_PROPSHEETPAGE;
    propsheet.hwndParent = vdWindow;
    propsheet.hInstance = vdWindow;
-   propsheet.pszCaption = "Window Properties";
+   locGetString(propsheet.pszCaption, IDS_WINDOWPROPERTIES);
    propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
    propsheet.ppsp = &pages[0];
 

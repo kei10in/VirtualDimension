@@ -21,6 +21,8 @@
 #include "StdAfx.h"
 #include "platformhelper.h"
 #include <ole2.h>
+#include "Locale.h"
+#include "Resource.h"
 
 PlatformHelper instance;
 
@@ -224,10 +226,12 @@ bool PlatformHelper::SaveAsBitmap(IPicture * picture, LPTSTR fileName)
 	else // Write File Failed...
 	{
       LPVOID lpMsgBuf;
+		LPTSTR error;
+		locGetString(error, IDS_ERROR);
       if (FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                          NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                          (LPTSTR) &lpMsgBuf, 0, NULL))
-         MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
+         MessageBox( NULL, (LPCTSTR)lpMsgBuf, error, MB_OK | MB_ICONINFORMATION );
 
       LocalFree( lpMsgBuf );
 	   bResult = false;

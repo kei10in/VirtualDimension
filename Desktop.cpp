@@ -28,9 +28,12 @@
 #include "WindowsList.h"
 #include "VirtualDimension.h"
 #include "PlatformHelper.h"
+#include "Locale.h"
 
 Desktop::Desktop(int i)
 {
+	char * basename;
+
    m_active = false;
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
@@ -40,7 +43,8 @@ Desktop::Desktop(int i)
    m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));
    m_wallpaper.SetColor(m_bkColor);
 
-   sprintf(m_name, "Desk%i", i);
+	locGetString(basename, IDS_DESKTOP_BASENAME);
+   sprintf(m_name, "%s%i", basename, i);
 }
 
 Desktop::Desktop(Settings::Desktop * desktop)

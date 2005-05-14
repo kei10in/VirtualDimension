@@ -25,7 +25,6 @@
 
 #define LANGUAGE_CODE_LENGTH	2
 
-
 Locale Locale::m_instance;
 
 Locale::Locale(void)
@@ -41,18 +40,31 @@ Locale::~Locale(void)
 String Locale::GetString(HINSTANCE hinst, UINT uID)
 {
 	String str;
-
-	//Get resource length (actually, length of string table block)
-	HRSRC hrsrc = FindResource(hinst, MAKEINTRESOURCE((uID>>4)+1), RT_STRING);
-	if (hrsrc == NULL)
-		return str;
-	DWORD size = SizeofResource(hinst, hrsrc);
+	int size = GetStringSize(hinst, uID);
 
 	//Load the resource
 	LoadString(hinst, uID, str.GetBuffer(size), size/sizeof(TCHAR));
 	str.ReleaseBuffer();
 
 	return str;
+}
+
+int Locale::GetStringSize(HINSTANCE hinst, UINT uID)
+{
+	HRSRC hrsrc = FindResource(hinst, MAKEINTRESOURCE((uID>>4)+1), RT_STRING);
+	if (hrsrc == NULL)
+		return 0;
+	else
+		return SizeofResource(hinst, hrsrc);
+}
+
+int Locale::MessageBox(HWND hWnd, UINT uIdText, UINT uIdCaption, UINT uType)
+{
+	LPTSTR text;
+	LPTSTR title;
+	locGetString(text, uIdText);
+	locGetString(title, uIdCaption);
+	return ::MessageBox(hWnd, text, title, uType);
 }
 
 LocalesIterator::LocalesIterator()

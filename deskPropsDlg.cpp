@@ -103,6 +103,7 @@ void Desktop::DesktopProperties::OnWallpaperChanged(HWND hDlg, HWND ctrl)
 void Desktop::DesktopProperties::OnBrowseWallpaper(HWND hDlg)
 {
    OPENFILENAME ofn;
+	String filter;
 
    // Reset text if a special mode is selected, to let the dialog open properly.
    if (*m_wallpaper == '<')
@@ -114,12 +115,14 @@ void Desktop::DesktopProperties::OnBrowseWallpaper(HWND hDlg)
    ofn.hwndOwner = hDlg;
    ofn.lpstrFile = m_wallpaper;
    ofn.nMaxFile = MAX_PATH;
-   ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
+	filter = Locale::GetInstance().GetString(IDS_PICTUREFILTER);
+	filter.Replace('|', 0);
+	ofn.lpstrFilter = filter;
    ofn.nFilterIndex = 1;
    ofn.lpstrFileTitle = NULL;
    ofn.nMaxFileTitle = 0;
    ofn.lpstrInitialDir = NULL;
-   ofn.lpstrTitle = "Select wallpaper image";
+   locGetString(ofn.lpstrTitle, IDS_SELECT_WALLPAPER);
    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
 
    if (GetOpenFileName(&ofn) == TRUE)
@@ -156,8 +159,10 @@ void Desktop::DesktopProperties::OnPreviewDrawItem(LPDRAWITEMSTRUCT lpDrawItem)
    }
    else
    {
+		LPTSTR text;
+		locGetString(text, IDS_NOIMAGE);
       FillRect(lpDrawItem->hDC, &lpDrawItem->rcItem, GetSysColorBrush(COLOR_BTNFACE));
-      DrawText(lpDrawItem->hDC, "No image", -1, &lpDrawItem->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+      DrawText(lpDrawItem->hDC, text, -1, &lpDrawItem->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
    }
 }
 

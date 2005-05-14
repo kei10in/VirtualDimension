@@ -30,6 +30,7 @@
 #include "WindowsManager.h"
 #include "SharedMenuBuffer.h"
 #include "HookDLL.h"
+#include "Locale.h"
 
 HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data);
 bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
@@ -236,17 +237,25 @@ HICON Window::GetIcon(void)
    return m_hDefaulIcon;
 }
 
-void Window::InsertMenuItem(HMENU menu, bool checked, HANDLE bmp, UINT id, LPSTR str)
+void Window::InsertMenuItem(HMENU menu, bool checked, HANDLE bmp, UINT id, UINT uIdStr)
 {
    MENUITEMINFO mii;
+
    mii.cbSize = sizeof(MENUITEMINFO);
    mii.fMask = MIIM_DATA | MIIM_BITMAP | MIIM_ID | MIIM_STRING | MIIM_STATE;
    mii.hbmpItem = (int)bmp <= 11 ? (HBITMAP)bmp : HBMMENU_CALLBACK;
    mii.dwItemData = (ULONG_PTR)bmp;
    mii.wID = id;
-   mii.dwTypeData = str;
+	locGetString(mii.dwTypeData, uIdStr);
    mii.fState = checked ? MFS_CHECKED : MFS_UNCHECKED;
    ::InsertMenuItem(menu, (UINT)-1, TRUE, &mii);
+}
+
+void Window::InsertMenuInfo(SharedMenuBuffer& menuinfo, UINT id, UINT uIdStr, bool checked)
+{
+	char * text;
+	locGetString(text, uIdStr);
+	menuinfo.InsertMenu(id, text, checked);
 }
 
 HANDLE Window::LoadBmpRes(int id)
@@ -269,32 +278,32 @@ HMENU Window::BuildMenu()
    PlatformHelper::SetMenuInfo(hMenu, &mi);
 
    //Now add the items
-   InsertMenuItem(hMenu, IsAlwaysOnTop(), NULL, VDM_TOGGLEONTOP, "Always on top");
-   InsertMenuItem(hMenu, IsMinimizeToTray(), NULL, VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray");
+   InsertMenuItem(hMenu, IsAlwaysOnTop(), NULL, VDM_TOGGLEONTOP, IDS_MENU_ALWAYSONTOP);
+   InsertMenuItem(hMenu, IsMinimizeToTray(), NULL, VDM_TOGGLEMINIMIZETOTRAY, IDS_MENU_MINTOTRAY);
    if (m_transp.IsTransparencySupported())
-      InsertMenuItem(hMenu, m_transp.GetTransparencyLevel() != 255, NULL, VDM_TOGGLETRANSPARENCY, "Transparent");
+      InsertMenuItem(hMenu, m_transp.GetTransparencyLevel() != 255, NULL, VDM_TOGGLETRANSPARENCY, IDS_MENU_TRANSPARENT);
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
 
-   InsertMenuItem(hMenu, IsOnAllDesktops(), NULL, VDM_TOGGLEALLDESKTOPS, "All desktops");
-   AppendMenu(hMenu, MF_STRING, VDM_MOVEWINDOW, "Change desktop...");
+   InsertMenuItem(hMenu, IsOnAllDesktops(), NULL, VDM_TOGGLEALLDESKTOPS, IDS_MENU_ONALLDESKTOPS);
+   InsertMenuItem(hMenu, FALSE, NULL, VDM_MOVEWINDOW, IDS_MENU_CHANGEDESKTOP);
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
 
-   InsertMenuItem(hMenu, false, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, "Activate");
+   InsertMenuItem(hMenu, false, HBMMENU_POPUP_RESTORE, VDM_ACTIVATEWINDOW, IDS_MENU_ACTIVATEWND);
    if (IsIconic() || IsZoomed(m_hWnd))
-      InsertMenuItem(hMenu, false, HBMMENU_POPUP_RESTORE, VDM_RESTORE, "Restore");
+      InsertMenuItem(hMenu, false, HBMMENU_POPUP_RESTORE, VDM_RESTORE, IDS_MENU_RESTOREWND);
    if (!IsIconic())
-      InsertMenuItem(hMenu, false, HBMMENU_POPUP_MINIMIZE, VDM_MINIMIZE, "Minimize");
+      InsertMenuItem(hMenu, false, HBMMENU_POPUP_MINIMIZE, VDM_MINIMIZE, IDS_MENU_MINIMIZEWND);
    if (!IsZoomed(m_hWnd))
    {
-      InsertMenuItem(hMenu, false, HBMMENU_POPUP_MAXIMIZE, VDM_MAXIMIZE, "Maximize");
-      InsertMenuItem(hMenu, false, LoadBmpRes(IDI_MAXIMIZE_VERT), VDM_MAXIMIZEHEIGHT, "Maximize Height");
-      InsertMenuItem(hMenu, false, LoadBmpRes(IDI_MAXIMIZE_HORIZ), VDM_MAXIMIZEWIDTH, "Maximize Width");
+      InsertMenuItem(hMenu, false, HBMMENU_POPUP_MAXIMIZE, VDM_MAXIMIZE, IDS_MENU_MAXIMIZEWND);
+      InsertMenuItem(hMenu, false, LoadBmpRes(IDI_MAXIMIZE_VERT), VDM_MAXIMIZEHEIGHT, IDS_MENU_MAXHEIGHTWND);
+      InsertMenuItem(hMenu, false, LoadBmpRes(IDI_MAXIMIZE_HORIZ), VDM_MAXIMIZEWIDTH, IDS_MENU_MAXWIDTHWND);
    }
-   InsertMenuItem(hMenu, false, HBMMENU_POPUP_CLOSE, VDM_CLOSE, "Close");
-   InsertMenuItem(hMenu, false, LoadBmpRes(IDI_KILL), VDM_KILL, "Kill");
+   InsertMenuItem(hMenu, false, HBMMENU_POPUP_CLOSE, VDM_CLOSE, IDS_MENU_CLOSEWND);
+   InsertMenuItem(hMenu, false, LoadBmpRes(IDI_KILL), VDM_KILL, IDS_MENU_KILLWND);
    AppendMenu(hMenu, MF_SEPARATOR, 0, 0);
 
-   InsertMenuItem(hMenu, false, NULL, VDM_PROPERTIES, "Properties");
+   InsertMenuItem(hMenu, false, NULL, VDM_PROPERTIES, IDS_MENU_WNDPROPERTIES);
 
    return hMenu;
 }
@@ -303,19 +312,19 @@ bool Window::PrepareSysMenu(HANDLE filemapping)
 {
    SharedMenuBuffer menuinfo(m_dwProcessId, filemapping);
 
-   menuinfo.InsertMenu(VDM_TOGGLEONTOP, "Always on top", IsAlwaysOnTop());
-   menuinfo.InsertMenu(VDM_TOGGLEMINIMIZETOTRAY, "Minimize to tray", IsMinimizeToTray());
+   InsertMenuInfo(menuinfo, VDM_TOGGLEONTOP, IDS_MENU_ALWAYSONTOP, IsAlwaysOnTop());
+   InsertMenuInfo(menuinfo, VDM_TOGGLEMINIMIZETOTRAY, IDS_MENU_MINTOTRAY, IsMinimizeToTray());
    if (m_transp.IsTransparencySupported())
-      menuinfo.InsertMenu(VDM_TOGGLETRANSPARENCY, "Transparent", IsTransparent());
+      InsertMenuInfo(menuinfo, VDM_TOGGLETRANSPARENCY, IDS_MENU_TRANSPARENT, IsTransparent());
    menuinfo.InsertSeparator();
-   menuinfo.InsertMenu(VDM_TOGGLEALLDESKTOPS, "All desktops", IsOnAllDesktops());
+   InsertMenuInfo(menuinfo, VDM_TOGGLEALLDESKTOPS, IDS_MENU_ONALLDESKTOPS, IsOnAllDesktops());
    Desktop * desk = deskMan->GetFirstDesktop();
    int i = 0;
    while(desk != NULL && menuinfo.InsertMenu(VDM_MOVETODESK+i++, desk->GetText(), GetDesk()==desk))
       desk = deskMan->GetNextDesktop();
    menuinfo.InsertSeparator();
-   menuinfo.InsertMenu(VDM_MOVEWINDOW, "Change desktop...", false);
-   menuinfo.InsertMenu(VDM_PROPERTIES, "Properties", false);
+   InsertMenuInfo(menuinfo, VDM_MOVEWINDOW, IDS_MENU_CHANGEDESKTOP, false);
+   InsertMenuInfo(menuinfo, VDM_PROPERTIES, IDS_MENU_WNDPROPERTIES, false);
 
    return true;
 }

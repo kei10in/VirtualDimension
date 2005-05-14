@@ -42,7 +42,11 @@ void FormatTransparencyLevel(HWND hWnd, int level)
    char buffer[15];
 
    if (level == TRANSPARENCY_DISABLED)
-      sprintf(buffer, "%3i (disabled)", level);
+	{					 
+		char * disabled;
+		locGetString(disabled, IDS_DISABLED);
+		sprintf(buffer, "%3i (%s)", level, disabled);
+	}
    else
       sprintf(buffer, "%3i", level);
 
@@ -181,6 +185,8 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 // Message handler for the display settings page.
 LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	char * text;
+
 	switch (message)
 	{
 	case WM_INITDIALOG:
@@ -228,19 +234,22 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
       switch(LOWORD(wParam))
       {
       case IDC_PLAINCOLOR_RATIO:
-         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, "Color");
+			locGetString(text, IDS_PARAM_COLOR);
+         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, text);
          EnableWindow(GetDlgItem(hDlg, IDC_EXTRAPARAM_BTN), TRUE);
          deskMan->SetDisplayMode(DesktopManager::DM_PLAINCOLOR);
          break;
 
       case IDC_IMAGE_RATIO:
-         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, "Image");
+			locGetString(text, IDS_PARAM_IMAGE);
+         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, text);
          EnableWindow(GetDlgItem(hDlg, IDC_EXTRAPARAM_BTN), TRUE);
          deskMan->SetDisplayMode(DesktopManager::DM_PICTURE);
          break;
 
       case IDC_SCREENSHOT_RATIO:
-         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, "No option");
+			locGetString(text, IDS_PARAM_COLOR);
+         SetDlgItemText(hDlg, IDC_EXTRAPARAM_BTN, text);
          EnableWindow(GetDlgItem(hDlg, IDC_EXTRAPARAM_BTN), FALSE);
          deskMan->SetDisplayMode(DesktopManager::DM_SCREENSHOT);
          break;
@@ -363,8 +372,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
             //list properly in that case (due to the desktop being automatically created)
             if (deskMan->GetNbDesktops() == 1)
             {
-               MessageBox(hDlg, "Virtual Dimension needs at least one virtual desktop to function properly !", 
-                          "Unable to remove desktop", MB_OK|MB_ICONERROR);
+               locMessageBox(hDlg, IDS_NEEDADESKTOP_ERROR, IDS_UNABLETOREMOVEDESKTOP, MB_OK|MB_ICONERROR);
                break;
             }
 
@@ -709,16 +717,16 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       {
       case IDC_HIDINGMETHODEXCEPTIONS_BTN:
          {
-            const LPCTSTR values[] = 
-            {
-               "Hide",
-               "Minimize",
-               "Move",
-               NULL
-            };
+				LPCTSTR values[4];
+				char * coltext; 
             Settings settings;
+				locGetString(values[0], IDS_METHOD_HIDE);
+				locGetString(values[1], IDS_METHOD_MINIMIZE);
+				locGetString(values[2], IDS_METHOD_MOVE);
+				values[3] = NULL;
+				locGetString(coltext, IDS_METHOD);
             Config::Group * group = settings.GetHidingMethodExceptions();
-            ApplicationListDlg dlg(group, "Method", settings.LoadSetting(Settings::DefaultHidingMethod), values);
+            ApplicationListDlg dlg(group, coltext, settings.LoadSetting(Settings::DefaultHidingMethod), values);
 				dlg.ShowDialog(Locale::GetInstance(), hDlg);
             delete group;
          }
@@ -817,8 +825,8 @@ HWND CreateConfigBox()
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
    propsheet.dwFlags = PSH_MODELESS | PSH_NOAPPLYNOW | PSH_PROPSHEETPAGE;
    propsheet.hwndParent = vdWindow;
-   propsheet.hInstance = vdWindow;
-   propsheet.pszCaption = "Settings";
+   propsheet.hInstance = hresinst;
+   propsheet.pszCaption = MAKEINTRESOURCE(IDS_DLGNAME_SETTINGS);
    propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
    propsheet.ppsp = pages;
 

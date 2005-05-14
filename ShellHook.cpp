@@ -20,6 +20,8 @@
 
 #include "StdAfx.h"
 #include "shellhook.h"
+#include "Locale.h"
+#include "Resource.h"
 
 int ShellHook::nbInstance = 0;
 HINSTANCE ShellHook::hinstDLL = NULL;
@@ -41,7 +43,7 @@ ShellHook::ShellHook(HWND hWnd)
       RegisterShellHook = (RegisterShellHookProc*)GetProcAddress(hinstDLL, (LPCSTR)181);
       if (RegisterShellHook == NULL)
       {
-         MessageBox(NULL, "Unable to find function 'RegisterShellHook' in shell32.dll", "Dynamic link error", MB_OK);
+         locMessageBox(NULL, IDS_REGISTERSHELLHOOK_ERROR, IDS_ERROR, MB_OK);
          FreeLibrary(hinstDLL);
          return;
       }

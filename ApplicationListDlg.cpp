@@ -25,6 +25,7 @@
 #include "Resource.h"
 #include "ApplicationListDlg.h"
 #include "PlatformHelper.h"
+#include "Locale.h"
 
 ApplicationListDlg::ApplicationListDlg(Config::Group * group, LPCTSTR title, int defaultValue, const LPCTSTR * values)
 {
@@ -64,7 +65,7 @@ void ApplicationListDlg::InitDialog()
    column.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
    column.fmt = LVCFMT_LEFT|LVCFMT_IMAGE;
    column.cx = m_values ? 250 : 320;
-   column.pszText = "Program";
+   locGetString(column.pszText, IDS_PROGRAM);
    column.iSubItem = -1;
    ListView_InsertColumn(m_hAppListWnd, 0, &column);
 
@@ -111,7 +112,7 @@ void ApplicationListDlg::OnInsertApplBtn()
 
    //Browse for a new program name
    if (GetProgramName(path, MAX_PATH) && 
-       (FindProgram(path)==-1 || (MessageBox(m_hDlg, "Selected program is already in the list.", "Error", MB_OK|MB_ICONEXCLAMATION), FALSE)))
+       (FindProgram(path)==-1 || (locMessageBox(m_hDlg, IDS_PROGRAMINLIST_ERROR, IDS_ERROR, MB_OK|MB_ICONEXCLAMATION), FALSE)))
       InsertProgram(path, m_defaultValue);
 }
 
@@ -134,7 +135,7 @@ void ApplicationListDlg::OnEditApplBtn()
 
    //Browse for a new program name
    if (GetProgramName(path, MAX_PATH) && 
-       (FindProgram(path)==-1 || (MessageBox(m_hDlg, "Selected program is already in the list.", "Error", MB_OK|MB_ICONEXCLAMATION), FALSE)))
+       (FindProgram(path)==-1 || (locMessageBox(m_hDlg, IDS_PROGRAMINLIST_ERROR, IDS_ERROR, MB_OK|MB_ICONEXCLAMATION), FALSE)))
       InsertProgram(path, m_defaultValue, idx);
 }
 
@@ -243,17 +244,21 @@ BOOL ApplicationListDlg::GetProgramName(LPTSTR filename, DWORD maxlen)
 {
    OPENFILENAME ofn;
 
+	String filter;
+
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hwndOwner = m_hDlg;
    ofn.lpstrFile = filename;
    ofn.nMaxFile = maxlen;
-   ofn.lpstrFilter = "Program file\0*.EXE\0All\0*.*\0";
+	filter = Locale::GetInstance().GetString(IDS_PROGRAMFILTER);
+	filter.Replace('|', 0);	
+   ofn.lpstrFilter = filter;
    ofn.nFilterIndex = 1;
    ofn.lpstrFileTitle = NULL;
    ofn.nMaxFileTitle = 0;
    ofn.lpstrInitialDir = NULL;
-   ofn.lpstrTitle = "Add program...";
+	locGetString(ofn.lpstrTitle, IDS_ADDPROGRAM);
    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
 
    return GetOpenFileName(&ofn);

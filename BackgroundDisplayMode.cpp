@@ -24,6 +24,7 @@
 #include <Commdlg.h>
 #include "PlatformHelper.h"
 #include "VirtualDimension.h"
+#include "Locale.h"
 
 void BackgroundDisplayMode::BeginPainting(HDC /*hdc*/)
 {}
@@ -95,18 +96,21 @@ bool PictureBackgroundDisplayMode::ChooseOptions(HWND hWnd)
 {
    OPENFILENAME ofn;
    BOOL res;
+	String filter;
 
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
    ofn.lStructSize = sizeof(OPENFILENAME);
    ofn.hwndOwner = hWnd;
    ofn.lpstrFile = m_bkgrndPictureFile;
    ofn.nMaxFile = MAX_PATH;
-   ofn.lpstrFilter = "Images\0*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX\0All\0*.*\0";
+	filter = Locale::GetInstance().GetString(IDS_PICTUREFILTER);
+	filter.Replace('|', 0);
+   ofn.lpstrFilter = filter;
    ofn.nFilterIndex = 1;
    ofn.lpstrFileTitle = NULL;
    ofn.nMaxFileTitle = 0;
    ofn.lpstrInitialDir = NULL;
-   ofn.lpstrTitle = "Select background image";
+	locGetString(ofn.lpstrTitle, IDS_SELECT_BACKGROUND);
    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER /*| OFN_ENABLESIZING*/;
 
    res = GetOpenFileName(&ofn);

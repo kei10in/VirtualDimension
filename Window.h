@@ -27,6 +27,7 @@
 #include "Transparency.h"
 #include "AlwaysOnTop.h"
 #include "HidingMethod.h"
+#include "SharedMenuBuffer.h"
 
 class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler, public AlwaysOnTop
 {
@@ -172,7 +173,8 @@ public:
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnContextMenu();
-   void InsertMenuItem(HMENU menu, bool checked, HANDLE bmp, UINT id, LPSTR str);
+   void InsertMenuItem(HMENU menu, bool checked, HANDLE bmp, UINT id, UINT uIdStr);
+	void InsertMenuInfo(SharedMenuBuffer& menuinfo, UINT id, UINT uIdStr, bool checked);
    HANDLE LoadBmpRes(int id);
 
    enum AutoSettingsModes {

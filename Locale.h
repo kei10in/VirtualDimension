@@ -21,6 +21,8 @@
 #ifndef __LOCALE_H__
 #define __LOCALE_H__
 
+#include <malloc.h>
+
 #include "StdString.h"
 typedef CStdString String;
 
@@ -39,13 +41,36 @@ public:
 	HMENU LoadMenu(LPCTSTR lpMenuName)	{ return ::LoadMenu(m_resDll, lpMenuName); }
 
 	String GetString(UINT uID)				{ return GetString(m_resDll, uID); }
+	int GetStringSize(UINT uID)			{ return GetStringSize(m_resDll, uID); }
 	static String GetString(HINSTANCE hinst, UINT uID);
+	static int GetStringSize(HINSTANCE hinst, UINT uID);
+
+	int MessageBox(HWND hWnd, UINT uIdText, UINT uIdCaption, UINT uType);
 
 protected:
 	static Locale m_instance;
 
 	HINSTANCE m_resDll;
 };
+
+#define locMessageBox(hwnd, uIdText, uIdCaption, uType)					\
+	Locale::GetInstance().MessageBox(hwnd, uIdText, uIdCaption, uType)
+
+/** An efficient macro to retrieve a resource string.
+ * This macro is quite efficient, as it uses memory allocated from the stack.
+ * However, this can lead to some issues (like stack overflow/exaustion if it
+ * is called multiple times in the same context. Thus, care must be taken to
+ * ensure no such situations can arise.
+ *
+ * It also adds a limitation on the size of the returned string: it is fixed
+ * to 0xffff at the moment, which should be enough with regard to the stack
+ * but this number can be increased at will. The only requirement is that this
+ * number should be greater than the space allocated for the string resource.
+ */
+#define locGetString(str, uId)													\
+	(str = (LPTSTR)_alloca(Locale::GetInstance().GetStringSize(uId)),	\
+	LoadString(Locale::GetInstance(), uId, (LPTSTR)str, 0xffff),					\
+	str)
 
 class LocalesIterator
 {

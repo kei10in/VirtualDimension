@@ -49,7 +49,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDS_LANGUAGE    ICON                    "english.ico"
+IDS_LANGUAGE            ICON                    "english.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -85,6 +85,15 @@ BEGIN
     BEGIN
         MENUITEM "&Add application...",         ID_ADDAPPL_CMD
         MENUITEM "&Delete",                     ID_DELAPPL_CMD
+    END
+END
+
+IDM_SHORTCUTS_CTXMENU MENU 
+BEGIN
+    POPUP "Menu"
+    BEGIN
+        MENUITEM "&Clear",                      IDC_CLEAR_SHORTCUT
+        MENUITEM "&Reset",                      40003
     END
 END
 
@@ -380,7 +389,63 @@ END
 
 STRINGTABLE 
 BEGIN
+    IDS_PROGRAM             "Program"
+    IDS_PROGRAMINLIST_ERROR "Selected program is already in the list."
+    IDS_ERROR               "Error"
+    IDS_ADDPROGRAM          "Add program..."
+    IDS_PROGRAMFILTER       "Program file|*.EXE|All|*.*|"
+    IDS_PICTUREFILTER       "Images|*.BMP;*.JPEG;*.JPG;*.GIF;*.PCX|All|*.*|"
+    IDS_SELECT_BACKGROUND   "Select background image"
+    IDS_DISABLED            "disabled"
+    IDS_PARAM_COLOR         "Color"
+    IDS_PARAM_IMAGE         "Image"
+    IDS_PARAM_NONE          "No option"
+    IDS_NEEDADESKTOP_ERROR  "Virtual Dimension needs at least one virtual desktop to function properly !"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_LANGUAGE            "English"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_UNABLETOREMOVEDESKTOP "Unable to remove desktop"
+    IDS_METHOD              "Method"
+    IDS_METHOD_HIDE         "Hide"
+    IDS_METHOD_MINIMIZE     "Minimize"
+    IDS_METHOD_MOVE         "Move"
+    IDS_DLGNAME_SETTINGS    "Settings"
+    IDS_SELECT_WALLPAPER    "Select wallpaper image"
+    IDS_NOIMAGE             "No image"
+    IDS_DESKTOP_BASENAME    "Desk"
+    IDS_COLUMN_FUNCTION     "Function"
+    IDS_COLUMN_SHORTCUT     "Shortcut"
+    IDS_REGISTERSHELLHOOK_ERROR 
+                            "Unable to locate function 'RegisterShellHook' in shell32.dll"
+    IDS_LICENSE_LINK        "Click here to display the GNU General Public License"
+    IDS_MENU_ALWAYSONTOP    "Always on top"
+    IDS_MENU_MINTOTRAY      "Minimize to tray"
+    IDS_MENU_TRANSPARENT    "Transparent"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_MENU_ONALLDESKTOPS  "All desktops"
+    IDS_MENU_CHANGEDESKTOP  "Change desktop..."
+    IDS_MENU_ACTIVATEWND    "Activate"
+    IDS_MENU_RESTOREWND     "Restore"
+    IDS_MENU_MINIMIZEWND    "Minimize"
+    IDS_MENU_MAXIMIZEWND    "Maximize"
+    IDS_MENU_MAXHEIGHTWND   "Maximize Height"
+    IDS_MENU_MAXWIDTHWND    "Maximize Width"
+    IDS_MENU_CLOSEWND       "Close"
+    IDS_MENU_KILLWND        "Kill"
+    IDS_MENU_WNDPROPERTIES  "Properties"
+    IDS_AUTOSETTINGS_ERROR  "Access to the registry failed. Auto-settings will not be saved."
+    IDS_WINDOWPROPERTIES    "Window Properties"
+    IDS_CONFIRMKILL         "If you kill the window, you may lose some date. Continue ?"
+    IDS_KILLWARNING         "Warning! Killing is bad"
 END
 
 #endif    // English (U.S.) resources
