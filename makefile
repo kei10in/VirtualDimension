@@ -25,7 +25,7 @@ BUILDDIR = mingw-release
 endif
 endif
 
-TARGET = VirtualDimension.exe HookDLL.dll langEN.dll
+TARGETS = $(BUILDDIR)/VirtualDimension.exe $(BUILDDIR)/HookDLL.dll $(BUILDDIR)/langEN.dll
 SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp \
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
@@ -34,9 +34,9 @@ OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp WindowsList.cpp  \
 WallPaper.cpp BackgroundDisplayMode.cpp BackgroundColor.cpp TaskPool.cpp \
 LinkControl.cpp HotkeyConfig.cpp guids.c ExplorerWrapper.cpp HidingMethod.cpp \
 SharedMenuBuffer.cpp MouseWarp.cpp Config.cpp ApplicationListDlg.cpp Locale.cpp
-RES_FILE = VirtualDimension.res
-OBJ_FILE_TMP = $(SRC_FILE:cpp=o)
-OBJ_FILE = $(OBJ_FILE_TMP:c=o) libtransp.a
+RES_FILE = $(BUILDDIR)/VirtualDimension.res
+DEP_FILE = $(addprefix $(BUILDDIR)/,$(addsuffix .d,$(basename $(SRC_FILE))))
+OBJ_FILE = $(DEP_FILE:.d=.o) $(BUILDDIR)/libtransp.a
 
 ifdef DEBUG
 CXXFLAGS = -g -O3 -DDEBUG
@@ -46,22 +46,9 @@ CXXFLAGS = -fexpensive-optimizations -O3 -ffast-math -DNDEBUG
 CFLAGS = -fexpensive-optimizations -O3 -ffast-math -DNDEBUG
 endif
 
-MAKEDEPEND = g++ -MM $(CPPFLAGS) -o $*.d $<
+.PHONY: all recall clean
 
-
-.PHONY: all recall clean pre_comp
-
-ifdef INCDEP
-VPATH = ..
-DEP_FILE_TMP = $(SRC_FILE:cpp=P)
-DEP_FILE = $(DEP_FILE_TMP:c=P)
--include $(DEP_FILE)
-endif
-
-all: pre_comp
-	@cd $(BUILDDIR); make allrec -f ../Makefile INCDEP=1
-
-allrec: $(TARGET)
+all: ${BUILDDIR} $(TARGETS)
 
 install: install-script.nsi all
 	/c/Program\ Files/NSIS/makeNSIS.exe $<
@@ -72,51 +59,48 @@ clean:
 	   rm -r ${BUILDDIR};           \
 	fi
 
-pre_comp:
+${BUILDDIR}:
 	@if (! [ -d ${BUILDDIR} ] ) then   \
 	   echo mkdir ${BUILDDIR};         \
 	   mkdir ${BUILDDIR};              \
 	fi
 
-VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
+$(BUILDDIR)/VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	g++ $^ -o $@ -mwindows -mthreads -lcomctl32 -lole32 -lolepro32 -lversion -luuid $(CXXFLAGS)
 ifndef DEBUG
 	strip --strip-all $@
 endif
 
-HookDLL.dll: HookDLL.o SharedMenuBuffer.o
+$(BUILDDIR)/HookDLL.dll: $(BUILDDIR)/HookDLL.o $(BUILDDIR)/SharedMenuBuffer.o
 	g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
 ifndef DEBUG
 	strip --strip-all $@
 endif
 
-%.res: %.rc
-	windres -i $< -I rc -o $@ -O coff --include-dir=..
+$(BUILDDIR)/%.res: %.rc ${BUILDDIR}
+	windres -i $< -J rc -o $@ -O coff --include-dir=..
 
-%.dll: %.res
+$(BUILDDIR)/%.dll: $(BUILDDIR)/%.res
 	g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
 ifndef DEBUG
 	strip --strip-all $@
 endif	
 
-libtransp.a: Transp.def
+$(BUILDDIR)/libtransp.a: Transp.def
 	dlltool --def $< --dllname user32.dll  --output-lib $@
 
-##VirtualDimension.res: VirtualDimension.rc
-##	windres -i $< -I rc -o $@ -O coff --include-dir=..
+$(BUILDDIR)/%.d: %.cpp $(BUILDDIR)
+	@-g++ -MM $(CPPFLAGS) $< \
+                      | sed 's|\($*\)\.o[ :]*|$(BUILDDIR)/\1.o $@ : |g' > $@;
 
-%.o: %.cpp
-	@-$(MAKEDEPEND); \
-            cp $*.d $*.P; \
-            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-                -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-            rm -f $*.d
+$(BUILDDIR)/%.d: %.c $(BUILDDIR)
+	@-gcc -MM $(CPPFLAGS) $< \
+                      | sed 's|\($*\)\.o[ :]*|$(BUILDDIR)/\1.o $@ : |g' > $@;
+
+$(BUILDDIR)/%.o: %.cpp $(BUILDDIR)
 	g++ -c -o $@ $< $(CXXFLAGS)
 
-%.o: %.c
-	@-$(MAKEDEPEND); \
-            cp $*.d $*.P; \
-            sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
-                -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
-            rm -f $*.d
+$(BUILDDIR)/%.o: %.c $(BUILDDIR)
 	gcc -c -o $@ $< $(CFLAGS)
+
+-include $(DEP_FILE)
