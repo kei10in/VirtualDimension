@@ -35,8 +35,8 @@ WallPaper.cpp BackgroundDisplayMode.cpp BackgroundColor.cpp TaskPool.cpp \
 LinkControl.cpp HotkeyConfig.cpp guids.c ExplorerWrapper.cpp HidingMethod.cpp \
 SharedMenuBuffer.cpp MouseWarp.cpp Config.cpp ApplicationListDlg.cpp Locale.cpp
 RES_FILE = $(BUILDDIR)/VirtualDimension.res
-DEP_FILE = $(addprefix $(BUILDDIR)/,$(addsuffix .d,$(basename $(SRC_FILE))))
-OBJ_FILE = $(DEP_FILE:.d=.o) $(BUILDDIR)/libtransp.a
+DEP_FILE = $(addprefix $(BUILDDIR)/,$(addsuffix .P,$(basename $(SRC_FILE))))
+OBJ_FILE = $(DEP_FILE:.P=.o) $(BUILDDIR)/libtransp.a
 
 ifdef DEBUG
 CXXFLAGS = -g -O3 -DDEBUG
@@ -45,6 +45,7 @@ else
 CXXFLAGS = -fexpensive-optimizations -O3 -ffast-math -DNDEBUG
 CFLAGS = -fexpensive-optimizations -O3 -ffast-math -DNDEBUG
 endif
+
 
 .PHONY: all recall clean
 
@@ -89,18 +90,19 @@ endif
 $(BUILDDIR)/libtransp.a: Transp.def
 	dlltool --def $< --dllname user32.dll  --output-lib $@
 
-$(BUILDDIR)/%.d: %.cpp $(BUILDDIR)
-	@-g++ -MM $(CPPFLAGS) $< \
-                      | sed 's|\($*\)\.o[ :]*|$(BUILDDIR)/\1.o $@ : |g' > $@;
-
-$(BUILDDIR)/%.d: %.c $(BUILDDIR)
-	@-gcc -MM $(CPPFLAGS) $< \
-                      | sed 's|\($*\)\.o[ :]*|$(BUILDDIR)/\1.o $@ : |g' > $@;
 
 $(BUILDDIR)/%.o: %.cpp $(BUILDDIR)
-	g++ -c -o $@ $< $(CXXFLAGS)
+	g++ -c -o $@ $< $(CXXFLAGS) -MMD
+	@cp $(BUILDDIR)/$*.d $(BUILDDIR)/$*.P
+	@sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+        -e '/^$$/ d' -e 's/$$/ :/' < $(BUILDDIR)/$*.d >> $(BUILDDIR)/$*.P
+	@rm -f $(BUILDDIR)/$*.d
 
 $(BUILDDIR)/%.o: %.c $(BUILDDIR)
-	gcc -c -o $@ $< $(CFLAGS)
+	gcc -c -o $@ $< $(CFLAGS) -MMD
+	@cp $(BUILDDIR)/$*.d $(BUILDDIR)/$*.P
+	@sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+        -e '/^$$/ d' -e 's/$$/ :/' < $(BUILDDIR)/$*.d >> $(BUILDDIR)/$*.P
+	@rm -f $(BUILDDIR)/$*.d
 
 -include $(DEP_FILE)
