@@ -39,7 +39,7 @@ Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(TRANSPARENCY_DISABL
 Transparency::~Transparency()
 {
    nbInstance --;
-   if (nbInstance == 0)
+   if (nbInstance == 0 && transparency_supported_valid)
    {
       transparency_supported_valid = false;  //to ensure the library would be reloaded before any call to setlayeredattributes
       FreeLibrary(hinstDLL);
