@@ -52,7 +52,8 @@ endif
 all: ${BUILDDIR} $(TARGETS)
 
 install: install-script.nsi all
-	/c/Program\ Files/NSIS/makeNSIS.exe $<
+	@echo Building installer...
+	@/c/Program\ Files/NSIS/makeNSIS.exe $<
 
 clean:
 	@if ( [ -d ${BUILDDIR} ] ) then \
@@ -67,39 +68,46 @@ ${BUILDDIR}:
 	fi
 
 $(BUILDDIR)/VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
-	g++ $^ -o $@ -mwindows -mthreads -lcomctl32 -lole32 -lolepro32 -lversion -luuid $(CXXFLAGS)
+	@echo Linking $@...
+	@g++ $^ -o $@ -mwindows -mthreads -lcomctl32 -lole32 -lolepro32 -lversion -luuid $(CXXFLAGS)
 ifndef DEBUG
-	strip --strip-all $@
+	@strip --strip-all $@
 endif
 
 $(BUILDDIR)/HookDLL.dll: $(BUILDDIR)/HookDLL.o $(BUILDDIR)/SharedMenuBuffer.o
-	g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
+	@echo Linking $@...
+	@g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
 ifndef DEBUG
-	strip --strip-all $@
+	@strip --strip-all $@
 endif
 
 $(BUILDDIR)/%.res: %.rc ${BUILDDIR}
-	windres -i $< -J rc -o $@ -O coff --include-dir=..
+	@echo $<...
+	@windres -i $< -J rc -o $@ -O coff --include-dir=..
 
 $(BUILDDIR)/%.dll: $(BUILDDIR)/%.res
-	g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
+	@echo Linking $@...
+	@g++ -shared -mwindows -mthreads -o $@ $^ $(CXXFLAGS)
 ifndef DEBUG
-	strip --strip-all $@
+	@strip --strip-all $@
 endif	
 
 $(BUILDDIR)/libtransp.a: Transp.def
-	dlltool --def $< --dllname user32.dll  --output-lib $@
+	@echo $@...
+	@dlltool --def $< --dllname user32.dll  --output-lib $@
 
 
 $(BUILDDIR)/%.o: %.cpp $(BUILDDIR)
-	g++ -c -o $@ $< $(CXXFLAGS) -MMD
+	@echo $<...
+	@g++ -c -o $@ $< $(CXXFLAGS) -MMD
 	@cp $(BUILDDIR)/$*.d $(BUILDDIR)/$*.P
 	@sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
         -e '/^$$/ d' -e 's/$$/ :/' < $(BUILDDIR)/$*.d >> $(BUILDDIR)/$*.P
 	@rm -f $(BUILDDIR)/$*.d
 
 $(BUILDDIR)/%.o: %.c $(BUILDDIR)
-	gcc -c -o $@ $< $(CFLAGS) -MMD
+	@echo $<...
+	@gcc -c -o $@ $< $(CFLAGS) -MMD
 	@cp $(BUILDDIR)/$*.d $(BUILDDIR)/$*.P
 	@sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
         -e '/^$$/ d' -e 's/$$/ :/' < $(BUILDDIR)/$*.d >> $(BUILDDIR)/$*.P
