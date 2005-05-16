@@ -34,7 +34,7 @@ ShellHook::RegisterShellHookProc * ShellHook::RegisterShellHook = NULL;
   RSH_REGISTER_PROGMAN = 2;
   RSH_REGISTER_TASKMAN = 3;
 */
-ShellHook::ShellHook(HWND hWnd)
+ShellHook::ShellHook(HWND hWnd): m_hWnd(hWnd)
 {
    if (nbInstance == 0)
    {
@@ -69,7 +69,7 @@ ShellHook::~ShellHook(void)
    if (RegisterShellHook == NULL)
       return;
 
-   RegisterShellHook(hWnd, 0);
+   RegisterShellHook(m_hWnd, 0);
 
    nbInstance--;
    

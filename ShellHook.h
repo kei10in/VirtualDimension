@@ -55,7 +55,7 @@ protected:
    static int nbInstance;
    static RegisterShellHookProc *RegisterShellHook;
 
-   HWND hWnd;
+   HWND m_hWnd;
 };
 
 #endif /*__SHELLHOOK_H__*/
