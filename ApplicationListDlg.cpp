@@ -120,6 +120,7 @@ void ApplicationListDlg::OnEditApplBtn()
 {
    TCHAR path[MAX_PATH];
    int idx;
+	int newidx;
 
    //Stop editing item
    if (IsEditing())
@@ -135,7 +136,8 @@ void ApplicationListDlg::OnEditApplBtn()
 
    //Browse for a new program name
    if (GetProgramName(path, MAX_PATH) && 
-       (FindProgram(path)==-1 || (locMessageBox(m_hDlg, IDS_PROGRAMINLIST_ERROR, IDS_ERROR, MB_OK|MB_ICONEXCLAMATION), FALSE)))
+		 (newidx = FindProgram(path), TRUE) &&
+       (newidx==-1 || newidx==idx || (locMessageBox(m_hDlg, IDS_PROGRAMINLIST_ERROR, IDS_ERROR, MB_OK|MB_ICONEXCLAMATION), FALSE)))
       InsertProgram(path, m_defaultValue, idx);
 }
 
