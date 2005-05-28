@@ -551,7 +551,7 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    //If no window on desktop, or no menu for the window, display system menu
    if (hMenu == NULL || GetMenuItemCount(hMenu) == 0)
    {
-      hBaseMenu = NULL; //to prevent destroying the system menu
+      hBaseMenu = hMenu; //destroy the newly created menu, even if we don't use it
       hMenu = m_pSysMenu;
    }
    else
