@@ -88,7 +88,6 @@ Desktop::~Desktop(void)
 HMENU Desktop::BuildMenu()
 {
    WindowsManager::Iterator it;
-   int i;
    HMENU hMenu;
    MENUITEMINFO mii;
    MENUINFO mi;
@@ -106,7 +105,6 @@ HMENU Desktop::BuildMenu()
    mii.cbSize = sizeof(mii);
    mii.fMask = MIIM_STRING | MIIM_ID | MIIM_DATA | MIIM_BITMAP;
 
-   i = WM_USER;
    for(it = winMan->GetIterator(); it; it++)
    {
       TCHAR buffer[50];
@@ -121,8 +119,10 @@ HMENU Desktop::BuildMenu()
       mii.dwItemData = (DWORD)win->GetIcon();
       mii.dwTypeData = buffer;
       mii.cch = strlen(buffer);
-      mii.wID = i++;
+      mii.wID = WM_USER+(int)win;	//this is not really clean, and could theoretically overflow...  no real problem, though...
       mii.hbmpItem = HBMMENU_CALLBACK;
+
+		assert(mii.wID > WM_USER);
 
       InsertMenuItem(hMenu, (UINT)-1, TRUE, &mii);
    }
@@ -130,16 +130,11 @@ HMENU Desktop::BuildMenu()
    return hMenu;
 }
 
-void Desktop::OnMenuItemSelected(HMENU menu, int cmdId)
+void Desktop::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
 {
-   MENUITEMINFO mii;
    Window * win;
 
-   mii.cbSize = sizeof(mii);
-   mii.fMask = MIIM_DATA;
-   GetMenuItemInfo(menu, cmdId, FALSE, &mii);
-
-   win = (Window *)mii.dwItemData;
+   win = (Window *)(cmdId-WM_USER);
    win->Activate();
 }
 
