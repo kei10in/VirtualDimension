@@ -39,8 +39,8 @@ DEP_FILE = $(addprefix $(BUILDDIR)/,$(addsuffix .P,$(basename $(SRC_FILE))))
 OBJ_FILE = $(DEP_FILE:.P=.o) $(BUILDDIR)/libtransp.a
 
 ifdef DEBUG
-CXXFLAGS = -g -O3 -DDEBUG
-CFLAGS = -g -O3 -DDEBUG
+CXXFLAGS = -g -O0 -DDEBUG
+CFLAGS = -g -O0 -DDEBUG
 else
 CXXFLAGS = -fexpensive-optimizations -O3 -ffast-math -DNDEBUG
 CFLAGS = -fexpensive-optimizations -O3 -ffast-math -DNDEBUG
