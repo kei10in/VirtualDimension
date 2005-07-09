@@ -23,7 +23,7 @@
 
 const char Settings::regKeyName[] = "Software\\Typz Software\\Virtual Dimension\\";
 
-static const RECT DefaultWindowPosition = {0, 0, 100, 100};
+static const RECT DefaultWindowPosition = {10, 10, 110, 110};
 static const LOGFONT DefaultPreviewWindowFont = {-12/*height*/,0,0,0,FW_BOLD/*weight*/,FALSE/*italic*/,0,0,0,0,0,0,0,"Arial"/*fontname*/};
 static const LOGFONT DefaultOSDFont = {-29/*height*/,0,0,0,FW_BOLD/*weight*/,TRUE/*italic*/,0,0,0,0,0,0,0,"Arial"/*fontname*/};
 static const POINT DefaultOSDPosition = {50,50};
