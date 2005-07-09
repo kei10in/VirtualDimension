@@ -77,6 +77,11 @@ Section "MainSection" SEC01
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\License.lnk" "$INSTDIR\LICENSE.html"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   !insertmacro MUI_STARTMENU_WRITE_END
+  
+  WriteRegDWORD HKCU "Software\Typz Software\Virtual Dimension\HidingMethodsTweaks" "C:\Program Files\Internet Explorer\iexplore.exe" 1
+  WriteRegDWORD HKCU "Software\Typz Software\Virtual Dimension\HidingMethodsTweaks" "C:\WINDOWS\explorer.exe" 1
+  WriteRegDWORD HKCU "Software\Typz Software\Virtual Dimension\HidingMethodsTweaks" "C:\WINNT\explorer.exe" 1
+
 SectionEnd
 
 Section Uninstall
