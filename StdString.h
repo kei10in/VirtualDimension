@@ -545,6 +545,15 @@
 	#endif
 #endif
 
+#ifdef __GNUC__
+#if __GNUC__ < 3 || __GCC_MINOR__ < 3
+//GCC does not have wstring defined in std::string before version 3.3...
+#include <string>
+namespace std {
+	typedef std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > wstring;
+};
+#endif
+#endif
 
 // -----------------------------------------------------------------------------
 // MIN and MAX.  The Standard C++ template versions go by so many names (at
