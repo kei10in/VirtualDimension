@@ -6,7 +6,7 @@ VD can be build using the following:
 	- Latest binutils (2.15.91-20040904-1)
 	- Latest w32api (v3.2)
 
-You will also need MSYS or cygwin, to provide make the shell commands used during the build.
+You will also need MSYS or cygwin, to provide make and the shell commands used during the build.
 
 To build, go into the directory where you have the sources, and type:
 	make
