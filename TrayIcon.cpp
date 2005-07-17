@@ -51,8 +51,7 @@ void TrayIcon::AddIcon()
    if (m_iconLoaded)
       return;
 
-   m_iconLoaded = true;
-   trayManager->AddIcon(this);
+   m_iconLoaded = trayManager->AddIcon(this);
 }
 
 void TrayIcon::DelIcon()
