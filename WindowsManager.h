@@ -106,10 +106,10 @@ protected:
 
    // Delayed window update
    //**************************************************************************
-   typedef vector<Window*>::iterator DelayedUdateWndIterator;
-   vector<Window*> m_delayedUpdateWndTab; //List of the windows which have requested delayed update
-   unsigned int m_firstDelayedUpdateWndIdx;
-   unsigned int m_delayedUpdateWndCount;
+   typedef vector<Window *>::iterator DelayedUdateWndIterator;
+   vector<Window *> m_delayedUpdateWndTab; //List of the windows which have requested delayed update
+   vector<int> m_delayedUpdateNextTab;
+   int m_firstFreeDelayedUpdateWndIdx;
 
    unsigned int AddDelayedUpdateWnd(Window * wnd);
    void RemoveDelayedUpdateWnd(unsigned int idx);

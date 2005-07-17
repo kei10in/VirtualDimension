@@ -29,7 +29,7 @@
 
 WindowsManager * winMan;
 
-WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstDelayedUpdateWndIdx(0)
+WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstFreeDelayedUpdateWndIdx(-1)
 {
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
@@ -129,7 +129,7 @@ LRESULT WindowsManager::OnShellHookMessage(HWND /*hWnd*/, UINT /*message*/, WPAR
       case ShellHook::ACTIVATESHELLWINDOW:   break;
       case ShellHook::TASKMAN:               break;
       case ShellHook::REDRAW:                OnRedraw((HWND)lParam); break;
-      case ShellHook::FLASH:                 break;
+      case ShellHook::FLASH:                 OnWindowFlash((HWND)lParam); break;
       case ShellHook::ENDTASK:               break;
       case ShellHook::GETMINRECT:            OnGetMinRect((HWND)lParam); break;
    }
@@ -247,9 +247,17 @@ void WindowsManager::OnRedraw(HWND /*hWnd*/)
    vdWindow.Refresh();
 }
 
-void WindowsManager::OnWindowFlash(HWND /*hWnd*/)
+void WindowsManager::OnWindowFlash(HWND hWnd)
 {
+/*	
+   HWNDMapIterator it = m_HWNDMap.find(hWnd);
+	if (it == m_HWNDMap.end())
+      return;
 
+	Window * win = *(*it).second;
+	if (!win->IsOnCurrentDesk())
+		MessageBox(hWnd, win->GetText(), "Window flashing", MB_OK);
+*/
 }
 
 BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )
@@ -400,7 +408,7 @@ void WindowsManager::ScheduleDelayedUpdate(Window * win)
 
 void WindowsManager::CancelDelayedUpdate(Window * win)
 {
-   DelayedUdateWndIterator it = find(m_delayedUpdateWndTab.begin()+m_firstDelayedUpdateWndIdx, m_delayedUpdateWndTab.end(), win);
+   DelayedUdateWndIterator it = find(m_delayedUpdateWndTab.begin(), m_delayedUpdateWndTab.end(), win);
 
    if (it != m_delayedUpdateWndTab.end())
    {
@@ -412,6 +420,7 @@ void WindowsManager::CancelDelayedUpdate(Window * win)
 void CALLBACK WindowsManager::OnDelayedUpdateTimer(HWND /*hwnd*/, UINT /*uMsg*/, UINT_PTR idEvent, DWORD /*dwTime*/)
 {
    unsigned int idx = idEvent - FIRST_WINDOW_MANAGER_TIMER;
+   assert(idx < winMan->m_delayedUpdateWndTab.size());
    assert(winMan->m_delayedUpdateWndTab[idx] != NULL);
    TRACE("DelayedUpdateTimer");
    winMan->m_delayedUpdateWndTab[idx]->OnDelayUpdate();
@@ -424,24 +433,18 @@ unsigned int WindowsManager::AddDelayedUpdateWnd(Window * wnd)
 
    //If we reached the end of the allocated space, but there are holes, try to fill them
    //(circular buffer style)
-   if (m_delayedUpdateWndTab.size() == m_delayedUpdateWndTab.capacity() &&
-       m_delayedUpdateWndCount < m_delayedUpdateWndTab.size())
-      idx = (m_firstDelayedUpdateWndIdx + m_delayedUpdateWndCount) % m_delayedUpdateWndTab.size();
+   if (m_firstFreeDelayedUpdateWndIdx != -1)
+   {
+      idx = m_firstFreeDelayedUpdateWndIdx;
+      m_firstFreeDelayedUpdateWndIdx = m_delayedUpdateNextTab[idx];
+      m_delayedUpdateWndTab[idx] = wnd;
+   }
    else
-      idx = m_firstDelayedUpdateWndIdx;   //make sure the vector gets extended.
-
-   //If there is not space, extend the vector. Else, assign the free element.
-   if (idx >= m_firstDelayedUpdateWndIdx)
    {
       idx = m_delayedUpdateWndTab.size();
       m_delayedUpdateWndTab.push_back(wnd);
+      m_delayedUpdateNextTab.push_back(-1);
    }
-   else
-   {
-      assert(m_delayedUpdateWndTab[idx] == NULL);
-      m_delayedUpdateWndTab[idx] = wnd;
-   }
-   m_delayedUpdateWndCount++;
 
    return idx;
 }
@@ -449,26 +452,17 @@ unsigned int WindowsManager::AddDelayedUpdateWnd(Window * wnd)
 void WindowsManager::RemoveDelayedUpdateWnd(unsigned int idx)
 {
    assert(idx < m_delayedUpdateWndTab.size());
-   assert(idx >= m_firstDelayedUpdateWndIdx);
-   assert(idx < m_firstDelayedUpdateWndIdx + m_delayedUpdateWndCount);
+   assert(winMan->m_delayedUpdateWndTab[idx] != NULL);
 
    //Stop the timer
    ::KillTimer(vdWindow, FIRST_WINDOW_MANAGER_TIMER+idx);
 
    //Remove the entry
-   m_delayedUpdateWndCount--;
    m_delayedUpdateWndTab[idx] = NULL;
 
    //Track the first entry
-   if (m_delayedUpdateWndCount == 0)
-      m_firstDelayedUpdateWndIdx = 0;
-   else if (idx == m_firstDelayedUpdateWndIdx)
-   {
-      //Find the next used entry
-      do {
-         m_firstDelayedUpdateWndIdx++;
-      } while(m_delayedUpdateWndTab[m_firstDelayedUpdateWndIdx] == NULL);
-   }
+   m_delayedUpdateNextTab[idx] = m_firstFreeDelayedUpdateWndIdx;
+   m_firstFreeDelayedUpdateWndIdx = idx;
 }
 
 WindowsManager::MoveWindowToNextDesktopEventHandler::MoveWindowToNextDesktopEventHandler()
