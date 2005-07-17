@@ -249,15 +249,13 @@ void WindowsManager::OnRedraw(HWND /*hWnd*/)
 
 void WindowsManager::OnWindowFlash(HWND hWnd)
 {
-/*	
    HWNDMapIterator it = m_HWNDMap.find(hWnd);
 	if (it == m_HWNDMap.end())
       return;
 
 	Window * win = *(*it).second;
 	if (!win->IsOnCurrentDesk())
-		MessageBox(hWnd, win->GetText(), "Window flashing", MB_OK);
-*/
+		trayIcon->DisplayBalloon(win->GetText(), "Window is flashing !", 0, NIIF_INFO);
 }
 
 BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )

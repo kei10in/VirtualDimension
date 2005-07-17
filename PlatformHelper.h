@@ -33,7 +33,7 @@
 #define TBM_SETBUDDY (WM_USER+32)
 
 #define MNS_CHECKORBMP 0x04000000
-
+/*
 #define LVCFMT_IMAGE 0x800
 #define LVS_EX_FULLROWSELECT     0x20  
 #define LVS_EX_GRIDLINES         0x01
@@ -43,10 +43,10 @@
 #define LVM_SETEXTENDEDLISTVIEWSTYLE (LVM_FIRST+54)
 #define ListView_SetExtendedListViewStyleEx(hWnd, dwExMask, dwExStyle)     \
    SendMessage(hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, dwExMask, dwExStyle)
-
+*/
 #define GetClassLongPtr GetClassLong
 #define SetClassLongPtr SetClassLong
-
+/*
 typedef struct tagNMITEMACTIVATE {
     NMHDR hdr;
     int iItem;
@@ -58,7 +58,7 @@ typedef struct tagNMITEMACTIVATE {
     LPARAM lParam;
     UINT uKeyFlags;
 } NMITEMACTIVATE,*LPNMITEMACTIVATE;
-
+*/
 #define SETWALLPAPER_DEFAULT ((LPWSTR)-1)
 #define AD_APPLY_REFRESH 0x4
 

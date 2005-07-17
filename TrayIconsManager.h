@@ -33,6 +33,7 @@ public:
    public:
       TrayIconHandler(): m_callbackMessage(0) { return; }
       void Update();
+      void DisplayBalloon(LPTSTR message = NULL, LPTSTR title = NULL, UINT timeout = 0 /*millisecond*/, DWORD flags = 0/*NIIF_* notify icon flags*/);
    protected:
 	   virtual LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
       virtual HICON GetIcon() = 0;

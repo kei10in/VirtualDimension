@@ -133,3 +133,23 @@ void TrayIconsManager::TrayIconHandler::Update()
 
    Shell_NotifyIcon(NIM_MODIFY, &data);
 }
+
+void TrayIconsManager::TrayIconHandler::DisplayBalloon(LPTSTR message, LPTSTR title, UINT timeout, DWORD flags)
+{
+	NOTIFYICONDATA data;
+
+   // Refresh the actual tray icon
+   data.cbSize = sizeof(data);
+   data.hWnd = vdWindow;
+   data.uID = (UINT)this;
+   data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_INFO;
+   data.uCallbackMessage = m_callbackMessage;
+   data.hIcon = GetIcon();
+   strcpy(data.szTip, GetText());
+   strncpy(data.szInfo, message ? message : "", sizeof(data.szInfo));
+   strncpy(data.szInfoTitle, title ? title : "", sizeof(data.szInfoTitle));
+   data.uTimeout = timeout;
+   data.dwInfoFlags = flags;
+
+   Shell_NotifyIcon(NIM_MODIFY, &data);
+}

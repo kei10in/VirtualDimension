@@ -29,6 +29,7 @@
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define WINVER 0x0501
 #define _WIN32_WINNT 0x0501       // For development purpose only. Should work with other versions as well
+#define _WIN32_IE 0x0500
 
 // Windows Header Files:
 #include <windows.h>
