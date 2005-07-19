@@ -1083,6 +1083,12 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
       strcat(text, ".");
       lpVal = strtok(NULL, ", \t");
       strcat(text, lpVal);
+		lpVal = strtok(NULL, ", \t");
+		if (*lpVal != '0')
+		{
+			*lpVal += 'a' - '0';
+			strcat(text, lpVal);
+		}
       SetDlgItemText(hDlg, IDC_PRODUCT, text);
 
       VerQueryValue(lpVersionInfo, "\\StringFileInfo\\040904b0\\LegalCopyright", (LPVOID*)&lpVal, &dwValSize);

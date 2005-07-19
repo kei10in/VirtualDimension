@@ -159,10 +159,10 @@ BEGIN
             VALUE "FileDescription", "Virtual Dimension"
             VALUE "FileVersion", "1, 0, 0, 0"
             VALUE "InternalName", "Virtual Dimension"
-            VALUE "LegalCopyright", "Copyright (C) 2003-2004 François Ferrand"
+            VALUE "LegalCopyright", "Copyright (C) 2003-2005 François Ferrand"
             VALUE "OriginalFilename", "VirtualDimension.exe"
             VALUE "ProductName", "Virtual Dimension"
-            VALUE "ProductVersion", "0, 94, 0, 0"
+            VALUE "ProductVersion", "0, 94, 1, 0"
         END
     END
     BLOCK "VarFileInfo"
