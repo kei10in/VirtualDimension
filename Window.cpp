@@ -46,7 +46,7 @@ HidingMethod* Window::s_hiding_methods[] =
    &s_mover_method 
 };
 
-Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(m_hOwnedWnd),
+Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(hWnd),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(m_hOwnedWnd), m_transpLevel(128), m_autoSaveSettings(false),
                            m_autosize(false), m_autopos(false), m_autodesk(false),
@@ -139,7 +139,7 @@ void Window::OnDelayUpdate()
    if (hOwnedWnd != m_hOwnedWnd)
    {
       m_hOwnedWnd = hOwnedWnd;
-      AlwaysOnTop::SetWindow(m_hOwnedWnd);
+      //AlwaysOnTop::SetWindow(m_hOwnedWnd);
       m_transp.SetWindow(m_hOwnedWnd);
    }
 
