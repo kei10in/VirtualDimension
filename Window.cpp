@@ -139,7 +139,6 @@ void Window::OnDelayUpdate()
    if (hOwnedWnd != m_hOwnedWnd)
    {
       m_hOwnedWnd = hOwnedWnd;
-      //AlwaysOnTop::SetWindow(m_hOwnedWnd);
       m_transp.SetWindow(m_hOwnedWnd);
    }
 
