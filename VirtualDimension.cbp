@@ -3,14 +3,14 @@
 <Code::Blocks_project_file>
 	<FileVersion major="1" minor="1"/>
 	<Project>
-		<Option title="Win32 Application"/>
+		<Option title="Virtual Dimension"/>
 		<Option makefile="Makefile"/>
-		<Option makefile_is_custom="0"/>
+		<Option makefile_is_custom="1"/>
 		<Option compiler="0"/>
 		<Build>
 			<Target title="default">
 				<Option output="cb-debug\virtualdimension.exe"/>
-				<Option working_dir="."/>
+				<Option working_dir="cb-debug"/>
 				<Option object_output="cb-debug\"/>
 				<Option deps_output="cb-debug\"/>
 				<Option external_deps=""/>
