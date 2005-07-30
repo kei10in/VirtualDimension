@@ -136,10 +136,10 @@ LRESULT MouseWarp::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, L
 
    switch(m_warpLocation)
    {
-   case WARP_LEFT:   desk = deskMan->GetOtherDesk(-1); break;
-   case WARP_RIGHT:  desk = deskMan->GetOtherDesk(1); break;
-   case WARP_TOP:    desk = deskMan->GetOtherDesk(-deskMan->GetNbColumns()); break;
-   case WARP_BOTTOM: desk = deskMan->GetOtherDesk(deskMan->GetNbColumns()); break;
+   case WARP_LEFT:   desk = deskMan->GetDeskOnLeft(deskMan->GetCurrentDesktop()); break;
+   case WARP_RIGHT:  desk = deskMan->GetDeskOnRight(deskMan->GetCurrentDesktop()); break;
+   case WARP_TOP:    desk = deskMan->GetDeskAbove(deskMan->GetCurrentDesktop()); break;
+   case WARP_BOTTOM: desk = deskMan->GetDeskBelow(deskMan->GetCurrentDesktop()); break;
    default:          desk = NULL; break;
    }
 

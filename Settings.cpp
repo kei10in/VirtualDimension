@@ -50,6 +50,8 @@ DEFINE_SETTING(Settings, SwitchToNextDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, SwitchToPreviousDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, SwitchToTopDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, SwitchToBottomDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, SwitchToLeftDesktopHotkey, int, 0);
+DEFINE_SETTING(Settings, SwitchToRightDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, MoveWindowToNextDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, MoveWindowToPreviousDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, MoveWindowToDesktopHotkey, int, 0);

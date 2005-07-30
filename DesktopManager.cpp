@@ -372,17 +372,18 @@ void DesktopManager::SetNbColumns(int cols)
    UpdateLayout();
 }
 
-Desktop* DesktopManager::GetOtherDesk(int change)
+Desktop* DesktopManager::GetOtherDesk(Desktop * desk, int (DesktopManager::*updpos)(int pos, int param), int param)
 {
    vector<Desktop*>::iterator it;
-   Desktop * desk;
+   ;
    int pos;
 
-   it = find(m_desks.begin(), m_desks.end(), m_currentDesktop);
+   it = find(m_desks.begin(), m_desks.end(), desk);
    if (it == m_desks.end())
-      return m_currentDesktop;
+      return desk;
 
-   pos = distance(m_desks.begin(), it) + change;
+   pos = (this->*updpos)(distance(m_desks.begin(), it), param);
+   
    while(pos < 0)
       pos += GetNbDesktops();
    while(pos >= GetNbDesktops())
@@ -473,6 +474,67 @@ void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)
    }
 }
 
+int DesktopManager::DeltaMod(int pos, int param)
+{
+	return pos + param;
+}
+ 
+int DesktopManager::LeftMod(int pos, int param)
+{
+   if (pos == GetNbDesktops()-1)
+      //last desktop
+      pos -= GetNbDesktops() % GetNbColumns() - 1;
+   else if ((pos + 1) % GetNbColumns() == 0)
+      //last column
+      pos -= GetNbColumns() - 1;
+   else
+      //other
+      pos ++;
+   return pos;
+}
+
+int DesktopManager::RightMod(int pos, int param)
+{
+   if (pos == GetNbDesktops() - GetNbDesktops() % GetNbColumns())
+      //first col on last line
+      pos += GetNbDesktops() % GetNbColumns() - 1;
+   else if (pos % GetNbColumns() == 0)
+      //first column
+      pos += GetNbColumns() - 1;
+   else
+      //other
+      pos --;
+   return pos;
+}
+
+int DesktopManager::TopMod(int pos, int param)
+{
+   if (pos / GetNbColumns() == 0)
+   {
+      //first row
+      if (pos >= GetNbDesktops()%GetNbColumns())
+         pos -= GetNbColumns();
+      pos += GetNbDesktops() - GetNbDesktops()%GetNbColumns();  
+   }
+   else
+      //other
+      pos -= GetNbColumns();
+   return pos;
+}
+
+int DesktopManager::BottomMod(int pos, int param)
+{
+   if (pos >= GetNbDesktops() - GetNbColumns())
+   {
+      //last row
+      pos = pos%GetNbColumns();
+   }
+   else
+      //other
+      pos += GetNbColumns();
+   return pos;
+}
+
 DesktopManager::NextDesktopEventHandler::NextDesktopEventHandler()
 {
    Settings s;
@@ -487,7 +549,7 @@ DesktopManager::NextDesktopEventHandler::~NextDesktopEventHandler()
 
 void DesktopManager::NextDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(1)); 
+   deskMan->SwitchToDesktop(deskMan->GetNextDesk(deskMan->GetCurrentDesktop())); 
 }
 
 DesktopManager::PrevDesktopEventHandler::PrevDesktopEventHandler()
@@ -504,7 +566,7 @@ DesktopManager::PrevDesktopEventHandler::~PrevDesktopEventHandler()
 
 void DesktopManager::PrevDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(-1)); 
+   deskMan->SwitchToDesktop(deskMan->GetPrevDesk(deskMan->GetCurrentDesktop())); 
 }
 
 DesktopManager::BottomDesktopEventHandler::BottomDesktopEventHandler()
@@ -521,7 +583,7 @@ DesktopManager::BottomDesktopEventHandler::~BottomDesktopEventHandler()
 
 void DesktopManager::BottomDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(deskMan->GetNbColumns())); 
+   deskMan->SwitchToDesktop(deskMan->GetDeskBelow(deskMan->GetCurrentDesktop())); 
 }
 
 DesktopManager::TopDesktopEventHandler::TopDesktopEventHandler()
@@ -538,7 +600,41 @@ DesktopManager::TopDesktopEventHandler::~TopDesktopEventHandler()
 
 void DesktopManager::TopDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetOtherDesk(-deskMan->GetNbColumns())); 
+   deskMan->SwitchToDesktop(deskMan->GetDeskAbove(deskMan->GetCurrentDesktop())); 
+}
+
+DesktopManager::LeftDesktopEventHandler::LeftDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadSetting(Settings::SwitchToLeftDesktopHotkey));
+}
+
+DesktopManager::LeftDesktopEventHandler::~LeftDesktopEventHandler()
+{
+   Settings s;
+   s.SaveSetting(Settings::SwitchToLeftDesktopHotkey, GetHotkey());
+}
+
+void DesktopManager::LeftDesktopEventHandler::OnHotkey()
+{
+   deskMan->SwitchToDesktop(deskMan->GetDeskOnLeft(deskMan->GetCurrentDesktop())); 
+}
+
+DesktopManager::RightDesktopEventHandler::RightDesktopEventHandler()
+{
+   Settings s;
+   SetHotkey(s.LoadSetting(Settings::SwitchToRightDesktopHotkey));
+}
+
+DesktopManager::RightDesktopEventHandler::~RightDesktopEventHandler()
+{
+   Settings s;
+   s.SaveSetting(Settings::SwitchToRightDesktopHotkey, GetHotkey());
+}
+
+void DesktopManager::RightDesktopEventHandler::OnHotkey()
+{
+   deskMan->SwitchToDesktop(deskMan->GetDeskOnRight(deskMan->GetCurrentDesktop())); 
 }
 
 Desktop * DesktopManager::GetDesktop(int index) const

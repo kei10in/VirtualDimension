@@ -56,7 +56,14 @@ public:
    Desktop * GetCurrentDesktop() const { return m_currentDesktop; }
    Desktop* GetDesktopFromPoint(int x, int y);
    void SwitchToDesktop(Desktop * desk);
-   Desktop* GetOtherDesk(int change);
+   Desktop* GetOtherDesk(Desktop * desk, int (DesktopManager::*updpos)(int pos, int param), int param);
+
+   Desktop* GetDeskOnLeft(Desktop * desk)    { return GetOtherDesk(desk, &DesktopManager::LeftMod, 0); }
+   Desktop* GetDeskOnRight(Desktop * desk)   { return GetOtherDesk(desk, &DesktopManager::RightMod, 0); }
+   Desktop* GetDeskAbove(Desktop * desk)     { return GetOtherDesk(desk, &DesktopManager::TopMod, 0); }
+   Desktop* GetDeskBelow(Desktop * desk)     { return GetOtherDesk(desk, &DesktopManager::BottomMod, 0); }
+   Desktop* GetNextDesk(Desktop * desk)      { return GetOtherDesk(desk, &DesktopManager::DeltaMod, 1); }
+   Desktop* GetPrevDesk(Desktop * desk)      { return GetOtherDesk(desk, &DesktopManager::DeltaMod, -1); }
 
    bool IsOSDEnabled() const                  { return m_useOSD; }
    void EnableOSD(bool enable)                { m_useOSD = enable; }
@@ -86,6 +93,12 @@ public:
 protected:
    Desktop * AddDesktop(Desktop * desk);
 
+   int DeltaMod(int pos, int param);
+   int LeftMod(int pos, int param);
+   int RightMod(int pos, int param);
+   int TopMod(int pos, int param);
+   int BottomMod(int pos, int param);
+   
    class NextDesktopEventHandler: public ConfigurableHotkey
    {
    public:
@@ -121,7 +134,25 @@ protected:
       virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Activate desk above"; }
    };
+   
+   class LeftDesktopEventHandler: public ConfigurableHotkey
+   {
+   public:
+      LeftDesktopEventHandler();
+      virtual ~LeftDesktopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Activate desk on the left"; }
+   };
 
+   class RightDesktopEventHandler: public ConfigurableHotkey
+   {
+   public:
+      RightDesktopEventHandler();
+      virtual ~RightDesktopEventHandler();
+      virtual void OnHotkey();
+      virtual LPCSTR GetName() const   { return "Activate desk on the right"; }
+   };
+   
    int m_nbColumn;
 
    vector<Desktop*> m_desks;
@@ -132,6 +163,8 @@ protected:
    PrevDesktopEventHandler m_prevDeskEventHandler;
    BottomDesktopEventHandler m_bottomDeskEventHandler;
    TopDesktopEventHandler m_topDeskEventHandler;
+   LeftDesktopEventHandler m_leftDeskEventHandler;
+   RightDesktopEventHandler m_rightDeskEventHandler;
 
    int m_width, m_height;
 

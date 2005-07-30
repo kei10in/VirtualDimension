@@ -53,6 +53,8 @@ public:
    static DECLARE_SETTING(SwitchToPreviousDesktopHotkey, int);
    static DECLARE_SETTING(SwitchToTopDesktopHotkey, int);
    static DECLARE_SETTING(SwitchToBottomDesktopHotkey, int);
+   static DECLARE_SETTING(SwitchToLeftDesktopHotkey, int);
+   static DECLARE_SETTING(SwitchToRightDesktopHotkey, int);
    static DECLARE_SETTING(MoveWindowToNextDesktopHotkey, int);
    static DECLARE_SETTING(MoveWindowToPreviousDesktopHotkey, int);
    static DECLARE_SETTING(MoveWindowToDesktopHotkey, int);
