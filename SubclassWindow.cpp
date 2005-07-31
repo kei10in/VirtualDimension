@@ -39,8 +39,10 @@ typedef struct RemoteCleanupArgs {
 } RemoteCleanupArgs;
 
 // Calls to the stack-checking routine must be disabled.
+#ifdef _MSC_VER
 #pragma check_stack (off)
 #pragma runtime_checks( "", off )
+#endif /*_MSC_VER*/
 
 static HINSTANCE WINAPI RemoteStartup (RemoteStartupArgs* args) 
 {
@@ -91,8 +93,10 @@ static void AfterRemoteCleanup(void)
 {
 }
 
+#ifdef _MSC_VER
 #pragma runtime_checks( "", restore )
 #pragma check_stack 
+#endif /*_MSC_VER*/
 
 #define STACKPTR(Context)  (Context.Esp)
 

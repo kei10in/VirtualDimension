@@ -291,7 +291,6 @@ void DesktopManager::Sort()
 
 Desktop* DesktopManager::GetDesktopFromPoint(int X, int Y)
 {
-   vector<Desktop*>::const_iterator it;
    unsigned int index;
    int deltaX, deltaY;  //Width and height of a desktop
 

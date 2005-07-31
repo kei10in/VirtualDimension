@@ -117,8 +117,6 @@ IPicture * PlatformHelper::OpenImage(LPCTSTR fileName)
       void * pData = GlobalLock(hGlobal);
       memcpy(pData, pResData, dwSize);
 	   GlobalUnlock(hGlobal);
-
-      UnlockResource(hres);
    }
    else
    {

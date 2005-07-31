@@ -45,7 +45,7 @@ public:
     * Performs cleanup: settings are saved to the registry if needed, the window is unhooked and 
     * memory/handles are released.
     */
-   ~Window();
+   virtual ~Window();
 
    /** Move the window to the specified desktop.
     * This function allows to specify the desktop on which the window can be seen.

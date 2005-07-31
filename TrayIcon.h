@@ -28,7 +28,7 @@ class TrayIcon: public TrayIconsManager::TrayIconHandler
 {
 public:
    TrayIcon(HWND hWnd);
-   ~TrayIcon(void);
+   virtual ~TrayIcon(void);
 
    void SetIcon(bool res);
    bool HasIcon() const              { return m_iconLoaded; }

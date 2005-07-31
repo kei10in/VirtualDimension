@@ -43,7 +43,7 @@ bool BackgroundDisplayMode::ChooseOptions(HWND /*hWnd*/)
 
 
 
-PictureBackgroundDisplayMode::PictureBackgroundDisplayMode(): m_width(0), m_height(0)
+PictureBackgroundDisplayMode::PictureBackgroundDisplayMode(): m_height(0), m_width(0)
 {
    Settings settings;
 

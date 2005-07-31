@@ -163,7 +163,7 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
    }
    else if (window->CheckCreated())
 	{
-#pragma message("Warning: Need to do better reporting in this case")
+      //TODO: Need to do better reporting in this case
 		TRACE("VD puzzled: existing window created !!!");
 	}
 }
@@ -217,7 +217,6 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
       return;
 
    WindowsList::Node * node = (*it).second;
-   WindowsList::Iterator wIt(&m_windows, node);
    Window * win = *node;
    
    if (win->IsSwitching())
@@ -297,25 +296,6 @@ void WindowsManager::SetIntegrateWithShell(bool integ)
       else
          (*it).UnHook();
    }
-}
-
-void WindowsManager::SetTopWindow(Window * top)
-{
-   HWND hWnd = *top;
-   HWNDMapIterator it = m_HWNDMap.find(hWnd);
-   
-   if (it == m_HWNDMap.end())
-      return;
-
-   WindowsList::Node * node = (*it).second;
-   WindowsList::Iterator wIt(&m_windows, node);
-   
-
-   if (top->IsOnAllDesktops())
-      deskMan->UpdateLayout();
-   else
-      deskMan->GetCurrentDesktop()->UpdateLayout();
-   vdWindow.Refresh();
 }
 
 LRESULT WindowsManager::OnSettingsChange(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)

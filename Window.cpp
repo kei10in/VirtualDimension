@@ -49,16 +49,15 @@ HidingMethod* Window::s_hiding_methods[] =
 const ATOM Window::s_VDPropertyTag = GlobalAddAtom("ViRtUaL DiMeNsIoN rocks !");
 
 
-Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(hWnd),
-                           m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
-                           m_transp(m_hOwnedWnd), m_transpLevel(128), m_autoSaveSettings(false),
-                           m_autosize(false), m_autopos(false), m_autodesk(false),
-                           m_hIcon(NULL), m_hDefaulIcon(NULL), m_style(0), m_HookDllHandle(NULL),
-                           m_switching(false)
+Window::Window(HWND hWnd): AlwaysOnTop(hWnd), m_hWnd(hWnd), m_hOwnedWnd(GetOwnedWindow(hWnd)),
+                           m_MinToTray(false), m_style(0), m_transp(m_hOwnedWnd), m_transpLevel(128), 
+                           m_autoSaveSettings(false), m_autosize(false), m_autopos(false), m_autodesk(false),
+                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_HookDllHandle(NULL),
+                           m_switching(false), m_hidden(false)
 {
    Settings s;
    Settings::Window settings(&s);
-   int method;
+   unsigned int method;
 
    //Try to see if there are some special settings for this window
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
@@ -74,7 +73,7 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(hWnd),
    }
    else
       method = GetTag(hWnd);
-   if (method < 0 && method > sizeof(s_hiding_methods)/sizeof(*s_hiding_methods))
+   if (method > sizeof(s_hiding_methods)/sizeof(*s_hiding_methods))
       method = 0;
    m_hidingMethod = s_hiding_methods[method];
    m_hidingMethod->Attach(this);
@@ -460,7 +459,7 @@ void Window::SetTransparent(bool transp)
 
 void Window::ToggleTransparent()
 {
-#pragma message("Warning: will need to be updated once all settings have been changed")
+   //TODO: will need to be updated once all settings have been changed
    if (GetTransparencyLevel() == TRANSPARENCY_DISABLED && !IsTransparent())
       SetTransparencyLevel(0xc0/*Settings::GetDefaultSetting(Settings::Window::TransparencyLevel)*/);
    SetTransparent(!IsTransparent());
@@ -479,7 +478,7 @@ void Window::Activate()
 {
    if (IsIconic())
       Restore();
-   winMan->SetTopWindow(this);
+
    if (!IsOnCurrentDesk())
       deskMan->SwitchToDesktop(m_desk);
    else

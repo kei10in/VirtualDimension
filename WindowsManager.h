@@ -62,7 +62,6 @@ public:
    bool IsIntegrateWithShell() const        { return m_integrateWithShell; }
    void SetIntegrateWithShell(bool integ);
 
-   void SetTopWindow(Window * top);
    HWND GetPrevWindow(Window * wnd);
 
    void EnableAnimations();

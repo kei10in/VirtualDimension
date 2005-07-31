@@ -42,7 +42,7 @@ class Desktop: public ToolTip::Tool, HotKeyManager::EventHandler
 public:
    Desktop(int i);
    Desktop(Settings::Desktop * desktop);
-   ~Desktop(void);
+   virtual ~Desktop(void);
 
    HMENU BuildMenu();
    void OnMenuItemSelected(HMENU menu, int cmdId);
