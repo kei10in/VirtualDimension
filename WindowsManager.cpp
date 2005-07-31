@@ -26,6 +26,7 @@
 #include "movewindow.h"
 #include "DesktopManager.h"
 #include "Locale.h"
+#include "BalloonNotif.h"
 
 WindowsManager * winMan;
 
@@ -254,7 +255,7 @@ void WindowsManager::OnWindowFlash(HWND hWnd)
 
 	Window * win = *(*it).second;
 	if (!win->IsOnCurrentDesk())
-		trayIcon->DisplayBalloon(win->GetText(), "Window is flashing !", 0, NIIF_INFO);
+      msgManager.Add(win->GetText(), "Window is flashing !", NIIF_INFO, NULL);
 }
 
 BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )
