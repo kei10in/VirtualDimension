@@ -170,6 +170,11 @@ public:
 
    void OnDelayUpdate();
 
+   static void SetTag(HWND hWnd, int val)     { SetProp(hWnd, MAKEINTATOM(s_VDPropertyTag), (HANDLE)(val+1)); }
+   static void RemTag(HWND hWnd)              { RemoveProp(hWnd, MAKEINTATOM(s_VDPropertyTag)); }
+   static bool HasTag(HWND hWnd)              { return GetProp(hWnd, MAKEINTATOM(s_VDPropertyTag)) != NULL; }
+   static int GetTag(HWND hWnd)               { return (int)GetProp(hWnd, MAKEINTATOM(s_VDPropertyTag)) - 1; }
+
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnContextMenu();
@@ -234,6 +239,8 @@ protected:
    static HidingMethodMove       s_mover_method;
 
    static HidingMethod* s_hiding_methods[];
+   
+   static const ATOM s_VDPropertyTag;
 };
 
 HWND Window::GetOwnedWindow(HWND hWnd)

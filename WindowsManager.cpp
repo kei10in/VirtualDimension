@@ -260,9 +260,10 @@ void WindowsManager::OnWindowFlash(HWND hWnd)
 
 BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )
 {
-   if ( (GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE) && 
-       !(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) &&
-        (::GetWindow(hWnd, GW_OWNER) == NULL) )
+   if ( ((GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE) && 
+         !(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) &&
+         (::GetWindow(hWnd, GW_OWNER) == NULL)) ||
+        Window::HasTag(hWnd) )
    {
       WindowsList::Node * node = new WindowsList::Node(hWnd);
       WindowsManager * man = (WindowsManager*)lParam;

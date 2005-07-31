@@ -62,6 +62,7 @@ protected:
 class HidingMethodMinimize: public HidingMethod
 {
 public:
+   virtual void Attach(Window * wnd);
    virtual void Show(Window * wnd);
    virtual void Hide(Window * wnd);
 };
@@ -69,6 +70,7 @@ public:
 class HidingMethodMove: public HidingMethod
 {
 public:
+   virtual void Attach(Window * wnd);
    virtual void Show(Window * wnd);
    virtual void Hide(Window * wnd);
 };

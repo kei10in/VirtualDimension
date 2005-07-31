@@ -46,6 +46,9 @@ HidingMethod* Window::s_hiding_methods[] =
    &s_mover_method 
 };
 
+const ATOM Window::s_VDPropertyTag = GlobalAddAtom("ViRtUaL DiMeNsIoN rocks !");
+
+
 Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(hWnd),
                            m_hWnd(hWnd), m_hidden(false), m_MinToTray(false), 
                            m_transp(m_hOwnedWnd), m_transpLevel(128), m_autoSaveSettings(false),
@@ -61,15 +64,23 @@ Window::Window(HWND hWnd): m_hOwnedWnd(GetOwnedWindow(hWnd)), AlwaysOnTop(hWnd),
    GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
    OpenSettings(settings, false);
 
-   //Setup the hiding method to use
+   //Setup the hiding method to use (try to restore from tag, if present)
    m_hHideMutex = CreateMutex(NULL, FALSE, NULL);
-   TCHAR filename[MAX_PATH];
-   PlatformHelper::GetWindowFileName(m_hWnd, filename, MAX_PATH);
-   method = s.LoadHidingMethod(filename);
+   if (!HasTag(hWnd))
+   {
+      TCHAR filename[MAX_PATH];
+      PlatformHelper::GetWindowFileName(m_hWnd, filename, MAX_PATH);
+      method = s.LoadHidingMethod(filename);
+   }
+   else
+      method = GetTag(hWnd);
    if (method < 0 && method > sizeof(s_hiding_methods)/sizeof(*s_hiding_methods))
       method = 0;
    m_hidingMethod = s_hiding_methods[method];
    m_hidingMethod->Attach(this);
+
+   //Tag the window, to remember the window was managed by VD (in case of crash). It also tracks the hidding method used
+   SetTag(hWnd, method);
 
    //Load settings for this window
    m_desk = settings.LoadSetting(Settings::Window::OnAllDesktops) ? NULL : deskMan->GetCurrentDesktop();
@@ -117,6 +128,9 @@ Window::~Window(void)
       CloseHandle(m_hHideMutex);
 
    m_hidingMethod->Detach(this);
+   
+   //Tag is not needed anymore
+   RemTag(m_hWnd);
 }
 
 /** Delay update callback.

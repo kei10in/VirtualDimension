@@ -38,7 +38,13 @@ int HidingMethod::GetWindowData(const Window * wnd)
 
 void HidingMethodHide::Attach(Window * wnd)
 {
-   SetWindowData(wnd, SHOWN);
+	if (!::IsWindowVisible(*wnd))
+	{
+		SetWindowData(wnd, HIDDEN);
+		Show(wnd);
+	}
+	else
+      SetWindowData(wnd, SHOWN); 
 }
 
 void HidingMethodHide::Show(Window * wnd)
@@ -159,9 +165,19 @@ bool HidingMethodHide::CheckSwitching(const Window * wnd)
 }
 
 
+void HidingMethodMinimize::Attach(Window * wnd)
+{
+	 LONG_PTR style = GetWindowLongPtr(*wnd, GWL_EXSTYLE);
+	 if (style & WS_EX_TOOLWINDOW)
+	 {
+        SetWindowData(wnd, (style & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW);
+        Show(wnd);
+	 }
+}
+
 void HidingMethodMinimize::Show(Window * wnd)
 {
-   LONG_PTR oldstyle = GetWindowData(wnd) & 0x7fff;
+   LONG_PTR oldstyle = GetWindowData(wnd) & 0x7fffffff;
 
    //Restore the window's style
    if (oldstyle != GetWindowLongPtr(*wnd, GWL_EXSTYLE))
@@ -186,7 +202,7 @@ void HidingMethodMinimize::Show(Window * wnd)
 
 void HidingMethodMinimize::Hide(Window * wnd)
 {
-   LONG_PTR oldstyle = GetWindowLongPtr(*wnd, GWL_EXSTYLE);
+   LONG_PTR oldstyle = GetWindowLongPtr(*wnd, GWL_EXSTYLE) & 0x7fffffff;
 
    //Minimize the application
    int iconic = wnd->IsIconic() ? 1 : 0;
@@ -211,6 +227,16 @@ void HidingMethodMinimize::Hide(Window * wnd)
    }
 }
 
+
+void HidingMethodMove::Attach(Window * wnd)
+{
+	 LONG_PTR style = GetWindowLongPtr(*wnd, GWL_EXSTYLE);
+	 if (style & WS_EX_TOOLWINDOW)
+	 {
+        SetWindowData(wnd, (style & ~WS_EX_TOOLWINDOW) | WS_EX_APPWINDOW);
+        Show(wnd);
+	 }
+}
 
 void HidingMethodMove::Show(Window * wnd)
 {
