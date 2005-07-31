@@ -40,7 +40,7 @@ BalloonNotification::Message BalloonNotification::Add(LPCTSTR text, LPCTSTR titl
                                                       BalloonNotification::ClickCb cb, int data, DWORD timeout)
 {
    HWND hwndToolTips = CreateWindow(TOOLTIPS_CLASS, NULL,
-                         WS_POPUP | TTS_NOPREFIX | TTS_BALLOON,
+                         WS_POPUP | TTS_NOPREFIX | TTS_BALLOON | ((cb) ? TTS_CLOSE : 0),
                          0, 0, 0, 0,
                          NULL, NULL, vdWindow, NULL);
 
