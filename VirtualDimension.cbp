@@ -8,7 +8,7 @@
 		<Option makefile_is_custom="1"/>
 		<Option compiler="0"/>
 		<Build>
-			<Target title="default">
+			<Target title="VD - Debug">
 				<Option output="cb-debug\virtualdimension.exe"/>
 				<Option working_dir="cb-debug"/>
 				<Option object_output="cb-debug\"/>
@@ -18,11 +18,38 @@
 				<Option compiler="0"/>
 				<Option projectResourceIncludeDirsRelation="0"/>
 				<Compiler>
+					<Add option="-Wall"/>
 					<Add option="-g"/>
 				</Compiler>
 				<Linker>
 					<Add option="-mthreads -lcomctl32 -lole32 -lolepro32 -lversion -luuid"/>
 				</Linker>
+			</Target>
+			<Target title="HookDLL - Debug">
+				<Option output="cb-debug\HookDLL.dll"/>
+				<Option working_dir="cb-debug"/>
+				<Option object_output="cb-debug\"/>
+				<Option deps_output="cb-debug\"/>
+				<Option external_deps=""/>
+				<Option type="3"/>
+				<Option compiler="0"/>
+				<Option createDefFile="1"/>
+				<Option createStaticLib="1"/>
+				<Compiler>
+					<Add option="-Wall"/>
+					<Add option="-g"/>
+				</Compiler>
+			</Target>
+			<Target title="landEN - Debug">
+				<Option output="cb-debug\langEN.dll"/>
+				<Option working_dir="cb-debug"/>
+				<Option object_output="cb-debug\"/>
+				<Option deps_output="cb-debug\"/>
+				<Option external_deps=""/>
+				<Option type="3"/>
+				<Option compiler="0"/>
+				<Option createDefFile="1"/>
+				<Option createStaticLib="1"/>
 			</Target>
 		</Build>
 		<Linker>
@@ -46,364 +73,387 @@
 		</Linker>
 		<Unit filename="AlwaysOnTop.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="AlwaysOnTop.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ApplicationListDlg.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ApplicationListDlg.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="BackgroundColor.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="BackgroundColor.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="BackgroundDisplayMode.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="BackgroundDisplayMode.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Config.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Config.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ConfigBox.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Desktop.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Desktop.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="DesktopManager.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="DesktopManager.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ExplorerWrapper.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ExplorerWrapper.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="FastWindow.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="FastWindow.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="HidingMethod.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="HidingMethod.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
+		</Unit>
+		<Unit filename="HookDLL.cpp">
+			<Option compilerVar="CPP"/>
+			<Option target="HookDLL - Debug"/>
+		</Unit>
+		<Unit filename="HookDLL.h">
+			<Option compilerVar=""/>
+			<Option compile="0"/>
+			<Option link="0"/>
+			<Option target="HookDLL - Debug"/>
 		</Unit>
 		<Unit filename="HotKeyControl.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="HotKeyControl.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="HotKeyManager.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="HotKeyManager.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="HotkeyConfig.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="HotkeyConfig.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="LinkControl.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="LinkControl.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
+		</Unit>
+		<Unit filename="Locale.cpp">
+			<Option compilerVar="CPP"/>
+			<Option target="VD - Debug"/>
+		</Unit>
+		<Unit filename="Locale.h">
+			<Option compilerVar=""/>
+			<Option compile="0"/>
+			<Option link="0"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="MouseWarp.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="MouseWarp.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
-		</Unit>
-		<Unit filename="NotifyWindow.cpp">
-			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="NotifyWindow.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="OnScreenDisplay.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="OnScreenDisplay.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="PlatformHelper.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="PlatformHelper.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Resource.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Settings.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Settings.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="SharedMenuBuffer.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
+			<Option target="HookDLL - Debug"/>
 		</Unit>
 		<Unit filename="SharedMenuBuffer.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
+			<Option target="HookDLL - Debug"/>
 		</Unit>
 		<Unit filename="ShellHook.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ShellHook.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="SubclassWindow.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="TaskPool.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="TaskPool.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ToolTip.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="ToolTip.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Transparency.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Transparency.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="TrayIcon.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="TrayIcon.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="TrayIconsManager.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="TrayIconsManager.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="VirtualDimension.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="VirtualDimension.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="VirtualDimension.rc">
 			<Option compilerVar="WINDRES"/>
 			<Option objectName="VirtualDimension.res"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="WallPaper.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="WallPaper.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Window.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="Window.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="WindowDialogs.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="WindowsList.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="WindowsList.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="WindowsManager.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="WindowsManager.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="deskPropsDlg.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="guids.c">
 			<Option compilerVar="CC"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
+		</Unit>
+		<Unit filename="langEN.rc">
+			<Option compilerVar="WINDRES"/>
+			<Option objectName="langEN.res"/>
+			<Option target="landEN - Debug"/>
 		</Unit>
 		<Unit filename="movewindow.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="movewindow.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="stdafx.cpp">
 			<Option compilerVar="CPP"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 		<Unit filename="stdafx.h">
 			<Option compilerVar=""/>
 			<Option compile="0"/>
 			<Option link="0"/>
-			<Option target="default"/>
+			<Option target="VD - Debug"/>
 		</Unit>
 	</Project>
 </Code::Blocks_project_file>
