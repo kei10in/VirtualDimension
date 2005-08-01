@@ -90,10 +90,11 @@ BalloonNotification::Message BalloonNotification::Add(LPCTSTR text, LPCTSTR titl
       TOOLINFO ti;
       ti.cbSize = sizeof(ti);
       ti.uFlags = TTF_CENTERTIP | TTF_TRACK;
-      ti.hwnd = vdWindow;// hwnd;
+      ti.hwnd = vdWindow;
       ti.uId = 0;
       ti.hinst = NULL;
       ti.lpszText = (LPSTR)text;
+      
       memset(&ti.rect, 0, sizeof(ti.rect));
       SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM) &ti);
 
