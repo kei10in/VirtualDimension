@@ -29,6 +29,7 @@
 #include "ShellHook.h"
 #include "WindowsList.h"
 #include "HotkeyConfig.h"
+#include "BalloonNotif.h"
 
 using namespace std;
 
@@ -102,6 +103,7 @@ protected:
    void OnWindowReplaced(HWND)            { return; } //window has been replaced
    void OnWindowReplacing(HWND)           { return; } //window is being replaced
    void OnWindowFlash(HWND hWnd);         //window is flashing
+   static void OnFlashBallonClick(BalloonNotification::Message msg, int data);
 
    // Delayed window update
    //**************************************************************************

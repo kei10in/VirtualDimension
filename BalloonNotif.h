@@ -28,7 +28,7 @@ class BalloonNotification
    ~BalloonNotification(void);
 
    typedef HWND Message;
-   typedef void (*ClickCb)(HANDLE tip, int data);   ///< Callback called when a message is clicked.
+   typedef void (*ClickCb)(Message tip, int data);   ///< Callback called when a message is clicked.
 
    /** Add a new message to the notification area. 
     * @param icon Icon to display. can be one of the NIIN_* values, or an HICON (works 
@@ -39,8 +39,11 @@ class BalloonNotification
    void Remove(Message msg);               ///< Remove a message from the notification area.
 
  protected:
-   WNDPROC m_tooltipWndProc;
-   
+   WNDPROC m_tooltipWndProc;  ///< Original tooltip window proc
+   int m_tooltipWndExtra;     ///< Original tooltip window data byte count
+
+   LPCTSTR m_tooltipClass;    ///< Window class to use for the balloon tooltips
+
    static LRESULT CALLBACK MyTooltipWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 };
 

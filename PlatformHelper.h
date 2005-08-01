@@ -28,6 +28,12 @@
 
 #ifdef __GNUC__
 
+#ifdef UNICODE
+#define TTM_SETTITLE TTM_SETTITLEW
+#else
+#define TTM_SETTITLE TTM_SETTITLEA
+#endif
+
 #define UDM_SETRANGE32 (WM_USER+111)
 
 #define TBM_SETBUDDY (WM_USER+32)

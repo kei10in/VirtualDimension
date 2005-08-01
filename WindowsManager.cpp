@@ -161,6 +161,9 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
          window->GetDesk()->UpdateLayout();
 
       vdWindow.Refresh();
+      
+//            msgManager.Add("This window requires attention!\r\nClick here to activate it.", 
+//                     window->GetText(), (int)window->GetIcon(), &OnFlashBallonClick, (int)hWnd);
    }
    else if (window->CheckCreated())
 	{
@@ -255,7 +258,20 @@ void WindowsManager::OnWindowFlash(HWND hWnd)
 
 	Window * win = *(*it).second;
 	if (!win->IsOnCurrentDesk())
-      msgManager.Add(win->GetText(), "Window is flashing !", NIIF_INFO, NULL);
+      msgManager.Add("This window requires attention!\r\nClick here to activate it.", 
+                     win->GetText(), (int)win->GetIcon(), &OnFlashBallonClick, (int)hWnd);
+}
+
+void WindowsManager::OnFlashBallonClick(BalloonNotification::Message msg, int data)
+{
+	HWND hWnd = (HWND)data;
+   HWNDMapIterator it = winMan->m_HWNDMap.find(hWnd);
+
+	if (it == winMan->m_HWNDMap.end())
+      return;
+
+	Window * win = *(*it).second;
+	win->Activate();
 }
 
 BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )

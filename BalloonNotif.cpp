@@ -21,36 +21,70 @@
 #include "stdafx.h"
 #include "BalloonNotif.h"
 #include "VirtualDimension.h"
+#include "PlatformHelper.h"
 
 // Use an empiric 'random' timer id, to minimize interference with timers used by tooltip control
 #define BALLOON_NOTIFICATION_TIMEOUT   0xa341c85e
 
 BalloonNotification msgManager;
 
-
-BalloonNotification::BalloonNotification(void): m_tooltipWndProc(NULL)
+BalloonNotification::BalloonNotification(void): m_tooltipWndProc(NULL), m_tooltipWndExtra(-1), m_tooltipClass(NULL)
 {
+	WNDCLASSEX cls;
+	INITCOMMONCONTROLSEX cmnctrl;
+
+   //Ensure tooltip class is loaded
+   cmnctrl.dwSize = sizeof(cmnctrl);
+   cmnctrl.dwICC = ICC_TAB_CLASSES;
+   InitCommonControlsEx(&cmnctrl);
+
+   //Get tooltip's class info
+   cls.cbSize = sizeof(WNDCLASSEX);
+	if (GetClassInfoEx(NULL, TOOLTIPS_CLASS, &cls))
+	{
+		// Subclass
+		m_tooltipWndProc = cls.lpfnWndProc;
+		cls.lpfnWndProc = &MyTooltipWndProc;
+
+		// Add some storage space
+		m_tooltipWndExtra = cls.cbWndExtra;
+		cls.cbWndExtra += 2*sizeof(int);
+
+		// Register the new class
+		cls.hInstance = (HINSTANCE)GetModuleHandle(NULL);
+		cls.lpszClassName = "Balloon Notification Tooltips";
+		//cls.style |= CS_GLOBALCLASS;
+		m_tooltipClass = MAKEINTATOM(RegisterClassEx(&cls));
+	}
+   
+   if (m_tooltipClass == NULL)
+   {
+      // Failed to get class info -> use standard class
+      m_tooltipClass = TOOLTIPS_CLASS;
+   }
 }
 
 BalloonNotification::~BalloonNotification(void)
 {
+	UnregisterClass(m_tooltipClass, GetModuleHandle(NULL));
 }
 
 BalloonNotification::Message BalloonNotification::Add(LPCTSTR text, LPCTSTR title, int icon, 
                                                       BalloonNotification::ClickCb cb, int data, DWORD timeout)
 {
-   HWND hwndToolTips = CreateWindow(TOOLTIPS_CLASS, NULL,
+   HWND hwndToolTips = CreateWindowEx(WS_EX_TOPMOST, m_tooltipClass, NULL,
                          WS_POPUP | TTS_NOPREFIX | TTS_BALLOON | ((cb) ? TTS_CLOSE : 0),
                          0, 0, 0, 0,
                          NULL, NULL, vdWindow, NULL);
 
    if (hwndToolTips)
    {
-   	// Subclass the window
-   	WNDPROC proc = (WNDPROC)GetWindowLongPtr(hwndToolTips, GWLP_WNDPROC);
-   	assert(m_tooltipWndProc == NULL || m_tooltipWndProc == proc);
-   	m_tooltipWndProc = proc;
-   	SetWindowLongPtr(hwndToolTips, GWLP_WNDPROC, (LONG_PTR)&MyTooltipWndProc);
+   	// Store the callback information
+   	if (m_tooltipWndExtra >= 0)
+      {
+         SetWindowLongPtr(hwndToolTips, m_tooltipWndExtra, (LONG_PTR)cb);
+         SetWindowLongPtr(hwndToolTips, m_tooltipWndExtra+sizeof(int), (LONG_PTR)data);
+      }
 
       // Create a tool
       TOOLINFO ti;
@@ -65,7 +99,7 @@ BalloonNotification::Message BalloonNotification::Add(LPCTSTR text, LPCTSTR titl
 
       // Set the title, if any
       if (title)
-      	SendMessage(hwndToolTips, TTM_SETTITLEA, (WPARAM)icon, (LPARAM)title);  
+      	SendMessage(hwndToolTips, TTM_SETTITLE, (WPARAM)icon, (LPARAM)title);  
 
       // Position and display the tooltip
       SendMessage(hwndToolTips, TTM_TRACKPOSITION, 0, 0);
@@ -87,10 +121,14 @@ void BalloonNotification::Remove(BalloonNotification::Message tip)
 LRESULT BalloonNotification::MyTooltipWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
 	LRESULT res = 0;
+	ClickCb cb;
 
    switch(Msg)
    {
    case WM_LBUTTONDOWN:
+      cb = (ClickCb)GetWindowLongPtr(hWnd, msgManager.m_tooltipWndExtra);
+      if (cb)
+         (*cb)(hWnd, GetWindowLongPtr(hWnd, msgManager.m_tooltipWndExtra+sizeof(int)));
       DestroyWindow(hWnd);
       break;
 
