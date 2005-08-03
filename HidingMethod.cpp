@@ -55,13 +55,7 @@ void HidingMethodHide::Show(Window * wnd)
    switch(state)
    {
    case HIDING:
-      SetWindowData(wnd, HIDING_TO_SHOW | iconic);
-      break;
-   
    case SHOWING_TO_HIDE:
-      SetWindowData(wnd, SHOWING | iconic);
-      break;
-   
    case HIDDEN:
       SetWindowData(wnd, SHOWING | iconic);
 
@@ -77,29 +71,20 @@ void HidingMethodHide::Show(Window * wnd)
 void HidingMethodHide::Hide(Window * wnd)
 {
    int state = GetWindowData(wnd) & 0xf;
-   int iconic;
+   int iconic = GetWindowData(wnd) & 0x10;
 
    switch(state)
    {
-   case SHOWING:
-      iconic = GetWindowData(wnd) & 0x10;
-      SetWindowData(wnd, SHOWING_TO_HIDE | iconic);
-      break;
-
-   case HIDING_TO_SHOW:
-      iconic = GetWindowData(wnd) & 0x10;
-      SetWindowData(wnd, HIDING | iconic);
-      break;
-
    case SHOWN:
-      SetWindowData(wnd, HIDING);
-
+      iconic = ::IsIconic(*wnd) ? 0x10 : 0;
+   case SHOWING:
+   case HIDING_TO_SHOW:
+      SetWindowData(wnd, HIDING | iconic);
+      
       winMan->DisableAnimations();
       //need to hide the parent window first or hiding owned windows causes an activate of the parent (theory, didn't confirm)
       SetWindowPos(*wnd, NULL, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-      if (::IsIconic(*wnd))
-         SetWindowData(wnd, HIDING|0x10);
-      else
+      if (!iconic)
          ShowOwnedPopups(*wnd, FALSE);
       winMan->EnableAnimations();
       break;
