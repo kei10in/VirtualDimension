@@ -75,7 +75,7 @@ void TaskPool::SetThreadCount(LONG count)
    }
 }
 
-void TaskPool::QueueJob(JobProc * fun, void * arg)
+void TaskPool::QueueJob(JobProc * fun, void * arg, HANDLE * event)
 {
    static JobInfo info;
    int length;
@@ -86,6 +86,10 @@ void TaskPool::QueueJob(JobProc * fun, void * arg)
    //Build the job info
    info.fun = fun;
    info.arg = arg;
+   if (event)
+      *event = info.event = CreateEvent(NULL, FALSE, FALSE, NULL);
+   else
+      info.event = NULL;
 
    //Add the job
    m_jobsQueue.push_back(info);
@@ -127,7 +131,7 @@ bool TaskPool::DeQueueJob(JobProc * fun, void * arg)
    return false;
 }
 
-bool TaskPool::UpdateJob(JobProc * oldFun, void * oldArg, JobProc * newFun, void * newArg)
+bool TaskPool::UpdateJob(JobProc * oldFun, void * oldArg, JobProc * newFun, void * newArg, HANDLE * event)
 {
    //Get access to the queue
    WaitForSingleObject(m_hQueueMutex, INFINITE);
@@ -139,6 +143,15 @@ bool TaskPool::UpdateJob(JobProc * oldFun, void * oldArg, JobProc * newFun, void
       {
          it->arg = newArg;
          it->fun = newFun;
+         if (event && it->event)
+            *event = it->event;
+         else if (event)
+            *event = it->event = CreateEvent(NULL, FALSE, FALSE, NULL);
+         else if (it->event)
+         {
+            CloseHandle(it->event);
+            it->event = NULL;
+         }
 
          ReleaseMutex(m_hQueueMutex);
          return true;
@@ -161,6 +174,7 @@ DWORD TaskPool::task()
       {
          JobProc * fun;
          void * arg;
+         HANDLE event;
 
          //Get access to the queue
          WaitForSingleObject(m_hQueueMutex, INFINITE);
@@ -172,6 +186,7 @@ DWORD TaskPool::task()
 
             fun = info.fun;
             arg = info.arg;
+            event = info.event;
 
             m_jobsQueue.pop_front();
          }
@@ -179,6 +194,7 @@ DWORD TaskPool::task()
          {
             fun = NULL;
             arg = NULL;
+            event = NULL;
          }
 
          //Release access to the queue
@@ -187,6 +203,13 @@ DWORD TaskPool::task()
          //Do the job !
          if (fun)
             fun(arg);
+            
+         //Notify job completion
+         if (event)
+         {
+         	PulseEvent(event);
+         	CloseHandle(event);
+         }
       }
    while(m_nThreadCount <= m_nMinThreadCount);  //Ensure a minimum number of threads is running
    InterlockedDecrement(&m_nThreadCount);

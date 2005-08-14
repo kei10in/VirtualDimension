@@ -396,7 +396,10 @@ void Desktop::Activate(void)
 
       if (win->IsOnDesk(this))
       {
-			ShowWindowWorkerProc(win);
+      	HANDLE event;
+      	if (!m_taskPool.UpdateJob(HideWindowWorkerProc, win, ShowWindowWorkerProc, win, &event))
+            m_taskPool.QueueJob(ShowWindowWorkerProc, win, &event);
+         WaitForSingleObject(event, 2000);
 			WindowsOnThisDesk = true;
       }
 		else if(!win->IsHidden())

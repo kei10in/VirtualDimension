@@ -38,9 +38,9 @@ public:
    void SetThreadCount(LONG count);
    LONG GetThreadCount() const { return m_nThreadCount; }
 
-   void QueueJob(JobProc * fun, void * arg);
+   void QueueJob(JobProc * fun, void * arg, HANDLE * event=NULL);
    bool DeQueueJob(JobProc * fun, void * arg);
-   bool UpdateJob(JobProc * oldFun, void * oldArg, JobProc * newFun, void * newArg);
+   bool UpdateJob(JobProc * oldFun, void * oldArg, JobProc * newFun, void * newArg, HANDLE * event=NULL);
 
 protected:
    DWORD task();
@@ -60,6 +60,7 @@ protected:
    typedef struct JobInfo {
       JobProc * fun;
       void * arg;
+      HANDLE event;
    } JobInfo;
    list<JobInfo> m_jobsQueue;
    HANDLE m_hQueueMutex;
