@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -34,14 +34,14 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstFreeDelayedUpdat
 {
    Settings settings;
    UINT uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
-   
+
    m_confirmKill = settings.LoadSetting(Settings::ConfirmKilling);
    m_autoSwitch = settings.LoadSetting(Settings::AutoSwitchDesktop);
    m_allWindowsInTaskList = settings.LoadSetting(Settings::AllWindowsInTaskList);
    m_integrateWithShell = settings.LoadSetting(Settings::IntegrateWithShell);
 
    m_nbDisabledAnimations = 0;
-   { 
+   {
       ANIMATIONINFO info;
       info.cbSize = sizeof(ANIMATIONINFO);
       info.iMinAnimate = 0;
@@ -110,7 +110,7 @@ void WindowsManager::MoveWindow(HWND hWnd, Desktop* desk)
 Window* WindowsManager::GetWindow(HWND hWnd)
 {
    HWNDMapIterator it = m_HWNDMap.find(hWnd);
-   
+
    if (it == m_HWNDMap.end())
       return NULL;
    else
@@ -161,9 +161,6 @@ void WindowsManager::OnWindowCreated(HWND hWnd)
          window->GetDesk()->UpdateLayout();
 
       vdWindow.Refresh();
-      
-//            msgManager.Add("This window requires attention!\r\nClick here to activate it.", 
-//                     window->GetText(), (int)window->GetIcon(), &OnFlashBallonClick, (int)hWnd);
    }
    else if (window->CheckCreated())
 	{
@@ -178,7 +175,7 @@ void WindowsManager::OnWindowDestroyed(HWND hWnd)
    Iterator nIt;
    HWNDMapIterator it = m_HWNDMap.find(hWnd);
    Desktop * desk;
-   
+
    if (it == m_HWNDMap.end() || !((Window*)*((*it).second))->CheckDestroyed())
       return;
 
@@ -216,13 +213,13 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    //Try to see if some window that should not be on this desktop has
    //been activated. If so, move it to the current desktop
    HWNDMapIterator it = m_HWNDMap.find(hWnd);
-   
+
    if (it == m_HWNDMap.end())
       return;
 
    WindowsList::Node * node = (*it).second;
    Window * win = *node;
-   
+
    if (win->IsSwitching())
       return;  //Ignore switching windows
 
@@ -257,26 +254,12 @@ void WindowsManager::OnWindowFlash(HWND hWnd)
       return;
 
 	Window * win = *(*it).second;
-	if (!win->IsOnCurrentDesk())
-      msgManager.Add("This window requires attention!\r\nClick here to activate it.", 
-                     win->GetText(), (int)win->GetIcon(), &OnFlashBallonClick, (int)hWnd);
-}
-
-void WindowsManager::OnFlashBallonClick(BalloonNotification::Message msg, int data)
-{
-	HWND hWnd = (HWND)data;
-   HWNDMapIterator it = winMan->m_HWNDMap.find(hWnd);
-
-	if (it == winMan->m_HWNDMap.end())
-      return;
-
-	Window * win = *(*it).second;
-	win->Activate();
+	win->FlashWindow();
 }
 
 BOOL CALLBACK WindowsManager::ListWindowsProc( HWND hWnd, LPARAM lParam )
 {
-   if ( ((GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE) && 
+   if ( ((GetWindowLong(hWnd, GWL_STYLE) & WS_VISIBLE) &&
          !(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_TOOLWINDOW) &&
          (::GetWindow(hWnd, GW_OWNER) == NULL)) ||
         Window::HasTag(hWnd) )
@@ -340,7 +323,7 @@ LRESULT WindowsManager::OnSettingsChange(HWND /*hWnd*/, UINT /*message*/, WPARAM
 void WindowsManager::DisableAnimations()
 {
    //Increment number of time animation has been disabled
-   if ((InterlockedIncrement(&m_nbDisabledAnimations) == 1) && 
+   if ((InterlockedIncrement(&m_nbDisabledAnimations) == 1) &&
        (m_iAnimate != 0))
    {
       //If this is the first time, disable animations
@@ -391,7 +374,7 @@ HWND WindowsManager::GetPrevWindow(Window * wnd)
       return *(*it);
    else
       return ::GetWindow(*wnd, GW_HWNDPREV);
-}		 
+}
 
 // Delayed window update
 //**************************************************************************

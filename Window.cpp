@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -39,20 +39,20 @@ HidingMethodHide       Window::s_hider_method;
 HidingMethodMinimize   Window::s_minimizer_method;
 HidingMethodMove       Window::s_mover_method;
 
-HidingMethod* Window::s_hiding_methods[] = 
-{ 
-   &s_hider_method, 
-   &s_minimizer_method, 
-   &s_mover_method 
+HidingMethod* Window::s_hiding_methods[] =
+{
+   &s_hider_method,
+   &s_minimizer_method,
+   &s_mover_method
 };
 
 const ATOM Window::s_VDPropertyTag = GlobalAddAtom("ViRtUaL DiMeNsIoN rocks !");
 
 
 Window::Window(HWND hWnd): AlwaysOnTop(hWnd), m_hWnd(hWnd), m_hOwnedWnd(GetOwnedWindow(hWnd)),
-                           m_MinToTray(false), m_style(0), m_transp(m_hOwnedWnd), m_transpLevel(128), 
+                           m_MinToTray(false), m_style(0), m_transp(m_hOwnedWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false), m_autodesk(false),
-                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_HookDllHandle(NULL),
+                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_BallonMsg(NULL), m_HookDllHandle(NULL),
                            m_switching(false), m_hidden(false)
 {
    Settings s;
@@ -127,19 +127,19 @@ Window::~Window(void)
       CloseHandle(m_hHideMutex);
 
    m_hidingMethod->Detach(this);
-   
+
    //Tag is not needed anymore
    RemTag(m_hWnd);
 }
 
 /** Delay update callback.
- * This method is called as the final step in the delayed-update process. This process is used to 
+ * This method is called as the final step in the delayed-update process. This process is used to
  * fix some issues when VD is called too early after a window has been created. Indeed, sometime
  * the owned window is not ready, thus the user would not get the VD menu, and many features would
  * not work (always on top, transparency...).
- * This function is thus called some time after the constructor (provided a call to 
+ * This function is thus called some time after the constructor (provided a call to
  * WindowManager::ScheduleDelayedUpdate() is made). It checks if the owned window has changed,
- * updates various parameters consequently, and in any case performs auto-size/position and shell 
+ * updates various parameters consequently, and in any case performs auto-size/position and shell
  * integration.
  */
 void Window::OnDelayUpdate()
@@ -158,7 +158,7 @@ void Window::OnDelayUpdate()
    //Auto-size/position
    OpenSettings(settings, false);
    if ( (m_autosize || m_autopos) && settings.LoadSetting(Settings::Window::WindowPosition, &rect) )
-      SetWindowPos(m_hOwnedWnd, 0, 
+      SetWindowPos(m_hOwnedWnd, 0,
       rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
       SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
       (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
@@ -179,6 +179,9 @@ void Window::MoveToDesktop(Desktop * desk)
 
    oldDesk = m_desk;
    m_desk = desk;
+
+   if (deskMan->GetCurrentDesktop() == desk)
+      UnFlashWindow();
 
    if (IsOnDesk(deskMan->GetCurrentDesktop()))
    {
@@ -210,7 +213,7 @@ void Window::MoveToDesktop(Desktop * desk)
 }
 
 bool Window::IsOnCurrentDesk() const
-{ 
+{
    return IsOnDesk(deskMan->GetCurrentDesktop());
 }
 
@@ -220,7 +223,7 @@ HICON Window::GetIcon(void)
       return m_hIcon;
 
    m_hIcon = NULL;
-     	
+
    //Get normal icon
 	if (SendMessageTimeout(m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD)&m_hIcon) &&
        m_hIcon)
@@ -388,7 +391,7 @@ void Window::OnMenuItemSelected(HMENU /*menu*/, int cmdId)
    case VDM_MAXIMIZEWIDTH:
       MaximizeWidth();
       break;
-      
+
    case VDM_CLOSE:
       PostMessage(m_hWnd, WM_SYSCOMMAND, SC_CLOSE, 0);
       break;
@@ -415,7 +418,7 @@ void Window::SetMinimizeToTray(bool totray)
    if (IsIconic() && IsOnCurrentDesk())
    {
       if (m_MinToTray)
-      {  
+      {
          // Move minimized icon from taskbar to tray
          trayManager->AddIcon(this);
          HideWindow();
@@ -469,7 +472,7 @@ void Window::SetTransparencyLevel(unsigned char level)
 {
    //Update the variable
    m_transpLevel = level;
-   
+
    //Refresh the display
    SetTransparent(IsTransparent());
 }
@@ -481,8 +484,7 @@ void Window::Activate()
 
    if (!IsOnCurrentDesk())
       deskMan->SwitchToDesktop(m_desk);
-   else
-      SetForegroundWindow(m_hOwnedWnd);
+   SetForegroundWindow(m_hOwnedWnd);
 }
 
 void Window::Restore()
@@ -534,7 +536,7 @@ void Window::MaximizeHeight()
 
    GetWindowRect(hWnd, &rect);
    SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
-   MoveWindow( hWnd, rect.left, screen.top, 
+   MoveWindow( hWnd, rect.left, screen.top,
                rect.right-rect.left, screen.bottom-screen.top,
                TRUE);
 }
@@ -547,8 +549,8 @@ void Window::MaximizeWidth()
 
    GetWindowRect(hWnd, &rect);
    SystemParametersInfo(SPI_GETWORKAREA, 0, &screen, 0);
-   MoveWindow( hWnd, screen.left, rect.top, 
-               screen.right-screen.left, rect.bottom - rect.top, 
+   MoveWindow( hWnd, screen.left, rect.top,
+               screen.right-screen.left, rect.bottom - rect.top,
                TRUE);
 }
 
@@ -556,7 +558,7 @@ void Window::Kill()
 {
    HANDLE hProcess;
    DWORD pId;
-   
+
    GetWindowThreadProcessId(m_hWnd, &pId);
    hProcess = OpenProcess( PROCESS_TERMINATE, 0, pId );
    if (hProcess == NULL)
@@ -589,7 +591,7 @@ void Window::OnContextMenu()
    HMENU hMenu;
    HRESULT res;
    POINT pt;
-   
+
    hMenu = BuildMenu();
 
    GetCursorPos(&pt);
@@ -624,4 +626,32 @@ void Window::UnHook()
          UnHookWindow(m_HookDllHandle, m_dwProcessId, m_hOwnedWnd);
    }
    m_HookDllHandle = NULL;
+}
+
+void Window::FlashWindow(void)
+{
+   if (!IsOnCurrentDesk() && !IsWindowFlashing())
+   {
+      m_BallonMsg = msgManager.Add("This window requires attention!\r\nClick here to activate it.",
+                                   GetText(), (int)GetIcon(), &OnFlashBallonClick, (int)m_hWnd);
+   }
+}
+
+void Window::UnFlashWindow(void)
+{
+   if (IsWindowFlashing())
+   {
+      msgManager.Remove(m_BallonMsg);
+      m_BallonMsg = NULL;
+   }
+}
+
+void Window::OnFlashBallonClick(BalloonNotification::Message msg, int data)
+{
+   Window * wnd = winMan->GetWindow((HWND)data);
+   if (wnd)
+   {
+      wnd->UnFlashWindow();
+      wnd->Activate();
+   }
 }

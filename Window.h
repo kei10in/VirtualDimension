@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -28,6 +28,8 @@
 #include "AlwaysOnTop.h"
 #include "HidingMethod.h"
 #include "SharedMenuBuffer.h"
+#include "BalloonNotif.h"
+
 
 class Window: public ToolTip::Tool, public TrayIconsManager::TrayIconHandler, public AlwaysOnTop
 {
@@ -42,7 +44,7 @@ public:
    Window(HWND hWnd);
 
    /** Destructor.
-    * Performs cleanup: settings are saved to the registry if needed, the window is unhooked and 
+    * Performs cleanup: settings are saved to the registry if needed, the window is unhooked and
     * memory/handles are released.
     */
    virtual ~Window();
@@ -51,13 +53,13 @@ public:
     * This function allows to specify the desktop on which the window can be seen.
     * By specifying NULL, the window will be seen on all desktops.
     *
-    * @param desk Pointer to the desktop on to which the window belongs (ie, on which the 
+    * @param desk Pointer to the desktop on to which the window belongs (ie, on which the
     * window is displayed), or NULL to make the window always visible (ie, on all desktops)
     */
    void MoveToDesktop(Desktop * desk);
 
    /** Tell if the window can be seen on the specified desktop.
-    * This function returns a boolean, indicating if the window is displayed on the 
+    * This function returns a boolean, indicating if the window is displayed on the
     * specified desktop. By specifying the NULL desktop, the caller can easily find out
     * if the window can be seen on all desktops.
     * This does not give any information concerning the window state or whatsoever. It
@@ -148,12 +150,12 @@ public:
    void SetTransparencyLevel(unsigned char level);
 
    operator HWND()                            { return m_hWnd; }
-   
+
    HICON GetIcon(void);
    char * GetText()
-   { 
+   {
       GetWindowText(m_hWnd, m_name, sizeof(m_name)/sizeof(char));
-      return m_name; 
+      return m_name;
    }
    void GetRect(LPRECT /*rect*/)  { return; }
 
@@ -174,6 +176,10 @@ public:
    static void RemTag(HWND hWnd)              { RemoveProp(hWnd, MAKEINTATOM(s_VDPropertyTag)); }
    static bool HasTag(HWND hWnd)              { return GetProp(hWnd, MAKEINTATOM(s_VDPropertyTag)) != NULL; }
    static int GetTag(HWND hWnd)               { return (int)GetProp(hWnd, MAKEINTATOM(s_VDPropertyTag)) - 1; }
+
+   void FlashWindow(void);
+   void UnFlashWindow(void);
+   bool IsWindowFlashing(void)                { return m_BallonMsg; }
 
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -203,6 +209,8 @@ protected:
    void OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode);
    static LRESULT CALLBACK AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
+   static void OnFlashBallonClick(BalloonNotification::Message msg, int data);
+
    HWND m_hWnd;
    HWND m_hOwnedWnd;
    Desktop * m_desk;
@@ -224,6 +232,8 @@ protected:
    HICON m_hIcon;
    HICON m_hDefaulIcon;
 
+   BalloonNotification::Message m_BallonMsg;
+
    HINSTANCE m_HookDllHandle;
    DWORD m_dwProcessId;
 
@@ -239,7 +249,7 @@ protected:
    static HidingMethodMove       s_mover_method;
 
    static HidingMethod* s_hiding_methods[];
-   
+
    static const ATOM s_VDPropertyTag;
 };
 

@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -161,7 +161,7 @@ void Desktop::UpdateLayout()
    {
       Window * win = it;
       RECT rect;
-      
+
       if (!win->IsOnDesk(this))
          continue;
 
@@ -251,13 +251,13 @@ Window* Desktop::GetWindowFromPoint(int X, int Y)
    WindowsManager::Iterator it;
    int index;
 
-   index = ((X - m_rect.left) / 16) + 
+   index = ((X - m_rect.left) / 16) +
            ((m_rect.right-m_rect.left) / 16) * ((Y - m_rect.top) / 16);
 
    for(it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
-      
+
       if (!win->IsOnDesk(this))
          continue;
 
@@ -272,7 +272,7 @@ Window* Desktop::GetWindowFromPoint(int X, int Y)
 void Desktop::Rename(char * name)
 {
    Settings settings;
-   Settings::Desktop desktop(&settings, m_name); 
+   Settings::Desktop desktop(&settings, m_name);
 
    /* Remove the desktop from registry */
    desktop.Destroy();
@@ -284,7 +284,7 @@ void Desktop::Rename(char * name)
 void Desktop::Remove()
 {
    Settings settings;
-   Settings::Desktop desktop(&settings, m_name); 
+   Settings::Desktop desktop(&settings, m_name);
 
    /* Remove the desktop from registry */
    desktop.Destroy();
@@ -307,7 +307,7 @@ void Desktop::Remove()
 void Desktop::Save()
 {
    Settings settings;
-   Settings::Desktop desktop(&settings, m_name); 
+   Settings::Desktop desktop(&settings, m_name);
 
    desktop.SaveSetting(Settings::Desktop::DeskWallpaper, m_wallpaperFile);
    desktop.SaveSetting(Settings::Desktop::DeskIndex, m_index);
@@ -397,6 +397,7 @@ void Desktop::Activate(void)
       if (win->IsOnDesk(this))
       {
       	HANDLE event;
+      	win->UnFlashWindow();
       	if (!m_taskPool.UpdateJob(HideWindowWorkerProc, win, ShowWindowWorkerProc, win, &event))
             m_taskPool.QueueJob(ShowWindowWorkerProc, win, &event);
          WaitForSingleObject(event, 2000);
@@ -417,7 +418,7 @@ void Desktop::Desactivate(void)
 {
    m_active = false;
 }
-                                                   
+
 void Desktop::SetHotkey(int hotkey)
 {
    if (m_hotkey != 0)
