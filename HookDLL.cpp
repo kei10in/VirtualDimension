@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -49,9 +49,8 @@ void CleanupMenu(HWND hWnd, HMENU hMenu);
 void InitPopupMenu(HWND hWnd, HMENU hMenu);
 int FindMenuItem(UINT cmdid, HMENU hMenu);
 
-class HWNDHookData
+struct HWNDHookData
 {
-public:
    WNDPROC m_fnPrevWndProc;
    int m_iData;
    HANDLE m_hMutex;
@@ -126,7 +125,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			}
          break;
       }
-      break;   
+      break;
 
 	case WM_INITMENUPOPUP:
 		if ((HMENU)wParam == pData->m_hSubMenu)
@@ -191,7 +190,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		   {
 				short shift = GetKeyState(VK_SHIFT) & 0x8000;
 				short ctrl = GetKeyState(VK_CONTROL) & 0x8000;
-			
+
 				if (shift && !ctrl)
 					//Maximize width using VD
 					res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, VDM_MAXIMIZEWIDTH, (WPARAM)pData->m_iData);
@@ -217,7 +216,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          }
          break;
       }
-      break;   
+      break;
 
 	case WM_INITMENUPOPUP:
 		if ((HMENU)wParam == pData->m_hSubMenu)
@@ -229,7 +228,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       break;
 
-   case WM_DESTROY:		
+   case WM_DESTROY:
 	   {
 			//Restore window procedure
 			SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)pData->m_fnPrevWndProc);
@@ -252,7 +251,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
 {
    HWNDHookData * pHookData;
    bool unicode = IsWindowUnicode(hWnd) ? true : false;
-   
+
    if (unicode)
       pHookData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
    else
@@ -273,6 +272,8 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
    }
 
    pHookData = new HWNDHookData;
+   if (!pHookData)
+      return HOOK_ERROR;
 
    pHookData->m_hMutex = CreateMutex(NULL, TRUE, NULL);
    if (!pHookData->m_hMutex)
@@ -287,7 +288,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
 
    if (unicode)
    {
-      SetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName), (HANDLE)pHookData);  
+      SetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName), (HANDLE)pHookData);
       pHookData->m_fnPrevWndProc = (WNDPROC)SetWindowLongPtrW(hWnd, GWLP_WNDPROC, (LONG_PTR)hookWndProcW);
    }
    else
@@ -319,7 +320,7 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
    it = m_HookData.find(hWnd);
    pData = (it == m_HookData.end()) ? NULL : it->second;
-   if (pData && 
+   if (pData &&
        (WaitForSingleObject(pData->m_hMutex, INFINITE) != WAIT_FAILED))
 	{
 		//Unsubclass the window
@@ -427,8 +428,8 @@ int FindMenuItem(UINT cmdid, HMENU hMenu)
 }
 
 extern "C"
-BOOL APIENTRY DllMain( HANDLE /*hModule*/, 
-                       DWORD  ul_reason_for_call, 
+BOOL APIENTRY DllMain( HANDLE /*hModule*/,
+                       DWORD  ul_reason_for_call,
                        LPVOID /*lpReserved*/
 					 )
 {
