@@ -256,12 +256,6 @@
 			<Option link="0"/>
 			<Option target="VD - Debug"/>
 		</Unit>
-		<Unit filename="NotifyWindow.h">
-			<Option compilerVar=""/>
-			<Option compile="0"/>
-			<Option link="0"/>
-			<Option target="VD - Debug"/>
-		</Unit>
 		<Unit filename="OnScreenDisplay.cpp">
 			<Option compilerVar="CPP"/>
 			<Option target="VD - Debug"/>
