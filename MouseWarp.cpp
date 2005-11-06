@@ -40,7 +40,7 @@ MouseWarp::MouseWarp()
    m_sensibility = settings.LoadSetting(Settings::WarpSensibility);
    m_minDuration = settings.LoadSetting(Settings::WarpMinDuration);
    m_reWarpDelay = settings.LoadSetting(Settings::WarpRewarpDelay);
-   m_warpVKey = settings.LoadSettings(Settings::WarpRequiredVKey);
+   m_warpVKey = settings.LoadSetting(Settings::WarpRequiredVKey);
 
    //Compute size of center rect
    RefreshDesktopSize();
