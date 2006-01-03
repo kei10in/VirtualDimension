@@ -145,6 +145,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			//Alert VD window
 			PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
 		}
+		break;
    }
 
    if (res == 0)
@@ -236,6 +237,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			//Alert VD window
 			PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
 		}
+		break;
 	}
 
    if (res == 0)
@@ -271,10 +273,12 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
       return HOOK_OK_REHOOK;
    }
 
+   //Allocate data for storing hook information
    pHookData = new HWNDHookData;
    if (!pHookData)
       return HOOK_ERROR;
 
+   //Create mutex to sync access to hook information
    pHookData->m_hMutex = CreateMutex(NULL, TRUE, NULL);
    if (!pHookData->m_hMutex)
    {
@@ -286,6 +290,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
    pHookData->m_bHookWndProcCalled = false;
    pHookData->m_hSubMenu = NULL;
 
+   //Replace the window procedure
    if (unicode)
    {
       SetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName), (HANDLE)pHookData);
@@ -296,20 +301,23 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
       SetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName), (HANDLE)pHookData);
       pHookData->m_fnPrevWndProc = (WNDPROC)SetWindowLongPtrA(hWnd, GWLP_WNDPROC, (LONG_PTR)hookWndProcA);
    }
-
    if (!pHookData->m_fnPrevWndProc)
    {
+      if (unicode)
+			RemovePropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
+		else
+			RemovePropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
       CloseHandle(pHookData->m_hMutex);
       delete pHookData;
       return HOOK_ERROR;
    }
-   else
-   {
-   	pHookData->m_hSubMenu = SetupMenu(hWnd);
-      m_HookData[hWnd] = pHookData;
-      ReleaseMutex(pHookData->m_hMutex);
-      return HOOK_OK;
-   }
+
+   //Store the hook
+   pHookData->m_hSubMenu = SetupMenu(hWnd);
+   m_HookData[hWnd] = pHookData;
+   ReleaseMutex(pHookData->m_hMutex);
+
+   return HOOK_OK;
 }
 
 HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
@@ -407,7 +415,7 @@ void InitPopupMenu(HWND hWnd, HMENU hMenu)
 
    //Retrieve the menu description
    SharedMenuBuffer menuinfo;
-   LRESULT res;
+   DWORD res;
    if (SendMessageTimeout(hVDWnd, WM_VD_PREPARE_HOOK_MENU, (WPARAM)menuinfo.GetFileMapping(), (LPARAM)pHookData->m_iData,
                           SMTO_ABORTIFHUNG|SMTO_NORMAL, 20000 /*20s*/, &res) &&
        res)
