@@ -407,10 +407,13 @@ void InitPopupMenu(HWND hWnd, HMENU hMenu)
 
    //Retrieve the menu description
    SharedMenuBuffer menuinfo;
-   if (SendMessage(hVDWnd, WM_VD_PREPARE_HOOK_MENU, (WPARAM)menuinfo.GetFileMapping(), (LPARAM)pHookData->m_iData))
+   LRESULT res;
+   if (SendMessageTimeout(hVDWnd, WM_VD_PREPARE_HOOK_MENU, (WPARAM)menuinfo.GetFileMapping(), (LPARAM)pHookData->m_iData,
+                          SMTO_ABORTIFHUNG|SMTO_NORMAL, 20000 /*20s*/, &res) &&
+       res)
    {
       //Clear the menu
-      while(GetMenuItemCount(hMenu))
+      while(GetMenuItemCount(hMenu) > 0)
          RemoveMenu(hMenu, 0, MF_BYPOSITION);
 
       //Build the menu as in the retrieved description
