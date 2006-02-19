@@ -39,6 +39,7 @@ public:
    static LPCTSTR GetDefaultWallpaper()   { return m_defaultWallpaper; }
 
 protected:
+	bool m_useDefaultWallpaper;
    LPTSTR m_fileName;
    LPTSTR m_bmpFileName;
 

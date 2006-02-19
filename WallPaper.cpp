@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -104,7 +104,8 @@ void WallPaper::SetImage(LPTSTR fileName)
       delete m_bmpFileName;
    }
 
-   if (fileName != NULL && *fileName == 0)
+   m_useDefaultWallpaper = (fileName != NULL && *fileName == 0);
+   if (m_useDefaultWallpaper)
       m_fileName = m_defaultWallpaper;
    else
       m_fileName = fileName;
@@ -155,6 +156,7 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
    WallPaperLoader * self = (WallPaperLoader *)lpParameter;
    HANDLE handles[2] = { self->m_hQueueSem, self->m_hStopThread };
    TCHAR tempPath[MAX_PATH-14];
+   bool changed = false;
 
    GetTempPath(MAX_PATH-14, tempPath);
 
@@ -164,48 +166,54 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
       WallPaper * wallpaper = self->m_WallPapersQueue.front();
       self->m_WallPapersQueue.pop_front();
       ReleaseMutex(self->m_hQueueMutex);
-   
-      if (wallpaper->m_bmpFileName)
-      {
-         if (wallpaper == m_activeWallPaper)
-            SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
-      }
-      else if (wallpaper->m_fileName) 
-      {
-         if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
-         {
-            wallpaper->m_bmpFileName = wallpaper->m_fileName;
 
-			   if (wallpaper == m_activeWallPaper)
-				   SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
-         }
-         else
-         {
-			   IPicture * picture = PlatformHelper::OpenImage(wallpaper->m_fileName);
-			   if (!picture)
-			   {
-				   wallpaper->m_fileName = NULL;
-				   continue;
-			   }
+		if (changed || !wallpaper->m_useDefaultWallpaper)
+		{
+		   //TODO: for default wallpaper, we should now check if it has not changed
+			changed = !wallpaper->m_useDefaultWallpaper;
 
-			   wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
-            if ( (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0) ||
-               (!PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName)) )
-			   {
-               delete wallpaper->m_bmpFileName;
-               wallpaper->m_bmpFileName = NULL;
-				   picture->Release();
-				   continue;
-			   }
+			if (wallpaper->m_bmpFileName)
+			{
+				if (wallpaper == m_activeWallPaper)
+					SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+			}
+			else if (wallpaper->m_fileName)
+			{
+				if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
+				{
+					wallpaper->m_bmpFileName = wallpaper->m_fileName;
 
-			   if (wallpaper == m_activeWallPaper)
-				   SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
-   			
-			   picture->Release();
-		   }
-      }
-      else
-         SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (void*)"", 0);
+					if (wallpaper == m_activeWallPaper)
+						SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+				}
+				else
+				{
+					IPicture * picture = PlatformHelper::OpenImage(wallpaper->m_fileName);
+					if (!picture)
+					{
+						wallpaper->m_fileName = NULL;
+						continue;
+					}
+
+					wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
+					if ( (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0) ||
+						  (!PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName)) )
+					{
+						delete wallpaper->m_bmpFileName;
+						wallpaper->m_bmpFileName = NULL;
+						picture->Release();
+						continue;
+					}
+
+					if (wallpaper == m_activeWallPaper)
+						SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, wallpaper->m_bmpFileName, 0);
+
+					picture->Release();
+				}
+			}
+			else
+				SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, (void*)"", 0);
+		}
 
       // Set the background color
       BackgroundColor::GetInstance().SetColor(wallpaper->m_bkColor);
