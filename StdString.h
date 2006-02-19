@@ -789,6 +789,8 @@ inline const Type& SSMAX(const Type& arg1, const Type& arg2)
 	#include <varargs.h>
 #endif
 
+namespace StdString {
+
 // StdCodeCvt - made to look like Win32 functions WideCharToMultiByte
 //				and MultiByteToWideChar but uses locales in SS_ANSI
 //				builds.  There are a number of overloads.
@@ -4227,6 +4229,11 @@ struct StdStringEqualsNoCaseA
 	bool operator()(const CStdStringA& sLeft, const CStdStringA& sRight) const
 	{ return ssicmp(sLeft.c_str(), sRight.c_str()) == 0; }
 };
+
+
+}; //namespace
+
+using namespace StdString;
 
 // If we had to define our own version of TRACE above, get rid of it now
 
