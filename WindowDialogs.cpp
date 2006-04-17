@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -63,7 +63,7 @@ LRESULT CALLBACK Window::PropertiesProc(HWND hDlg, UINT message, WPARAM /*wParam
 
       case PSN_APPLY:
          SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
-         return TRUE; 
+         return TRUE;
       }
       break;
 	}
@@ -86,7 +86,7 @@ void Window::OnInitSettingsDlg(HWND hDlg)
    SendMessage(hWnd, TBM_SETBUDDY, FALSE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC2));
    SendMessage(hWnd, TBM_SETPOS, TRUE, GetTransparencyLevel());
    EnableWindow(hWnd, supportTransparency);
-   
+
    hWnd = GetDlgItem(hDlg, IDC_TRANSP_DISP);
    FormatTransparencyLevel(hWnd, GetTransparencyLevel());
    EnableWindow(hWnd, supportTransparency);
@@ -167,7 +167,7 @@ void Window::OnApplySettingsBtn(HWND hDlg)
    SetMinimizeToTray(res);
 
    //Apply on all desktops
-   hWnd = GetDlgItem(hDlg, IDC_ALLDESKS_CHECK);         
+   hWnd = GetDlgItem(hDlg, IDC_ALLDESKS_CHECK);
    res = SendMessage(hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false;
    SetOnAllDesktops(res);
 
@@ -241,7 +241,7 @@ LRESULT CALLBACK Window::SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LP
          self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
          self->OnApplySettingsBtn(hDlg);
          SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
-         return TRUE; 
+         return TRUE;
       }
       break;
 	}
@@ -415,34 +415,50 @@ LRESULT CALLBACK Window::AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam
          self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
          self->OnApplyAutoSettingsBtn(hDlg);
          SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
-         return TRUE; 
+         return TRUE;
       }
       break;
 	}
 	return FALSE;
 }
 
+LRESULT CALLBACK Window::FilterSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   return FALSE;
+}
+
 void Window::DisplayWindowProperties()
 {
-   PROPSHEETPAGE pages[2];
+   PROPSHEETPAGE pages[3];
    PROPSHEETHEADER propsheet;
 	HINSTANCE hresinst = Locale::GetInstance();
+	int page = 0;
 
    memset(&pages, 0, sizeof(pages));
 
-   pages[0].dwSize = sizeof(PROPSHEETPAGE);
-	pages[0].hInstance = hresinst;
-   pages[0].dwFlags = PSP_DEFAULT;
-   pages[0].pfnDlgProc = (DLGPROC)SettingsProc;
-   pages[0].lParam = (LPARAM)this;
-   pages[0].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_SETTINGS);
+   pages[page].dwSize = sizeof(PROPSHEETPAGE);
+	pages[page].hInstance = hresinst;
+   pages[page].dwFlags = PSP_DEFAULT;
+   pages[page].pfnDlgProc = (DLGPROC)SettingsProc;
+   pages[page].lParam = (LPARAM)this;
+   pages[page].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_SETTINGS);\
+   page++;
 
-   pages[1].dwSize = sizeof(PROPSHEETPAGE);
-   pages[1].hInstance = hresinst;
-   pages[1].dwFlags = PSP_DEFAULT;
-   pages[1].pfnDlgProc = (DLGPROC)AutoSettingsProc;
-   pages[1].lParam = (LPARAM)this;
-   pages[1].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_AUTOSETTINGS);
+   pages[page].dwSize = sizeof(PROPSHEETPAGE);
+   pages[page].hInstance = hresinst;
+   pages[page].dwFlags = PSP_DEFAULT;
+   pages[page].pfnDlgProc = (DLGPROC)AutoSettingsProc;
+   pages[page].lParam = (LPARAM)this;
+   pages[page].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_AUTOSETTINGS);
+   page++;
+
+   pages[page].dwSize = sizeof(PROPSHEETPAGE);
+   pages[page].hInstance = hresinst;
+   pages[page].dwFlags = PSP_DEFAULT;
+   pages[page].pfnDlgProc = (DLGPROC)FilterSettingsProc;
+   pages[page].lParam = (LPARAM)this;
+   pages[page].pszTemplate = MAKEINTRESOURCE(IDD_WINDOW_FILTER);
+   page++;
 
    memset(&propsheet, 0, sizeof(propsheet));
    propsheet.dwSize = sizeof(PROPSHEETHEADER);
@@ -450,7 +466,7 @@ void Window::DisplayWindowProperties()
    propsheet.hwndParent = vdWindow;
    propsheet.hInstance = vdWindow;
    locGetString(propsheet.pszCaption, IDS_WINDOWPROPERTIES);
-   propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
+   propsheet.nPages = page;
    propsheet.ppsp = &pages[0];
 
    PropertySheet(&propsheet);

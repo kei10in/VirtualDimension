@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -95,6 +95,7 @@
 #define IDS_CONFIRMKILL                 141
 #define IDD_SHORTCUT_SETTINGS           142
 #define IDS_KILLWARNING                 142
+#define IDD_WINDOW_FILTER               143
 #define IDI_KILL                        143
 #define IDI_MAXIMIZE_VERT               144
 #define IDI_MAXIMIZE_HORIZ              145
@@ -174,6 +175,13 @@
 #define IDC_SNAPSIZE_SPIN               1079
 #define IDC_AUTOHIDEDELAY_SPIN          1082
 #define IDC_AUTOHIDEDELAY_EDIT          1083
+#define IDC_FILTERWNDCLS_CHECK          1084
+#define IDC_WNDCLSFLT_EDIT              1085
+#define IDC_FILTERWNDTITLE_CHECK        1086
+#define IDC_WNDTITLEFLT_EDIT            1087
+#define IDC_FILTERPROGRAM_CHECK         1088
+#define IDC_PROGRAMFLT_EDIT             1089
+#define IDC_BROWSE_BTN                  1090
 #define IDS_LANGUAGE                    17325
 #define IDC_DEFAULT_WALLPAPER           32774
 #define IDC_NO_WALLPAPER                32775

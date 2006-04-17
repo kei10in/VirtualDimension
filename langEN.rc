@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -27,7 +27,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #define APSTUDIO_HIDDEN_SYMBOLS
-#include "windows.h"
+#include <windows.h>
 #undef APSTUDIO_HIDDEN_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ IDS_LANGUAGE            ICON                    "english.ico"
 // Menu
 //
 
-IDC_VIRTUALDIMENSION MENU 
+IDC_VIRTUALDIMENSION MENU
 BEGIN
     POPUP "Popupmenu"
     BEGIN
@@ -66,7 +66,7 @@ BEGIN
     END
 END
 
-IDM_WALLPAPER_CTXMENU MENU 
+IDM_WALLPAPER_CTXMENU MENU
 BEGIN
     POPUP "PopupMenu"
     BEGIN
@@ -79,7 +79,7 @@ BEGIN
     END
 END
 
-IDM_APPSLIST_CTXMENU MENU 
+IDM_APPSLIST_CTXMENU MENU
 BEGIN
     POPUP "Popup"
     BEGIN
@@ -88,7 +88,7 @@ BEGIN
     END
 END
 
-IDM_SHORTCUTS_CTXMENU MENU 
+IDM_SHORTCUTS_CTXMENU MENU
 BEGIN
     POPUP "Menu"
     BEGIN
@@ -104,28 +104,28 @@ END
 //
 
 IDD_DESKS_SETTINGS DIALOGEX 22, 17, 212, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | 
-    DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD | WS_VISIBLE | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK |
+    DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD | WS_VISIBLE |
     WS_CAPTION | WS_SYSMENU
 CAPTION "Desktops"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LISTBOX         IDC_DESK_LIST,7,7,138,79,LBS_NOINTEGRALHEIGHT | 
+    LISTBOX         IDC_DESK_LIST,7,7,138,79,LBS_NOINTEGRALHEIGHT |
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "",IDC_DESK_SPIN,"msctls_updown32",UDS_ALIGNRIGHT | 
+    CONTROL         "",IDC_DESK_SPIN,"msctls_updown32",UDS_ALIGNRIGHT |
                     UDS_AUTOBUDDY | UDS_ARROWKEYS,105,7,11,78
     PUSHBUTTON      "Insert",IDC_INSERT_DESK,155,7,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE_DESK,155,23,50,14
     PUSHBUTTON      "Configure",IDC_SETUP_DESK,155,39,50,14
     LTEXT           "Number of columns",IDC_STATIC,7,97,65,8,NOT WS_GROUP
     EDITTEXT        IDC_COLUMN_NUMBER,73,94,26,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_COLUMN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+    CONTROL         "",IDC_COLUMN_SPIN,"msctls_updown32",UDS_SETBUDDYINT |
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS |
                     UDS_NOTHOUSANDS,92,94,11,14
 END
 
 IDD_DESKTOPPROPS DIALOGEX 0, 0, 284, 102
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
     WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Desk properties"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -139,7 +139,7 @@ BEGIN
                     96,72
     RTEXT           "Wallpaper",IDC_STATIC,7,29,33,8
     PUSHBUTTON      "...",IDC_CHOOSE_WALLPAPER,163,26,16,14,BS_NOTIFY
-    CONTROL         "",IDC_HOTKEY,"AlternateHotKeyControl",WS_BORDER | 
+    CONTROL         "",IDC_HOTKEY,"AlternateHotKeyControl",WS_BORDER |
                     WS_TABSTOP,43,45,136,14
     RTEXT           "Hotkey",IDC_STATIC,7,48,33,8
     CONTROL         "",IDC_BGCOLOR_BTN,"Static",SS_OWNERDRAW | SS_NOTIFY,43,
@@ -149,24 +149,24 @@ BEGIN
 END
 
 IDD_SHORTCUT_SETTINGS DIALOGEX 0, 0, 214, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
     DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Shortcuts"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_SHORTCUTSLIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SORTASCENDING | LVS_ALIGNLEFT | 
+    CONTROL         "",IDC_SHORTCUTSLIST,"SysListView32",LVS_REPORT |
+                    LVS_SINGLESEL | LVS_SORTASCENDING | LVS_ALIGNLEFT |
                     LVS_NOSORTHEADER | WS_TABSTOP,7,7,200,100,
                     WS_EX_CLIENTEDGE
 END
 
 IDD_DISPLAY_SETTINGS DIALOGEX 0, 0, 214, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
     DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Display"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | 
+    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS |
                     WS_TABSTOP,24,75,166,18
     GROUPBOX        "Transparency level",IDC_TRANSP_STATIC,7,64,200,43
     LTEXT           "255",IDC_TRANSP_STATIC2,189,77,14,8
@@ -184,7 +184,7 @@ BEGIN
 END
 
 IDD_OSD_SETTINGS DIALOGEX 0, 0, 214, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
     DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "OSD"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -194,14 +194,14 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,18,114,10
     LTEXT           "Hide Timeout (ms):",IDC_TIMEOUT_STATIC,19,54,62,8
     EDITTEXT        IDC_TIMEOUT_EDIT,85,51,47,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_TIMEOUT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+    CONTROL         "",IDC_TIMEOUT_SPIN,"msctls_updown32",UDS_SETBUDDYINT |
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS |
                     UDS_NOTHOUSANDS,117,51,11,14
     PUSHBUTTON      "Font...",IDC_FONT_BTN,142,15,60,14
     PUSHBUTTON      "Background...",IDC_BGCOLOR_BTN,142,33,60,14
     GROUPBOX        "Transparency level",IDC_TRANSP_STATIC,7,75,200,32
     RTEXT           "0",IDC_TRANSP_STATIC1,14,88,9,12
-    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | 
+    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS |
                     WS_TABSTOP,24,86,166,18
     LTEXT           "255",IDC_TRANSP_STATIC2,189,88,14,8
     CONTROL         "Disable mouse input",IDC_TRANSPARENT_CHK,"Button",
@@ -212,14 +212,14 @@ BEGIN
 END
 
 IDD_MOVEWINDOW DIALOGEX 0, 0, 178, 127
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
     WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Move window to desktop"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Make window visible on all desktops",IDC_ALLDESKS_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,129,10
-    LISTBOX         IDC_DESK_LIST,7,20,164,77,LBS_NOINTEGRALHEIGHT | 
+    LISTBOX         IDC_DESK_LIST,7,20,164,77,LBS_NOINTEGRALHEIGHT |
                     WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,7,106,50,14
     PUSHBUTTON      "Apply",IDC_APPLY,64,106,50,14
@@ -227,18 +227,18 @@ BEGIN
 END
 
 IDD_WINDOW_SETTINGS DIALOGEX 0, 0, 214, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
     DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | 
+    CONTROL         "",IDC_TRANSP_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS |
                     WS_TABSTOP,24,75,166,18
     GROUPBOX        "Transparency level",IDC_TRANSP_STATIC,7,64,200,43
     LTEXT           "255",IDC_TRANSP_STATIC2,189,77,14,8
     RTEXT           "0",IDC_TRANSP_STATIC1,14,79,9,12
     CTEXT           "255",IDC_TRANSP_DISP,59,94,95,8
-    CONTROL         "Always on top",IDC_ONTOP_CHECK,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Always on top",IDC_ONTOP_CHECK,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,18,17,80,10
     CONTROL         "Minimize to tray",IDC_MINTOTRAY_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,18,30,80,10
@@ -250,7 +250,7 @@ BEGIN
 END
 
 IDD_WINDOW_AUTOSETTINGS DIALOGEX 0, 0, 214, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
     DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Auto-settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -272,20 +272,41 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,116,76,80,10
 END
 
+IDD_WINDOW_FILTER DIALOGEX 0, 0, 214, 114
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
+    DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
+CAPTION "Filter"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+   GROUPBOX         "Window class",IDC_STATIC,7,7,200,30
+   CONTROL          "",IDC_FILTERWNDCLS_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,17,14,14
+   EDITTEXT         IDC_WNDCLSFLT_EDIT,30,17,170,14,ES_AUTOHSCROLL
+   GROUPBOX         "Window title",IDC_STATIC,7,42,200,30
+   CONTROL          "",IDC_FILTERWNDTITLE_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,52,14,14
+   EDITTEXT         IDC_WNDTITLEFLT_EDIT,30,52,170,14,ES_AUTOHSCROLL
+   GROUPBOX         "Program",IDC_STATIC,7,77,200,30
+   CONTROL          "",IDC_FILTERPROGRAM_CHECK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,14,87,14,14
+   EDITTEXT         IDC_PROGRAMFLT_EDIT,30,87,150,14,ES_AUTOHSCROLL
+   PUSHBUTTON       "...",IDC_BROWSE_BTN,183,87,16,14
+END
+
 IDD_GLOBAL_SETTINGS DIALOGEX 0, 0, 214, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
     DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Always on top",IDC_ONTOP_CHECK,"Button",BS_AUTOCHECKBOX | 
+    CONTROL         "Always on top",IDC_ONTOP_CHECK,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,16,18,80,10
     CONTROL         "Enable tray icon",IDC_TRAYICON_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,31,80,10
     CONTROL         "Enable tooltips",IDC_TOOLTIPS_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,44,80,10
     CONTROL         "All windows in task list",
-                    IDC_ALLWINDOWSINTASKLIST_CHECK,"Button",BS_AUTOCHECKBOX | 
+                    IDC_ALLWINDOWSINTASKLIST_CHECK,"Button",BS_AUTOCHECKBOX |
                     WS_TABSTOP,16,57,84,10
     CONTROL         "Confirm before killing",IDC_CONFIRMKILL_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,111,18,80,10
@@ -297,16 +318,16 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,111,57,80,10
     GROUPBOX        "Options",IDC_STATIC,7,7,200,100
     LTEXT           "Snap sensibility:",IDC_STATIC,112,91,52,8
-    EDITTEXT        IDC_SNAPSIZE_EDIT,167,89,35,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_SNAPSIZE_EDIT,167,89,35,13,ES_AUTOHSCROLL |
                     ES_NUMBER
-    CONTROL         "",IDC_SNAPSIZE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | 
-                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | 
+    CONTROL         "",IDC_SNAPSIZE_SPIN,"msctls_updown32",UDS_SETBUDDYINT |
+                    UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS |
                     UDS_NOTHOUSANDS,207,92,6,6
     LTEXT           "Auto-hide delay:",IDC_STATIC,112,75,54,8
-    EDITTEXT        IDC_AUTOHIDEDELAY_EDIT,167,73,35,13,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_AUTOHIDEDELAY_EDIT,167,73,35,13,ES_AUTOHSCROLL |
                     ES_NUMBER
     CONTROL         "",IDC_AUTOHIDEDELAY_SPIN,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY |
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS,207,77,6,6,
                     WS_EX_TRANSPARENT
     CONTROL         "Mouse warp",IDC_MOUSEWARP_CHECK,"Button",
@@ -314,7 +335,7 @@ BEGIN
 END
 
 IDD_TROUBLESHOOTING_SETTINGS DIALOGEX 0, 0, 214, 114
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
     DS_CENTER | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -333,19 +354,19 @@ BEGIN
     PUSHBUTTON      "Exceptions...",IDC_HIDINGMETHODEXCEPTIONS_BTN,145,62,56,
                     15
     CONTROL         "Detect incompatible applications",
-                    IDC_AUTOEXCEPTION_CHECK,"Button",BS_AUTOCHECKBOX | 
+                    IDC_AUTOEXCEPTION_CHECK,"Button",BS_AUTOCHECKBOX |
                     WS_DISABLED | WS_TABSTOP,16,32,118,10
 END
 
 IDD_APPLLIST_DLG DIALOGEX 0, 0, 287, 187
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,230,7,50,14
-    CONTROL         "",IDC_APPL_LIST,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | 
+    CONTROL         "",IDC_APPL_LIST,"SysListView32",LVS_REPORT |
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT |
                     WS_TABSTOP,7,7,216,173,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Cancel",IDCANCEL,230,26,50,14
     PUSHBUTTON      "Add...",IDC_INSERTAPPL_BTN,230,130,50,14
@@ -360,12 +381,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
@@ -373,7 +394,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "\r\n"
     "\0"
@@ -387,7 +408,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROGRAM             "Program"
     IDS_PROGRAMINLIST_ERROR "Selected program is already in the list."
@@ -403,12 +424,12 @@ BEGIN
     IDS_NEEDADESKTOP_ERROR  "Virtual Dimension needs at least one virtual desktop to function properly !"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_LANGUAGE            "English"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_UNABLETOREMOVEDESKTOP "Unable to remove desktop"
     IDS_METHOD              "Method"
@@ -421,7 +442,7 @@ BEGIN
     IDS_DESKTOP_BASENAME    "Desk"
     IDS_COLUMN_FUNCTION     "Function"
     IDS_COLUMN_SHORTCUT     "Shortcut"
-    IDS_REGISTERSHELLHOOK_ERROR 
+    IDS_REGISTERSHELLHOOK_ERROR
                             "Unable to locate function 'RegisterShellHook' in shell32.dll"
     IDS_LICENSE_LINK        "Click here to display the GNU General Public License"
     IDS_MENU_ALWAYSONTOP    "Always on top"
@@ -429,7 +450,7 @@ BEGIN
     IDS_MENU_TRANSPARENT    "Transparent"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MENU_ONALLDESKTOPS  "All desktops"
     IDS_MENU_CHANGEDESKTOP  "Change desktop..."

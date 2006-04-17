@@ -209,6 +209,8 @@ protected:
    void OnUpdateAutoSettingsUI(HWND hDlg, AutoSettingsModes mode);
    static LRESULT CALLBACK AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
+   static LRESULT CALLBACK FilterSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
    static void OnFlashBallonClick(BalloonNotification::Message msg, int data);
 
    HWND m_hWnd;
