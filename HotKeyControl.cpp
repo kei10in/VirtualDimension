@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -42,7 +42,7 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX); 
+	wcex.cbSize = sizeof(WNDCLASSEX);
 
 	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_GLOBALCLASS;
 	wcex.lpfnWndProc	= (WNDPROC)HotKeyWndProc;
@@ -75,7 +75,7 @@ static void BuildDisplayString(char mods, char vk, short scancode, char* str, in
       strncat(str, "SHIFT+", bufLen);
    if (mods & MOD_WIN)
       strncat(str, "WIN+", bufLen);
-   
+
    if (scancode == 0)
       scancode = (short)MapVirtualKey(vk, 0);
    char keyName[20];
@@ -105,7 +105,7 @@ static void RepositionCaret(HWND hWnd, char * str)
    SelectObject(hdc, GetFont(hWnd));
    GetTextExtentPoint32(hdc, str, strlen(str), &size);
    ReleaseDC(hWnd, hdc);
-   
+
    RECT rect;
    GetClientRect(hWnd, &rect);
 
@@ -165,13 +165,13 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
    case WM_SETFOCUS:
       hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
-      CreateCaret(hWnd, NULL, 0, hkCtrl->dwCharY); 
+      CreateCaret(hWnd, NULL, 0, hkCtrl->dwCharY);
       RepositionCaret(hWnd, hkCtrl->text);
-      ShowCaret(hWnd); 
+      ShowCaret(hWnd);
       break;
 
    case WM_KILLFOCUS:
-      HideCaret(hWnd); 
+      HideCaret(hWnd);
       DestroyCaret();
       break;
 
@@ -201,16 +201,22 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
          switch(wParam)
          {
+         case VK_LCONTROL:
+         case VK_RCONTROL:
          case VK_CONTROL:
             hkCtrl->flags |= MOD_CONTROL;
             hkCtrl->key = 0;
             break;
 
+         case VK_LSHIFT:
+			case VK_RSHIFT:
          case VK_SHIFT:
             hkCtrl->flags |= MOD_SHIFT;
             hkCtrl->key = 0;
             break;
 
+         case VK_LMENU:
+			case VK_RMENU:
          case VK_MENU:
             hkCtrl->flags |= MOD_ALT;
             hkCtrl->key = 0;
@@ -228,7 +234,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
          BuildDisplayString(hkCtrl->flags, (char)(hkCtrl->key&0xff), (short)(hkCtrl->key>>16),
                             hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
-         RepositionCaret(hWnd, hkCtrl->text); 
+         RepositionCaret(hWnd, hkCtrl->text);
          InvalidateRect(hWnd, NULL, TRUE);
          SendMessage(GetParent(hWnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hWnd), HKN_CHANGE), (LPARAM)hWnd);
          break;
@@ -262,7 +268,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
          if (hkCtrl->key == 0)
          {
             BuildDisplayString(hkCtrl->flags, 0, 0, hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
-            RepositionCaret(hWnd, hkCtrl->text); 
+            RepositionCaret(hWnd, hkCtrl->text);
             InvalidateRect(hWnd, NULL, TRUE);
          }
          break;
