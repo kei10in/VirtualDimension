@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -38,6 +38,7 @@
 #include <assert.h>
 #include "HookDLL.h"
 #include "Locale.h"
+#include "CmdLine.h"
 
 // Global Variables:
 HWND configBox = NULL;
@@ -53,23 +54,29 @@ HWND CreateConfigBox();
 
 int APIENTRY _tWinMain( HINSTANCE hInstance,
                         HINSTANCE /*hPrevInstance*/,
-                        LPTSTR    /*lpCmdLine*/,
+                        LPTSTR    lpCmdLine,
                         int       nCmdShow)
 {
 	MSG msg;
 	HACCEL hAccelTable;
+	BOOL firstrun;
 
    InitCommonControls();
    CoInitialize ( NULL );
 
-   if (!vdWindow.Start(hInstance, nCmdShow))
+   firstrun = vdWindow.Start(hInstance, nCmdShow);
+	if (!firstrun)
+	{
+      CommandLineParser parser;
+   	parser.ParseCommandLine(lpCmdLine);
       return -1;
+	}
 
    // Load accelerators
 	hAccelTable = LoadAccelerators(hInstance, (LPCTSTR)IDC_VIRTUALDIMENSION);
 
 	// Main message loop:
-	while (GetMessage(&msg, NULL, 0, 0)) 
+	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		if (IsWindow(configBox) && IsDialogMessage(configBox, &msg))
       {
@@ -102,7 +109,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    Settings settings;
    HWND hwndPrev;
    DWORD dwStyle;
-   
+
    // If a previous instance is running, activate
    // that instance and terminate this one.
    hwndPrev = FindWindow(m_szWindowClass, NULL);
@@ -192,7 +199,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
 	// Create the main window
 	Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, dwStyle,
-           pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top, 
+           pos.left, pos.top, pos.right - pos.left, pos.bottom - pos.top,
            NULL, NULL, hInstance);
    if (!IsValid())
       return false;
@@ -342,7 +349,7 @@ ATOM VirtualDimension::RegisterClass()
 {
 	WNDCLASSEX wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX); 
+	wcex.cbSize = sizeof(WNDCLASSEX);
 
 	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_SAVEBITS;
 	wcex.cbClsExtra		= 0;
@@ -538,7 +545,7 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    Desktop * desk = deskMan->GetDesktopFromPoint(pt.x, pt.y);
    Window * window = NULL;
    if ((!m_shrinked) &&
-		 ((wParam & MK_CONTROL) == 0) && 
+		 ((wParam & MK_CONTROL) == 0) &&
        (desk != NULL))
    {
       window = desk->GetWindowFromPoint(pt.x, pt.y);
@@ -582,10 +589,10 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
 }
 
 LRESULT VirtualDimension::OnDestroy(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
-{  
+{
    RECT pos;
    Settings settings;
-   
+
    // Before exiting, save the window position
    pos.left = m_location.x;
    pos.top = m_location.y;
@@ -713,28 +720,28 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 	{
 		// Snap to screen border
 		m_dockedBorders = 0;
-		if( (lpwndpos->x >= -m_snapSize + deskRect.left) && 
+		if( (lpwndpos->x >= -m_snapSize + deskRect.left) &&
 			(lpwndpos->x <= deskRect.left + m_snapSize) )
 		{
 			//Left border
 			lpwndpos->x = deskRect.left;
 			m_dockedBorders |= DOCK_LEFT;
 		}
-		if( (lpwndpos->y >= -m_snapSize + deskRect.top) && 
+		if( (lpwndpos->y >= -m_snapSize + deskRect.top) &&
 			(lpwndpos->y <= deskRect.top + m_snapSize) )
 		{
 			// Top border
 			lpwndpos->y = deskRect.top;
 			m_dockedBorders |= DOCK_TOP;
 		}
-		if( (lpwndpos->x + lpwndpos->cx <= deskRect.right + m_snapSize) && 
+		if( (lpwndpos->x + lpwndpos->cx <= deskRect.right + m_snapSize) &&
 			(lpwndpos->x + lpwndpos->cx >= deskRect.right - m_snapSize) )
 		{
 			// Right border
 			lpwndpos->x = deskRect.right - lpwndpos->cx;
 			m_dockedBorders |= DOCK_RIGHT;
 		}
-		if( (lpwndpos->y + lpwndpos->cy <= deskRect.bottom + m_snapSize) && 
+		if( (lpwndpos->y + lpwndpos->cy <= deskRect.bottom + m_snapSize) &&
 			(lpwndpos->y + lpwndpos->cy >= deskRect.bottom - m_snapSize) )
 		{
 			// Bottom border
@@ -804,7 +811,7 @@ LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wPar
    GetCursorPos(&pt);
    if (!IsPointInWindow(pt) && GetWindowThreadProcessId(GetForegroundWindow(),NULL) != GetCurrentThreadId())
    {
-      KillTimer(m_autoHideTimerId); //already auto-hidden -> do not need to 
+      KillTimer(m_autoHideTimerId); //already auto-hidden -> do not need to
 	   Shrink();
    }
 
@@ -1043,14 +1050,14 @@ bool VirtualDimension::CreateLangMenu()
 			InsertMenuItem(m_pLangMenu, 100+count, FALSE, &iteminfo);
 		}
 	}
-	
+
 	return count > 1;
 }
 
 // Message handler for about box.
 LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-   static IPicture * picture;	
+   static IPicture * picture;
 	LPTSTR text;
 
 	switch (message)
@@ -1114,7 +1121,7 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
       case IDC_HOMEPAGE_LINK:
          if (HIWORD(wParam) == STN_CLICKED)
          {
-            ShellExecute(hDlg, "open", "http://virt-dimension.sourceforge.net", 
+            ShellExecute(hDlg, "open", "http://virt-dimension.sourceforge.net",
                          NULL, NULL, SW_SHOWNORMAL);
          }
          break;
@@ -1128,7 +1135,7 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
          break;
 		}
 		break;
-   
+
    case WM_DRAWITEM:
       if (picture)
          PlatformHelper::CustomDrawIPicture(picture, (LPDRAWITEMSTRUCT)lParam, false);
