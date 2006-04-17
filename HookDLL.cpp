@@ -118,7 +118,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			break;
 
       default:
-         if (FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
+         if (pData->m_hSubMenu && FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
 			{
 		 		SetForegroundWindow(hVDWnd);
             res = PostMessageW(hVDWnd, WM_VD_HOOK_MENU_COMMAND, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
@@ -128,7 +128,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       break;
 
 	case WM_INITMENUPOPUP:
-		if ((HMENU)wParam == pData->m_hSubMenu)
+		if (pData->m_hSubMenu && (HMENU)wParam == pData->m_hSubMenu)
 			InitPopupMenu(hWnd, (HMENU)wParam);
 		break;
 
@@ -210,7 +210,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 			break;
 
       default:
-         if (FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
+         if (pData->m_hSubMenu && FindMenuItem(syscmd, pData->m_hSubMenu) != -1)
          {
             SetForegroundWindow(hVDWnd);
             res = PostMessageA(hVDWnd, WM_VD_HOOK_MENU_COMMAND, SystoVDItemID(syscmd), (WPARAM)pData->m_iData);
@@ -220,7 +220,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       break;
 
 	case WM_INITMENUPOPUP:
-		if ((HMENU)wParam == pData->m_hSubMenu)
+		if (pData->m_hSubMenu && (HMENU)wParam == pData->m_hSubMenu)
 			InitPopupMenu(hWnd, (HMENU)wParam);
 		break;
 
@@ -354,7 +354,8 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
 		//Cleanup the hook information related to this window
 		CloseHandle(pData->m_hMutex);
-		CleanupMenu(hWnd, pData->m_hSubMenu);
+		if (pData->m_hSubMenu)
+			CleanupMenu(hWnd, pData->m_hSubMenu);
 
       //Remove the hook data from all places where it is referenced
 		if (unicode)
@@ -373,13 +374,16 @@ HOOKDLL_API DWORD WINAPI doUnHookWindow(HINSTANCE hInstance, HWND hWnd)
 
 HMENU SetupMenu(HWND hWnd)
 {
-	HMENU hSubMenu;
+	HMENU hSubMenu = NULL;
 	HMENU hMenu;
 
-	hSubMenu = CreatePopupMenu();
 	hMenu = GetSystemMenu(hWnd, FALSE);
-	InsertMenu(hMenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING, (unsigned int)hSubMenu, "Virtual Dimension");
-	InsertMenu(hMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+	if (hMenu)
+	{
+		hSubMenu = CreatePopupMenu();
+		InsertMenu(hMenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING, (unsigned int)hSubMenu, "Virtual Dimension");
+		InsertMenu(hMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+	}
 
 	return hSubMenu;
 }
@@ -388,14 +392,17 @@ void CleanupMenu(HWND hWnd, HMENU hSubMenu)
 {
 	HMENU hMenu = GetSystemMenu(hWnd, FALSE);
 
-   //Remove the menu from the system menu of the window
-   for(int i = 0; i<GetMenuItemCount(hMenu); i++)
-      if (GetSubMenu(hMenu, i) == hSubMenu)
-      {
-         RemoveMenu(hMenu, i, MF_BYPOSITION);   //delete the menu
-         RemoveMenu(hMenu, i, MF_BYPOSITION);   //delete the following separator
-         break;
-      }
+	if (hMenu)
+	{
+		//Remove the menu from the system menu of the window
+		for(int i = 0; i<GetMenuItemCount(hMenu); i++)
+			if (GetSubMenu(hMenu, i) == hSubMenu)
+			{
+				RemoveMenu(hMenu, i, MF_BYPOSITION);   //delete the menu
+				RemoveMenu(hMenu, i, MF_BYPOSITION);   //delete the following separator
+				break;
+			}
+	}
 
    //Release resources associated with the menu
 	DestroyMenu(hSubMenu);
