@@ -43,6 +43,8 @@ public:
     */
    CommandLineOption(char opcode, UINT resid, ArgType arg = no_argument);
 
+   virtual ~CommandLineOption()		{}
+   
    /** Parse the option.
     * This method is called whenever the option is encountered during the parsing
     * of the command line.
@@ -63,18 +65,15 @@ protected:
  */
 class CommandLineFlag : public CommandLineOption {
 public:
-   CommandLineFlag(char opcode, UINT resid, int * flag, int value):
-      CommandLineOption(opcode, resid), m_flag(flag), m_value(value)
+   CommandLineFlag(char opcode, UINT resid):
+      CommandLineOption(opcode, resid), m_flag(false)
    {}
 
-   virtual void ParseOption(LPCTSTR arg)
-   {
-      *m_flag = m_value;
-   }
+   virtual void ParseOption(LPCTSTR arg)	{ m_flag = true; }
+   operator bool()							{ return m_flag; }
 
 protected:
-   int * m_flag;
-   int m_value;
+   bool m_flag;
 };
 
 /** Simple option class to parse an integer.
@@ -82,17 +81,28 @@ protected:
  */
 class CommandLineInt : public CommandLineOption {
 public:
-   CommandLineInt(char opcode, UINT resid, int * flag):
-      CommandLineOption(opcode, resid, required_argument), m_flag(flag)
+   CommandLineInt(char opcode, UINT resid, int defval=0, int optval=1, ArgType type=required_argument):
+      CommandLineOption(opcode, resid, type), m_flag(defval), m_optval(optval)
    {}
 
    virtual void ParseOption(LPCTSTR arg)
    {
-      *m_flag = atoi(arg);
+		if (arg)
+		{
+			char * ptr;
+			int val = strtol(arg, &ptr, 0);
+			if (ptr != arg)
+				m_flag = val;
+		}
+		else
+			m_flag = m_optval;
    }
 
+   operator int()							{ return m_flag; }
+
 protected:
-   int * m_flag;
+   int m_flag;
+   int m_optval;
 };
 
 /** Simple option class to parse a string.
@@ -100,17 +110,16 @@ protected:
  */
 class CommandLineStr : public CommandLineOption {
 public:
-   CommandLineStr(char opcode, UINT resid, String * str):
-      CommandLineOption(opcode, resid, required_argument), m_str(str)
+   CommandLineStr(char opcode, UINT resid, LPCTSTR defval="", LPCTSTR optval="", ArgType type=required_argument):
+      CommandLineOption(opcode, resid, type), m_str(defval), m_optval(optval)
    {}
 
-   virtual void ParseOption(LPCTSTR arg)
-   {
-      *m_str = arg;
-   }
+   virtual void ParseOption(LPCTSTR arg)	{ m_str = arg ? arg : m_optval; }
+   operator String()						{ return m_str; }
 
 protected:
-   String * m_str;
+   String m_str;
+   LPCTSTR m_optval;
 };
 
 /** Command line parser class.
