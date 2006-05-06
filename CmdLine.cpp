@@ -186,7 +186,7 @@ bool CommandLineParser::ParseCommandLine(LPTSTR cmdline)
 
    //Process the last argument, which may not have been processed yet
    //(e.g. if it was not followed by spaces)
-   if (res && arg)
+   if (res && arg != "")
       res = ProcessArg(arg);
 
    if (res)
