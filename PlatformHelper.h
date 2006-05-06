@@ -39,32 +39,6 @@
 #define TBM_SETBUDDY (WM_USER+32)
 
 #define MNS_CHECKORBMP 0x04000000
-/*
-#define LVCFMT_IMAGE 0x800
-#define LVS_EX_FULLROWSELECT     0x20  
-#define LVS_EX_GRIDLINES         0x01
-#define LVM_GETSUBITEMRECT           (LVM_FIRST+56)
-#define ListView_GetSubItemRect(hWnd, iItem, iSubItem, code, lpRect)       \
-   SendMessage(hWnd, LVM_GETSUBITEMRECT, iItem, (LPARAM)((lpRect)->left = code, (lpRect)->top = iSubItem, lpRect))
-#define LVM_SETEXTENDEDLISTVIEWSTYLE (LVM_FIRST+54)
-#define ListView_SetExtendedListViewStyleEx(hWnd, dwExMask, dwExStyle)     \
-   SendMessage(hWnd, LVM_SETEXTENDEDLISTVIEWSTYLE, dwExMask, dwExStyle)
-*/
-#define GetClassLongPtr GetClassLong
-#define SetClassLongPtr SetClassLong
-/*
-typedef struct tagNMITEMACTIVATE {
-    NMHDR hdr;
-    int iItem;
-    int iSubItem;
-    UINT uNewState;
-    UINT uOldState;
-    UINT uChanged;
-    POINT ptAction;
-    LPARAM lParam;
-    UINT uKeyFlags;
-} NMITEMACTIVATE,*LPNMITEMACTIVATE;
-*/
 #define SETWALLPAPER_DEFAULT ((LPWSTR)-1)
 #define AD_APPLY_REFRESH 0x4
 
