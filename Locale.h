@@ -41,7 +41,8 @@ public:
 	HMENU LoadMenu(LPCTSTR lpMenuName)	{ return ::LoadMenu(m_resDll, lpMenuName); }
 
 	String GetString(UINT uID)				{ return GetString(m_resDll, uID); }
-	int GetStringSize(UINT uID)			{ return GetStringSize(m_resDll, uID); }
+	int GetStringSize(UINT uID)				{ return GetStringSize(m_resDll, uID); }
+	LPTSTR GetString(UINT uID, LPTSTR str, int len)	{ LoadString(*this, uID, str, len); return str; }
 	static String GetString(HINSTANCE hinst, UINT uID);
 	static int GetStringSize(HINSTANCE hinst, UINT uID);
 
@@ -69,8 +70,7 @@ protected:
  */
 #define locGetString(str, uId)													\
 	(str = (LPTSTR)_alloca(Locale::GetInstance().GetStringSize(uId)),	\
-	LoadString(Locale::GetInstance(), uId, (LPTSTR)str, 0xffff),					\
-	str)
+	 Locale::GetInstance().GetString(uId, (LPTSTR)str, 0xffff))
 
 class LocalesIterator
 {
