@@ -48,6 +48,8 @@ public:
    HMENU GetMenu() const  { return m_pSysMenu; } 
    operator HINSTANCE()   { return m_hInstance; }
 
+   HWND FindWindow() const	  { return ::FindWindow(m_szWindowClass, m_szTitle); }
+
    inline void Refresh()  { InvalidateRect(m_hWnd, NULL, FALSE); }
 
 	inline int GetSnapSize() const		{ return m_snapSize; }

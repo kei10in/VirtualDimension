@@ -112,7 +112,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
    // If a previous instance is running, activate
    // that instance and terminate this one.
-   hwndPrev = FindWindow(m_szWindowClass, NULL);
+   hwndPrev = FindWindow();
    if (hwndPrev != NULL)
    {
         SetForegroundWindow (hwndPrev);
