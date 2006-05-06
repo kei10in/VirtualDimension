@@ -22,6 +22,8 @@
 #define __CMDLINE_H__
 
 #include <map>
+#include "Locale.h"
+
 
 /** Option for the command line parser.
  * This clas encapsulates an option for the command line parser. For each option,
@@ -63,8 +65,7 @@ class CommandLineFlag : public CommandLineOption {
 public:
    CommandLineFlag(char opcode, UINT resid, int * flag, int value):
       CommandLineOption(opcode, resid), m_flag(flag), m_value(value)
-   {
-   }
+   {}
 
    virtual void ParseOption(LPCTSTR arg)
    {
@@ -74,6 +75,42 @@ public:
 protected:
    int * m_flag;
    int m_value;
+};
+
+/** Simple option class to parse an integer.
+ * When the flag is detected, the given variable is set to the parsed value.
+ */
+class CommandLineInt : public CommandLineOption {
+public:
+   CommandLineInt(char opcode, UINT resid, int * flag):
+      CommandLineOption(opcode, resid, required_argument), m_flag(flag)
+   {}
+
+   virtual void ParseOption(LPCTSTR arg)
+   {
+      *m_flag = atoi(arg);
+   }
+
+protected:
+   int * m_flag;
+};
+
+/** Simple option class to parse a string.
+ * When the flag is detected, the given variable is set to the parsed value.
+ */
+class CommandLineStr : public CommandLineOption {
+public:
+   CommandLineStr(char opcode, UINT resid, String * str):
+      CommandLineOption(opcode, resid, required_argument), m_str(str)
+   {}
+
+   virtual void ParseOption(LPCTSTR arg)
+   {
+      *m_str = arg;
+   }
+
+protected:
+   String * m_str;
 };
 
 /** Command line parser class.
