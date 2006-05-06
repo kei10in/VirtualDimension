@@ -41,6 +41,7 @@ MouseWarp::MouseWarp()
    m_minDuration = settings.LoadSetting(Settings::WarpMinDuration);
    m_reWarpDelay = settings.LoadSetting(Settings::WarpRewarpDelay);
    m_warpVKey = settings.LoadSetting(Settings::WarpRequiredVKey);
+   m_invertMousePos = settings.LoadSetting(Settings::WarpInvertMousePos);
 
    //Compute size of center rect
    RefreshDesktopSize();
@@ -73,6 +74,7 @@ MouseWarp::~MouseWarp(void)
    settings.SaveSetting(Settings::WarpMinDuration, m_minDuration);
    settings.SaveSetting(Settings::WarpRewarpDelay, m_reWarpDelay);
    settings.SaveSetting(Settings::WarpRequiredVKey, m_warpVKey);
+   settings.SaveSetting(Settings::WarpInvertMousePos, m_invertMousePos);
 }
 
 /** Mouse wrap detect thread.
@@ -118,7 +120,21 @@ DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID lpParameter)
       {
          duration = 0;
          warpLoc = newWarpLoc;
-         PostMessage(vdWindow, WM_VD_MOUSEWARP, 0, warpLoc);
+		   if (warpLoc != WARP_NONE)
+	         PostMessage(vdWindow, WM_VD_MOUSEWARP, 0, warpLoc);
+
+         if (self->m_invertMousePos)
+		   {
+			   switch(warpLoc)
+			   {
+			   case WARP_NONE:		break;	//nothing to do 	
+			   case WARP_LEFT: 	pt.x = self->m_centerRect.right + self->m_centerRect.left - pt.x; 	warpLoc = WARP_RIGHT; 	break;
+			   case WARP_RIGHT: 	pt.x = self->m_centerRect.left + self->m_centerRect.right - pt.x ; 	warpLoc = WARP_LEFT; 	break;
+			   case WARP_TOP: 		pt.y = self->m_centerRect.top + self->m_centerRect.bottom - pt.y; 	warpLoc = WARP_BOTTOM; 	break;
+			   case WARP_BOTTOM: 	pt.y = self->m_centerRect.top + self->m_centerRect.bottom - pt.y; 	warpLoc = WARP_TOP; 	break;
+			   }
+			   SetCursorPos(pt.x, pt.y);
+		   }
       }
       else if (warpLoc != WARP_NONE && self->m_reWarpDelay != 0)   //do not generate multiple WARP_NONE events
          duration += MOUSE_WRAP_DELAY_CHECK;

@@ -79,6 +79,7 @@ DEFINE_SETTING(Settings, WarpSensibility, LONG, 3);
 DEFINE_SETTING(Settings, WarpMinDuration, DWORD, 500);
 DEFINE_SETTING(Settings, WarpRewarpDelay, DWORD, 3000);
 DEFINE_SETTING(Settings, WarpRequiredVKey, int, 0);
+DEFINE_SETTING(Settings, WarpInvertMousePos, bool, true);
 DEFINE_SETTING(Settings, DefaultHidingMethod, int, 0);
 
 Settings::Settings(void): RegistryGroup(regKeyName)

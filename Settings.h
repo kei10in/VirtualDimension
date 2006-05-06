@@ -82,6 +82,7 @@ public:
    static DECLARE_SETTING(WarpMinDuration, DWORD);
    static DECLARE_SETTING(WarpRewarpDelay, DWORD);
    static DECLARE_SETTING(WarpRequiredVKey, int);
+   static DECLARE_SETTING(WarpInvertMousePos, bool);
    static DECLARE_SETTING(DefaultHidingMethod, int);
 
    // Other settings

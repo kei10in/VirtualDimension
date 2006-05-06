@@ -69,8 +69,8 @@ protected:
    LONG m_sensibility;     ///Number of pixels from the border for warp to be triggered
    DWORD m_minDuration;    ///Minimum duration to stay on a border for warp to happen
 
-   int m_warpVKey;         //Optional VKey to press to enable warp
-
+   int m_warpVKey;         ///Optional VKey to press to enable warp. 0 to disable.
+   bool m_invertMousePos;  ///Does the mouse move to the other side of the screen when switching ?
    bool m_enableWarp;      ///Is warp enable ?
 };
 
