@@ -459,8 +459,10 @@ WindowsManager::MoveWindowToNextDesktopEventHandler::~MoveWindowToNextDesktopEve
 void WindowsManager::MoveWindowToNextDesktopEventHandler::OnHotkey()
 {
    Window * window = winMan->GetForegroundWindow();
-   Desktop * desk = deskMan->GetNextDesk(window->GetDesk());
-   if ((window != NULL) && (window->GetDesk() == deskMan->GetCurrentDesktop()) && (desk != NULL))
+   Desktop * desk;
+   if ((window != NULL) && 
+	   (window->GetDesk() == deskMan->GetCurrentDesktop()) && 
+	   ((desk = deskMan->GetNextDesk(window->GetDesk())) != NULL))
       window->MoveToDesktop(desk);
 }
 
@@ -479,8 +481,10 @@ WindowsManager::MoveWindowToPrevDesktopEventHandler::~MoveWindowToPrevDesktopEve
 void WindowsManager::MoveWindowToPrevDesktopEventHandler::OnHotkey()
 {
    Window * window = winMan->GetForegroundWindow();
-   Desktop * desk = deskMan->GetPrevDesk(window->GetDesk());
-   if ((window != NULL) && (window->GetDesk() == deskMan->GetCurrentDesktop()) && (desk != NULL))
+   Desktop * desk;
+   if ((window != NULL) && 
+	   (window->GetDesk() == deskMan->GetCurrentDesktop()) && 
+	   ((desk = deskMan->GetPrevDesk(window->GetDesk())) != NULL))
       window->MoveToDesktop(desk);
 }
 
