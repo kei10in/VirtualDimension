@@ -55,9 +55,25 @@ public:
    UINT GetResId() const         { return m_resid; }
    ArgType GetArgType() const    { return m_argType; }
 
+ 
+   /** Show a dialog box with the usage of the options.
+    */
+   static void ShowUsage();
+   
+   /** Register an option.
+    * This setp is needed for the option to be recognized.
+    */
+   static void RegisterOption(char opcode, CommandLineOption* option);
+
+   /** Get an option.
+	*/
+   static CommandLineOption * GetOption(char opcode);   
+   
 protected:
    const UINT m_resid;
    const ArgType m_argType;
+
+   static std::map<char, CommandLineOption*> s_argsmap;	/// List of all options
 };
 
 /** Simple option class to parse a flag.
@@ -139,24 +155,12 @@ public:
     */
    bool ParseCommandLine(LPTSTR cmdline);
 
-   /** Show a dialog box with the usage of the options.
-    */
-   static void ShowUsage();
-
-   /** Register an option.
-    * This setp is needed for the option to be recognized.
-    */
-   static void RegisterOption(char opcode, CommandLineOption* option);
-
 protected:
    bool ProcessArg(LPCTSTR arg);
    bool EndParsing();
-   static CommandLineOption * GetOption(char opcode);
 
    enum { NONE, REQARG, OPTARG} m_argState;
    CommandLineOption * m_curOption;
-
-   static std::map<char, CommandLineOption*> s_argsmap;
 };
 
 #endif /*__CMDLINE_H__*/

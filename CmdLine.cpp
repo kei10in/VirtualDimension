@@ -24,11 +24,11 @@
 
 using namespace std;
 
-map<char, CommandLineOption*> CommandLineParser::s_argsmap;
+map<char, CommandLineOption*> CommandLineOption::s_argsmap;
 
 CommandLineOption::CommandLineOption(char opcode, UINT resid, ArgType arg): m_resid(resid), m_argType(arg)
 {
-   CommandLineParser::RegisterOption(opcode, this);
+   CommandLineOption::RegisterOption(opcode, this);
 }
 
 CommandLineParser::CommandLineParser()
@@ -49,7 +49,7 @@ bool CommandLineParser::ProcessArg(LPCTSTR arg)
    case NONE:
       if (arg[0] != '-')
          res = MessageBox(NULL, arg, "No an option", MB_ICONERROR), false; //no an option
-      else if ((m_curOption = GetOption(arg[1])) == NULL)
+      else if ((m_curOption = CommandLineOption::GetOption(arg[1])) == NULL)
          res = MessageBox(NULL, arg, "Invalid option", MB_ICONERROR), false; //invalid option
       else if (m_curOption->GetArgType() == CommandLineOption::required_argument)
          m_argState = REQARG;
@@ -65,7 +65,7 @@ bool CommandLineParser::ProcessArg(LPCTSTR arg)
       break;
 
    case OPTARG:
-      if (arg[0] == '-' && (option = GetOption(arg[1])) != NULL)
+      if (arg[0] == '-' && (option = CommandLineOption::GetOption(arg[1])) != NULL)
       {
          m_curOption->ParseOption();   //no argument !
 
@@ -198,13 +198,14 @@ bool CommandLineParser::ParseCommandLine(LPTSTR cmdline)
 	return res;
 }
 
-CommandLineOption * CommandLineParser::GetOption(char opcode)
+CommandLineOption * CommandLineOption::GetOption(char opcode)
 {
    map<char, CommandLineOption*>::iterator it = s_argsmap.find(opcode);
    return it == s_argsmap.end() ? NULL : (*it).second;
 }
 
-void CommandLineParser::RegisterOption(char opcode, CommandLineOption* option)
+void CommandLineOption::RegisterOption(char opcode, CommandLineOption* option)
 {
    s_argsmap[opcode] = option;
 }
+
