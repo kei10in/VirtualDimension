@@ -48,9 +48,9 @@ bool CommandLineParser::ProcessArg(LPCTSTR arg)
    {
    case NONE:
       if (arg[0] != '-')
-         res = MessageBox(NULL, arg, "No an option", MB_ICONERROR), false; //no an option
+         res = (MessageBox(NULL, arg, "No an option", MB_ICONERROR), false); //no an option
       else if ((m_curOption = CommandLineOption::GetOption(arg[1])) == NULL)
-         res = MessageBox(NULL, arg, "Invalid option", MB_ICONERROR), false; //invalid option
+         res = (MessageBox(NULL, arg, "Invalid option", MB_ICONERROR), false); //invalid option
       else if (m_curOption->GetArgType() == CommandLineOption::required_argument)
          m_argState = REQARG;
       else if (m_curOption->GetArgType() == CommandLineOption::optional_argument)
@@ -102,7 +102,7 @@ bool CommandLineParser::EndParsing()
       break;
 
    case REQARG:
-      MessageBox(NULL, "last arg", "argumnet without option", MB_ICONERROR);
+      MessageBox(NULL, "The last argument needs an argument, which is not provided", "Invalid command line", MB_ICONERROR);
       res = false;
       break;
 
@@ -132,20 +132,20 @@ bool CommandLineParser::ParseCommandLine(LPTSTR cmdline)
       value = *cmdline++;
 
       //Tokenizer
-      if (isspace(value))
+      if (value == ESCAPE_CHAR)
       {
-         token = SPACE;
-      }
-      else if (value == ESCAPE_CHAR)
-      {
+         //Beginning of an escape char. The actual char is the next one.
+         //If this is the end of the string, handle the escape as a regular character.
          if (*cmdline)
             value = *cmdline++;
          token = OTHER;
       }
+      else if (isspace(value))
+         token = SPACE;
       else if (value == QUOTE_CHAR)
-      {
          token = QUOTE;
-      }
+      else
+         token = OTHER;
 
       //Parser
       switch(state)

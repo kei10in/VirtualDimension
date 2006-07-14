@@ -44,7 +44,7 @@ public:
    CommandLineOption(char opcode, UINT resid, ArgType arg = no_argument);
 
    virtual ~CommandLineOption()		{}
-   
+
    /** Parse the option.
     * This method is called whenever the option is encountered during the parsing
     * of the command line.
@@ -55,11 +55,11 @@ public:
    UINT GetResId() const         { return m_resid; }
    ArgType GetArgType() const    { return m_argType; }
 
- 
+
    /** Show a dialog box with the usage of the options.
     */
    static void ShowUsage();
-   
+
    /** Register an option.
     * This setp is needed for the option to be recognized.
     */
@@ -67,8 +67,8 @@ public:
 
    /** Get an option.
 	*/
-   static CommandLineOption * GetOption(char opcode);   
-   
+   static CommandLineOption * GetOption(char opcode);
+
 protected:
    const UINT m_resid;
    const ArgType m_argType;
@@ -85,8 +85,8 @@ public:
       CommandLineOption(opcode, resid), m_flag(false)
    {}
 
-   virtual void ParseOption(LPCTSTR arg)	{ m_flag = true; }
-   operator bool()							{ return m_flag; }
+   virtual void ParseOption(LPCTSTR /*arg*/)	{ m_flag = true; }
+   operator bool()							    { return m_flag; }
 
 protected:
    bool m_flag;

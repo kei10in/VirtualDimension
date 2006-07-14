@@ -34,7 +34,7 @@ OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp WindowsList.cpp  \
 WallPaper.cpp BackgroundDisplayMode.cpp BackgroundColor.cpp TaskPool.cpp \
 LinkControl.cpp HotkeyConfig.cpp guids.c ExplorerWrapper.cpp HidingMethod.cpp \
 SharedMenuBuffer.cpp MouseWarp.cpp Config.cpp ApplicationListDlg.cpp Locale.cpp \
-BalloonNotif.cpp CmdLine.cpp CmdLineOptions.cpp
+BalloonNotif.cpp CmdLineOptions.cpp CmdLine.cpp 
 RES_FILE = $(BUILDDIR)/VirtualDimension.res
 DEP_FILE = $(addprefix $(BUILDDIR)/,$(addsuffix .P,$(basename $(SRC_FILE))))
 OBJ_FILE = $(DEP_FILE:.P=.o) $(BUILDDIR)/libtransp.a
