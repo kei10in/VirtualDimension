@@ -90,6 +90,8 @@ public:
    LRESULT OnPaint(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void ReSize(int width, int height);
 
+   LRESULT OnCmdSwitchDesktop(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
 protected:
    Desktop * AddDesktop(Desktop * desk);
 

@@ -29,6 +29,7 @@
 #include "DesktopManager.h"
 #include <Commdlg.h>
 #include "WindowsManager.h"
+#include "HookDLL.h"
 
 DesktopManager * deskMan;
 
@@ -60,6 +61,8 @@ DesktopManager::DesktopManager(int width, int height)
    //Initialize the OSD
    m_osd.Create();
    m_useOSD = settings.LoadSetting(Settings::DesktopNameOSD);
+
+   vdWindow.SetMessageHandler(WM_VD_SWITCHDESKTOP, this, &DesktopManager::OnCmdSwitchDesktop);
 }
 
 DesktopManager::~DesktopManager(void)
@@ -532,6 +535,16 @@ int DesktopManager::BottomMod(int pos, int param)
       //other
       pos += GetNbColumns();
    return pos;
+}
+
+LRESULT DesktopManager::OnCmdSwitchDesktop(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	Desktop * desk = GetDesktop(lParam);
+	if (desk)
+		SwitchToDesktop(desk);
+	else
+		MessageBox(NULL, "No such desktop", "Error", MB_OK|MB_ICONERROR);
+	return 0;
 }
 
 DesktopManager::NextDesktopEventHandler::NextDesktopEventHandler()
