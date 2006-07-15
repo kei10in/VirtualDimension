@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -44,9 +44,9 @@ static ATOM RegisterHyperLinkClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX); 
+	wcex.cbSize = sizeof(WNDCLASSEX);
 
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
+	wcex.style			= CS_HREDRAW | CS_VREDRAW | CS_GLOBALCLASS;
 	wcex.lpfnWndProc	= (WNDPROC)HyperLinkWndProc;
 	wcex.cbClsExtra   = sizeof(HFONT);
    wcex.cbWndExtra	= 0;
@@ -69,7 +69,7 @@ static HFONT GetHyperLinkFont(HWND hWnd, HDC hdc)
 
    if (hf == NULL)
    {
-      TEXTMETRIC tm; 
+      TEXTMETRIC tm;
       LOGFONT lf;
 
       SelectObject(hdc, GetStockObject(DEFAULT_GUI_FONT));
@@ -111,7 +111,7 @@ static void ResizeToText(HWND hWnd, LPTSTR text)
 {
    SIZE size;
    HDC hdc = GetDC(hWnd);
-   
+
    SelectObject(hdc, GetHyperLinkFont(hWnd, hdc));
    GetTextExtentPoint32(hdc, text, strlen(text), &size);
 
@@ -192,11 +192,11 @@ static LRESULT CALLBACK HyperLinkWndProc(HWND hWnd, UINT message, WPARAM wParam,
          {
             LOGBRUSH lb;
 
-            lb.lbStyle = BS_SOLID; 
-            lb.lbColor = RGB(0,0,0); 
-            lb.lbHatch = 0; 
- 
-            HPEN hpen = ExtCreatePen(PS_COSMETIC | PS_ALTERNATE, 1, &lb, 0, NULL); 
+            lb.lbStyle = BS_SOLID;
+            lb.lbColor = RGB(0,0,0);
+            lb.lbHatch = 0;
+
+            HPEN hpen = ExtCreatePen(PS_COSMETIC | PS_ALTERNATE, 1, &lb, 0, NULL);
 
             SelectObject(hdc, hpen);
             SelectObject(hdc, GetStockObject(NULL_BRUSH));

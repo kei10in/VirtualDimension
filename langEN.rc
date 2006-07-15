@@ -20,27 +20,13 @@
 
 //
 #include "resource.h"
-
-#define APSTUDIO_READONLY_SYMBOLS
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 2 resource.
-//
-#define APSTUDIO_HIDDEN_SYMBOLS
 #include <windows.h>
-#undef APSTUDIO_HIDDEN_SYMBOLS
-
-/////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
-
+#include <commctrl.h>
+#include <richedit.h>
 /////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
 
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
-#endif //_WIN32
+LANGUAGE LANG_ENGLISH,SUBLANG_ENGLISH_US
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -108,7 +94,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK |
     DS_FIXEDSYS | DS_CONTROL | DS_CENTER | WS_CHILD | WS_VISIBLE |
     WS_CAPTION | WS_SYSMENU
 CAPTION "Desktops"
-FONT 8, "MS Shell Dlg", 0, 0, 0x0
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LISTBOX         IDC_DESK_LIST,7,7,138,79,LBS_NOINTEGRALHEIGHT |
                     WS_VSCROLL | WS_TABSTOP
@@ -331,7 +317,9 @@ BEGIN
                     UDS_ARROWKEYS | UDS_NOTHOUSANDS,207,77,6,6,
                     WS_EX_TRANSPARENT
     CONTROL         "Mouse warp",IDC_MOUSEWARP_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,70,82,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,70,52,10
+	CONTROL         "more...",IDC_MOUSEWARPCFG_BTN,"HyperLinkControl",
+					WS_GROUP | WS_TABSTOP,70,70,30,10
 END
 
 IDD_TROUBLESHOOTING_SETTINGS DIALOGEX 0, 0, 214, 114
@@ -374,40 +362,37 @@ BEGIN
     PUSHBUTTON      "Remove",IDC_REMOVEAPPL_BTN,230,166,50,14
 END
 
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE
+IDD_MOUSEWARP_SETTINGS DIALOGEX DISCARDABLE 6, 18, 233, 119
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
+    WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mouse warp"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    "resource.h\0"
+	CONTROL "Configuration", IDC_STATIC, "Button", BS_GROUPBOX|WS_GROUP, 6, 4, 130, 89
+  	CONTROL "Enable", IDC_MOUSEWARP_CHECK, "Button", BS_AUTOCHECKBOX|WS_TABSTOP, 14, 17, 92, 10
+	LTEXT "Warp sensibility:", IDC_STATIC, 14, 31, 80, 8
+	CONTROL "", IDC_WARPSENSIBILITY_EDIT, "Edit", ES_NUMBER|ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP, 95, 29, 34, 12
+  	LTEXT "Minimum duration (ms):", IDC_STATIC, 14, 47, 80, 8
+	CONTROL "", IDC_MINDURATION_EDIT, "Edit", ES_NUMBER|ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP, 95, 45, 34, 12
+ 	LTEXT "Rewarp delay (ms):", IDC_STATIC, 14, 63, 80, 8
+	CONTROL "", IDC_REWARPDELAY_EDIT, "Edit", ES_NUMBER|ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP, 95, 61, 34, 12
+  	CONTROL "Switch mouse position", IDC_SWAPMOUSE_CHECK, "Button", BS_AUTOCHECKBOX|WS_TABSTOP, 14, 77, 92, 10
+  	CONTROL "Enabling key", IDC_STATIC, "Button", BS_GROUPBOX|WS_GROUP, 143, 4, 84, 89
+  	CONTROL "None", IDC_WARPKEY_NONE_RADIO, "Button", BS_AUTORADIOBUTTON|WS_TABSTOP, 151, 17, 56, 10
+	CONTROL "Alt", IDC_WARPKEY_ALT_RADIO, "Button", BS_AUTORADIOBUTTON|WS_TABSTOP, 151, 29, 56, 10
+  	CONTROL "Shift", IDC_WARPKEY_SHIFT_RADIO, "Button", BS_AUTORADIOBUTTON, 151, 41, 56, 10
+  	CONTROL "Control", IDC_WARPKEY_CTRL_RADIO, "Button", BS_AUTORADIOBUTTON, 151, 53, 56, 10
+  	CONTROL "Windows", IDC_WARPKEY_WIN_RADIO, "Button", BS_AUTORADIOBUTTON, 151, 65, 56, 10
+  	CONTROL "Other:", IDC_WARPKEY_OTHER_RADIO, "Button", BS_AUTORADIOBUTTON, 151, 77, 35, 10
+  	CONTROL "", IDC_CUSTOMKEY_EDIT, "msctls_hotkey32", ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP, 187, 76, 32, 12
+  	DEFPUSHBUTTON "OK", IDOK, 133, 99, 45, 15
+	CONTROL "Cancel", IDCANCEL, "Button", WS_TABSTOP, 182, 99, 45, 15
 END
-
-2 TEXTINCLUDE
-BEGIN
-    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "#include ""windows.h""\r\n"
-    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE
-BEGIN
-    "\r\n"
-    "\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
-
 STRINGTABLE
 BEGIN
     IDS_PROGRAM             "Program"
@@ -469,18 +454,4 @@ BEGIN
     IDS_KILLWARNING         "Warning! Killing is bad"
 END
 
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 

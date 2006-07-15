@@ -39,11 +39,16 @@ public:
    void SetSensibility(LONG sensibility);
    void SetMinDuration(DWORD minDuration);
    void SetRewarpDelay(DWORD rewarpDelay);
+   void InvertMousePos(bool invert);
+   void SetWarpKey(int vkey);
 
    void RefreshDesktopSize();
 
+   void Configure(HWND hParentWnd);
+
 protected:
    static DWORD WINAPI MouseCheckThread(LPVOID lpParameter);
+   static LRESULT WINAPI PropertiesDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
    LRESULT OnTimer(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnMouseWarp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

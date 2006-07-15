@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -42,7 +42,7 @@ void FormatTransparencyLevel(HWND hWnd, int level)
    char buffer[15];
 
    if (level == TRANSPARENCY_DISABLED)
-	{					 
+	{
 		char * disabled;
 		locGetString(disabled, IDS_DISABLED);
 		sprintf(buffer, "%3i (%s)", level, disabled);
@@ -62,6 +62,8 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
       {
          HWND hWnd;
          Settings settings;
+
+         SetDlgItemText(hDlg, IDC_MOUSEWARPCFG_BTN, "more...");
 
          //Setup always on top
          CheckDlgButton(hDlg, IDC_ONTOP_CHECK, ontop->IsAlwaysOnTop() ? BST_CHECKED : BST_UNCHECKED);
@@ -105,11 +107,19 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 		return TRUE;
 
    case WM_COMMAND:
-      if (LOWORD(wParam) == IDC_TRAYICON_CHECK)
+      switch(LOWORD(wParam))
       {
+      case IDC_TRAYICON_CHECK: {
          HRESULT res = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
          HWND hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
          EnableWindow(hWnd, res);
+         }break;
+
+      case IDC_MOUSEWARPCFG_BTN:
+         mousewarp->EnableWarp(IsDlgButtonChecked(hDlg, IDC_MOUSEWARP_CHECK) == BST_CHECKED);
+         mousewarp->Configure(hDlg);
+         CheckDlgButton(hDlg, IDC_MOUSEWARP_CHECK, mousewarp->IsWarpEnabled() ? BST_CHECKED : BST_UNCHECKED);
+         break;
       }
       break;
 
@@ -175,7 +185,7 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
          }
-         return TRUE; 
+         return TRUE;
       }
       break;
 	}
@@ -194,7 +204,7 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
          HWND hWnd;
          bool supportTransparency;   //is transparency supported on the platform ?
          Settings settings;
-         
+
          supportTransparency = Transparency::IsTransparencySupported();
 
          //Setup the transparency slider and associated controls
@@ -205,7 +215,7 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
          SendMessage(hWnd, TBM_SETBUDDY, FALSE, (LPARAM)GetDlgItem(hDlg, IDC_TRANSP_STATIC2));
          SendMessage(hWnd, TBM_SETPOS, TRUE, transp->GetTransparencyLevel());
          EnableWindow(hWnd, supportTransparency);
-        
+
          hWnd = GetDlgItem(hDlg, IDC_TRANSP_DISP);
          FormatTransparencyLevel(hWnd, transp->GetTransparencyLevel());
          EnableWindow(hWnd, supportTransparency);
@@ -219,8 +229,8 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
          switch(deskMan->GetDisplayMode())
          {
          default:
-         case DesktopManager::DM_PLAINCOLOR: ratioItem = IDC_PLAINCOLOR_RATIO; break;         
-         case DesktopManager::DM_PICTURE:    ratioItem = IDC_IMAGE_RATIO;      break;         
+         case DesktopManager::DM_PLAINCOLOR: ratioItem = IDC_PLAINCOLOR_RATIO; break;
+         case DesktopManager::DM_PICTURE:    ratioItem = IDC_IMAGE_RATIO;      break;
          case DesktopManager::DM_SCREENSHOT: ratioItem = IDC_SCREENSHOT_RATIO; break;
          }
          CheckRadioButton(hDlg, IDC_PLAINCOLOR_RATIO, IDC_SCREENSHOT_RATIO, ratioItem);
@@ -303,7 +313,7 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
       case PSN_APPLY:
          //Apply succeeded
          SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
-         return TRUE; 
+         return TRUE;
       }
       break;
 	}
@@ -319,10 +329,10 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
       {
          Desktop * desk;
          HWND hWnd;
-         
+
          //Fill the listbox control with the various desks
          hWnd = GetDlgItem(hDlg, IDC_DESK_LIST);
-         for(desk = deskMan->GetFirstDesktop(); 
+         for(desk = deskMan->GetFirstDesktop();
              desk != NULL;
              desk = deskMan->GetNextDesktop())
          {
@@ -431,7 +441,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          case LBN_SELCHANGE:
             {
                HWND hWnd;
-               
+
                hWnd = GetDlgItem(hDlg, IDC_DESK_LIST);
                short pos = (short)SendMessage(hWnd, LB_GETCURSEL, 0, 0);
                short max = (short)SendMessage(hWnd, LB_GETCOUNT, 0, 0)-1;
@@ -458,7 +468,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          case EN_CHANGE:
             {
                int nbCols=0;
-               
+
                if (!IsWindowVisible(hDlg))
                   break;
 
@@ -483,7 +493,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          break;
       }
       break;
-   
+
    case WM_NOTIFY:
       LPNMHDR pnmh = (LPNMHDR) lParam;
       assert(wParam == pnmh->idFrom);
@@ -525,7 +535,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
                vdWindow.Refresh();
             }
             else
-               MessageBeep(MB_ICONEXCLAMATION);            
+               MessageBeep(MB_ICONEXCLAMATION);
          }
          break;
 
@@ -538,7 +548,7 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
          case PSN_APPLY:
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
-            return TRUE; 
+            return TRUE;
          }
       }
       break;
@@ -557,7 +567,7 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
          bool supportTransparency;   //is transparency supported on the platform ?
          OnScreenDisplayWnd * osd = deskMan->GetOSDWindow();
          bool osdEnabled;
-         
+
          supportTransparency = Transparency::IsTransparencySupported();
          osdEnabled = deskMan->IsOSDEnabled();
 
@@ -684,7 +694,7 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
          }
-         return TRUE; 
+         return TRUE;
       }
       break;
 	}
@@ -704,7 +714,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
          //Setup integrate with shell
          CheckDlgButton(hDlg, IDC_INTEGRATEWTHSHELL_CHECK, winMan->IsIntegrateWithShell() ? BST_CHECKED : BST_UNCHECKED);
 
-         //Setup hiding method   
+         //Setup hiding method
          hidingmethod = settings.LoadSetting(Settings::DefaultHidingMethod);
          if (hidingmethod > 2 || hidingmethod < 0)
             hidingmethod = 0;
@@ -718,7 +728,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       case IDC_HIDINGMETHODEXCEPTIONS_BTN:
          {
 				LPCTSTR values[4];
-				char * coltext; 
+				char * coltext;
             Settings settings;
 				locGetString(values[0], IDS_METHOD_HIDE);
 				locGetString(values[1], IDS_METHOD_MINIMIZE);
@@ -769,7 +779,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
             //Apply succeeded
             SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
          }
-         return TRUE; 
+         return TRUE;
       }
       break;
    }

@@ -24,6 +24,7 @@
 #include "DesktopManager.h"
 #include "Settings.h"
 #include "HookDLL.h"
+#include "Locale.h"
 
 MouseWarp * mousewarp;
 
@@ -116,7 +117,7 @@ DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID lpParameter)
          newWarpLoc = WARP_NONE;
 
       //Notify application if warp location has changed, or if it has not changed for some time
-      if (newWarpLoc != warpLoc || duration >= self->m_reWarpDelay)
+      if (newWarpLoc != warpLoc || duration > self->m_reWarpDelay)
       {
          duration = 0;
          warpLoc = newWarpLoc;
@@ -127,9 +128,9 @@ DWORD WINAPI MouseWarp::MouseCheckThread(LPVOID lpParameter)
 		   {
 			   switch(warpLoc)
 			   {
-			   case WARP_NONE:		break;	//nothing to do 	
-			   case WARP_LEFT: 	pt.x = self->m_centerRect.right + self->m_centerRect.left - pt.x; 	warpLoc = WARP_RIGHT; 	break;
-			   case WARP_RIGHT: 	pt.x = self->m_centerRect.left + self->m_centerRect.right - pt.x ; 	warpLoc = WARP_LEFT; 	break;
+			   case WARP_NONE:		break;	//nothing to do
+			   case WARP_LEFT: 	   pt.x = self->m_centerRect.right + self->m_centerRect.left - pt.x; 	warpLoc = WARP_RIGHT; 	break;
+			   case WARP_RIGHT: 	   pt.x = self->m_centerRect.left + self->m_centerRect.right - pt.x ; 	warpLoc = WARP_LEFT; 	break;
 			   case WARP_TOP: 		pt.y = self->m_centerRect.top + self->m_centerRect.bottom - pt.y; 	warpLoc = WARP_BOTTOM; 	break;
 			   case WARP_BOTTOM: 	pt.y = self->m_centerRect.top + self->m_centerRect.bottom - pt.y; 	warpLoc = WARP_TOP; 	break;
 			   }
@@ -235,6 +236,28 @@ void MouseWarp::SetRewarpDelay(DWORD rewarpDelay)
    ReleaseMutex(m_hDataMutex);
 }
 
+void MouseWarp::InvertMousePos(bool invert)
+{
+   //Get access to shared variables
+   WaitForSingleObject(m_hDataMutex, INFINITE);
+
+   m_invertMousePos = invert;
+
+   //Release access to shared variables
+   ReleaseMutex(m_hDataMutex);
+}
+
+void MouseWarp::SetWarpKey(int vkey)
+{
+   //Get access to shared variables
+   WaitForSingleObject(m_hDataMutex, INFINITE);
+
+   m_warpVKey = vkey;
+
+   //Release access to shared variables
+   ReleaseMutex(m_hDataMutex);
+}
+
 void MouseWarp::RefreshDesktopSize()
 {
    //Get access to shared variables
@@ -249,4 +272,102 @@ void MouseWarp::RefreshDesktopSize()
 
    //Release access to shared variables
    ReleaseMutex(m_hDataMutex);
+}
+
+LRESULT WINAPI MouseWarp::PropertiesDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+   MouseWarp * self;
+   HWND hWnd;
+
+   switch(message)
+   {
+   case WM_INITDIALOG:
+      SetWindowLongPtr(hDlg, DWLP_USER, lParam);
+      self = (MouseWarp*)lParam;
+
+      //Warp config
+      CheckDlgButton(hDlg, IDC_MOUSEWARP_CHECK, self->IsWarpEnabled()?BST_CHECKED:BST_UNCHECKED);
+      SetDlgItemInt(hDlg, IDC_WARPSENSIBILITY_EDIT, self->m_sensibility, FALSE);
+      SetDlgItemInt(hDlg, IDC_MINDURATION_EDIT, self->m_minDuration, FALSE);
+      SetDlgItemInt(hDlg, IDC_REWARPDELAY_EDIT, self->m_reWarpDelay, FALSE);
+      CheckDlgButton(hDlg, IDC_SWAPMOUSE_CHECK, self->m_invertMousePos?BST_CHECKED:BST_UNCHECKED);
+
+      //Warp key modes
+      switch(self->m_warpVKey)
+      {
+      case 0: CheckDlgButton(hDlg, IDC_WARPKEY_NONE_RADIO, BST_CHECKED); break;
+      case VK_MENU: CheckDlgButton(hDlg, IDC_WARPKEY_ALT_RADIO, BST_CHECKED); break;
+      case VK_SHIFT: CheckDlgButton(hDlg, IDC_WARPKEY_SHIFT_RADIO, BST_CHECKED); break;
+      case VK_CONTROL: CheckDlgButton(hDlg, IDC_WARPKEY_CTRL_RADIO, BST_CHECKED); break;
+      case VK_LWIN: CheckDlgButton(hDlg, IDC_WARPKEY_WIN_RADIO, BST_CHECKED); break;
+      default: CheckDlgButton(hDlg, IDC_WARPKEY_OTHER_RADIO, BST_CHECKED); break;
+      }
+
+      //Custom warp key
+      hWnd = GetDlgItem(hDlg, IDC_CUSTOMKEY_EDIT);
+      SendMessage(hWnd, HKM_SETRULES, HKCOMB_A|HKCOMB_C|HKCOMB_CA|HKCOMB_S|HKCOMB_SA|HKCOMB_SC|HKCOMB_SCA, 0);
+      if (IsDlgButtonChecked(hDlg, IDC_WARPKEY_OTHER_RADIO))
+      {
+         EnableWindow(hWnd, TRUE);
+         SendMessage(hWnd, HKM_SETHOTKEY, self->m_warpVKey, 0);
+      }
+      else
+         EnableWindow(hWnd, FALSE);
+
+      return TRUE;
+      break;
+
+   case WM_COMMAND:
+      switch(LOWORD(wParam))
+      {
+      case IDOK:
+         self = (MouseWarp*)GetWindowLongPtr(hDlg, DWLP_USER);
+
+         self->SetSensibility(GetDlgItemInt(hDlg, IDC_WARPSENSIBILITY_EDIT, NULL, FALSE));
+         self->SetMinDuration(GetDlgItemInt(hDlg, IDC_MINDURATION_EDIT, NULL, FALSE));
+         self->SetRewarpDelay(GetDlgItemInt(hDlg, IDC_REWARPDELAY_EDIT, NULL, FALSE));
+         self->InvertMousePos(IsDlgButtonChecked(hDlg, IDC_SWAPMOUSE_CHECK) ? true : false);
+         self->EnableWarp(IsDlgButtonChecked(hDlg, IDC_MOUSEWARP_CHECK) ? true : false);
+
+         if (IsDlgButtonChecked(hDlg, IDC_WARPKEY_ALT_RADIO))
+            self->SetWarpKey(VK_MENU);
+         else if (IsDlgButtonChecked(hDlg, IDC_WARPKEY_SHIFT_RADIO))
+            self->SetWarpKey(VK_SHIFT);
+         else if (IsDlgButtonChecked(hDlg, IDC_WARPKEY_CTRL_RADIO))
+            self->SetWarpKey(VK_CONTROL);
+         else if (IsDlgButtonChecked(hDlg, IDC_WARPKEY_WIN_RADIO))
+            self->SetWarpKey(VK_LWIN);
+         else if (IsDlgButtonChecked(hDlg, IDC_WARPKEY_OTHER_RADIO))
+            self->SetWarpKey(LOBYTE(SendMessage(GetDlgItem(hDlg, IDC_CUSTOMKEY_EDIT), HKM_GETHOTKEY, 0, 0)));
+         else
+            self->SetWarpKey(0);
+
+         EndDialog(hDlg, IDOK);
+         break;
+
+      case IDCANCEL:
+         EndDialog(hDlg, IDCANCEL);
+         break;
+
+      case IDC_WARPKEY_NONE_RADIO:
+      case IDC_WARPKEY_ALT_RADIO:
+      case IDC_WARPKEY_SHIFT_RADIO:
+      case IDC_WARPKEY_CTRL_RADIO:
+      case IDC_WARPKEY_WIN_RADIO:
+         EnableWindow(GetDlgItem(hDlg, IDC_CUSTOMKEY_EDIT), FALSE);
+         break;
+
+      case IDC_WARPKEY_OTHER_RADIO:
+         EnableWindow(GetDlgItem(hDlg, IDC_CUSTOMKEY_EDIT), TRUE);
+         break;
+      }
+      break;
+   }
+
+   return FALSE;
+}
+
+void MouseWarp::Configure(HWND hParentWnd)
+{
+   DialogBoxParam(Locale::GetInstance(), MAKEINTRESOURCE(IDD_MOUSEWARP_SETTINGS), hParentWnd, (DLGPROC)&PropertiesDlgProc, (LPARAM)this);
 }
