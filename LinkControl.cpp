@@ -147,6 +147,11 @@ static LRESULT CALLBACK HyperLinkWndProc(HWND hWnd, UINT message, WPARAM wParam,
       memset(hlCtrl, 0, sizeof(HLControl));
       hlCtrl->m_focused = false;
       SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)hlCtrl);
+      
+      //Setup initial text. We must bypass our own implementation of WM_GETTEXT,
+      //so we must call directoy DefWindowProc().
+      DefWindowProc(hWnd, WM_GETTEXT, (WPARAM)MAX_PATH, (LPARAM)hlCtrl->m_text);
+      ResizeToText(hWnd, hlCtrl->m_text);
       break;
 
    case WM_DESTROY:
