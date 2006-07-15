@@ -1,41 +1,89 @@
-/* 
-* Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+* Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
 * for the Microsoft Windows platform.
 * Copyright (C) 2003-2005 Francois Ferrand
 *
-* This program is free software; you can redistribute it and/or modify it under 
-* the terms of the GNU General Public License as published by the Free Software 
-* Foundation; either version 2 of the License, or (at your option) any later 
+* This program is free software; you can redistribute it and/or modify it under
+* the terms of the GNU General Public License as published by the Free Software
+* Foundation; either version 2 of the License, or (at your option) any later
 * version.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT 
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 *
-* You should have received a copy of the GNU General Public License along with 
-* this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+* You should have received a copy of the GNU General Public License along with
+* this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 * Place, Suite 330, Boston, MA 02111-1307 USA
 *
 */
 
 #include "StdAfx.h"
 #include "Resource.h"
+#include "Settings.h"
 #include "Locale.h"
 
 
-#define LANGUAGE_CODE_LENGTH	2
-
 Locale Locale::m_instance;
 
-Locale::Locale(void)
+Locale::Locale(void): m_resDll(NULL)
 {
-	m_resDll = (HINSTANCE)::LoadLibrary("langEN.dll");
+    Settings settings;
+    int code;
+
+    //Load last used language
+    code = settings.LoadSetting(Settings::LanguageCode);
+
+    //Try to load that language
+    Reload(code);
+
+    // by default, it will stay with ENglish one
+    if ( m_resDll == NULL)
+        m_resDll = (HINSTANCE)::LoadLibrary("langEN.dll");
+        
+    if (m_resDll == NULL)
+    {
+       //TODO: try to find another resource library (maybe there is only langFR.dll)
+       //TODO: if that fails, display error message (hardcoded in any language), and terminate application immediatly
+    }
 }
 
 Locale::~Locale(void)
 {
 	::FreeLibrary(m_resDll);
 }
+
+bool Locale::Reload(int langcode)
+{
+    bool bResult = false;
+
+    if (langcode == 0)
+    {
+        //TODO: try to auto-detect language
+    }
+
+    if (langcode)
+    {
+        char buffer[16];
+        sprintf(buffer,"lang%c%c.dll", 'A'-1+(langcode & 0x1f), 'A'-1+((langcode >> 5) & 0x1f));
+        HINSTANCE hInstTemporary = (HINSTANCE)::LoadLibrary(buffer);
+        if ( hInstTemporary != NULL)
+        {
+            //Change the resource library used
+            bResult = true;
+            if (m_resDll)
+               ::FreeLibrary(m_resDll);
+            m_resDll = hInstTemporary;
+
+            //Save the new language
+            Settings    settings;
+            settings.SaveSetting(Settings::LanguageCode,langcode);
+        }
+    }
+
+    return bResult;
+}
+
 
 String Locale::GetString(HINSTANCE hinst, UINT uID)
 {
@@ -83,7 +131,7 @@ bool LocalesIterator::GetNext()
 	*m_FindFileData.cFileName = 0;	//empty the file name
 	if (m_hFind == INVALID_HANDLE_VALUE)
 	{
-		char path[MAX_PATH]; 
+		char path[MAX_PATH];
 		char * ptr;
 
 		//Build the mask, including path
@@ -121,8 +169,13 @@ String LocalesIterator::GetLanguage(HICON * hSmIcon, HICON * hLgIcon)
 	return res;
 }
 
-String LocalesIterator::GetLanguageCode()
+int LocalesIterator::GetLanguageCode()
 {
-	String res(m_FindFileData.cFileName + 4, LANGUAGE_CODE_LENGTH);
-	return res;
+   char first = m_FindFileData.cFileName[4];
+   char second = m_FindFileData.cFileName[5];
+   if (first >= 'a' && first <= 'z')
+      first -= 'a' - 'A';
+   if (second >= 'a' && second <= 'z')
+      second -= 'a' - 'A';
+	return ((first + 1 - 'A') & 0x1f) | (((second + 1 - 'A') & 0x1f) << 5);
 }

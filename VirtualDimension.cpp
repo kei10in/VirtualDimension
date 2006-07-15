@@ -227,15 +227,14 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
       RemoveMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND);
       RemoveMenu(m_pSysMenu, 0, MF_BYCOMMAND);
 
-   	AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, "C&onfigure");
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, "&Lock the window");
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, "S&how the caption");
+      AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDM_CONFIGURE)); //"C&onfigure"
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDM_LOCKPREVIEWWND)); //"&Lock the window"
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDM_SHOWCAPTION)); //"S&how the caption"
 
-		if (CreateLangMenu())
-			AppendMenu(m_pSysMenu, MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, "L&anguage");
-	   AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, "&About");
-
+      if (CreateLangMenu())
+         AppendMenu(m_pSysMenu, MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, Locale::GetInstance().GetString(IDM_LANGUAGE)); //"L&anguage"
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, Locale::GetInstance().GetString(IDM_ABOUT)); //"&About"
       CheckMenuItem(m_pSysMenu, IDM_SHOWCAPTION, m_hasCaption ? MF_CHECKED : MF_UNCHECKED );
    }
 
@@ -892,6 +891,16 @@ LRESULT VirtualDimension::OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LP
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+LRESULT VirtualDimension::OnCmdLanguageChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (Locale::GetInstance().Reload(wParam-WM_VD_LANGUAGE))
+    {
+       UpdateSystemMenu();
+       CheckMenuItem(m_pLangMenu,(UINT)wParam,MF_BYCOMMAND|MF_CHECKED);
+    }
+    return 0;
+}
+
 #define SHRUNK_THICKNESS 10
 
 void VirtualDimension::Shrink(void)
@@ -1032,7 +1041,7 @@ bool VirtualDimension::CreateLangMenu()
 	m_pLangMenu = CreatePopupMenu();
 
 	//Add the entries
-	while(it.GetNext())
+	while(m_pLangMenu && it.GetNext())
 	{
 		String name;
 		HICON hicon;
@@ -1040,32 +1049,50 @@ bool VirtualDimension::CreateLangMenu()
 		if (!name.empty())
 		{
 			MENUITEMINFO iteminfo;
+			int code = it.GetLanguageCode();
+
 			count++;
+
 			iteminfo.cbSize = sizeof(MENUITEMINFO);
-			iteminfo.fMask = MIIM_DATA|MIIM_STRING|MIIM_FTYPE|MIIM_BITMAP;
+			iteminfo.fMask = MIIM_DATA|MIIM_STRING|MIIM_FTYPE|MIIM_BITMAP|MIIM_ID;
 			iteminfo.dwTypeData = (LPSTR)name.c_str();
 			iteminfo.fType = MFT_STRING;
 			iteminfo.dwItemData = (ULONG_PTR)hicon;
 			iteminfo.hbmpItem = HBMMENU_CALLBACK;
-			InsertMenuItem(m_pLangMenu, 100+count, FALSE, &iteminfo);
+			iteminfo.wID = WM_VD_LANGUAGE+code; // in order to get WM_COMMAND msg
+			InsertMenuItem(m_pLangMenu, WM_VD_LANGUAGE+code, FALSE, &iteminfo);
+
+			// then we connect any menu to the window proc
+         SetCommandHandler(WM_VD_LANGUAGE+code, this, &VirtualDimension::OnCmdLanguageChange);
+         SetSysCommandHandler(WM_VD_LANGUAGE+code, this, &VirtualDimension::OnCmdLanguageChange);
 		}
 	}
 
 	return count > 1;
 }
 
+void VirtualDimension::UpdateSystemMenu()
+{
+   if (m_pSysMenu)
+   {
+      ModifyMenu(m_pSysMenu, IDM_CONFIGURE, MF_BYCOMMAND|MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDM_CONFIGURE)); //"C&onfigure"
+      ModifyMenu(m_pSysMenu, IDM_LOCKPREVIEWWND, MF_BYCOMMAND|MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDM_LOCKPREVIEWWND)); //"&Lock the window"
+      ModifyMenu(m_pSysMenu, IDM_SHOWCAPTION, MF_BYCOMMAND|MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDM_SHOWCAPTION)); //"S&how the caption"
+
+      if (m_pLangMenu && GetMenuItemCount(m_pLangMenu)>1)
+         ModifyMenu(m_pSysMenu, (UINT_PTR)m_pLangMenu, MF_BYCOMMAND|MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, Locale::GetInstance().GetString(IDM_LANGUAGE)); //"L&anguage"
+      ModifyMenu(m_pSysMenu, IDM_ABOUT, MF_BYCOMMAND|MF_STRING, IDM_ABOUT, Locale::GetInstance().GetString(IDM_ABOUT)); //"&About"
+   }
+}
+
 // Message handler for about box.
 LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
    static IPicture * picture;
-	LPTSTR text;
 
 	switch (message)
 	{
 	case WM_INITDIALOG:
-      SetDlgItemText(hDlg, IDC_HOMEPAGE_LINK, "http://virt-dimension.sourceforge.net");
-		locGetString(text, IDS_LICENSE_LINK);
-      SetDlgItemText(hDlg, IDC_GPL_LINK, text);
       SetFocus(GetDlgItem(hDlg, IDOK));
       picture = PlatformHelper::OpenImage(MAKEINTRESOURCE(IDI_VIRTUALDIMENSION));
 

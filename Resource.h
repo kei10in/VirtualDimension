@@ -40,6 +40,7 @@
 #define IDS_SELECT_BACKGROUND           106
 #define IDI_VIRTUALDIMENSION            107
 #define IDS_DISABLED                    107
+#define IDM_LANGUAGE                    107
 #define IDI_DEFAPP_SMALL                108
 #define IDS_PARAM_COLOR                 108
 #define IDC_VIRTUALDIMENSION            109

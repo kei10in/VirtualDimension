@@ -60,6 +60,8 @@ enum VirtualDimensionMessages
 
    WM_VD_STARTONDESKTOP,      /* an application should start on the specified desktop. wParam = processId lParam = deskopIdx */
    WM_VD_SWITCHDESKTOP,       /* switch to some desktop. lParam = desktopIdx */
+
+   WM_VD_LANGUAGE = WM_APP + 0x1000,   /* WM_VD_LANGUAGE to WM_VD_LANGUAGE + 0x1000 is reserved for all language messages) */
 };
 
 #endif /*__HOOKDLL_H__*/

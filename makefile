@@ -25,8 +25,12 @@ BUILDDIR = mingw-release
 endif
 endif
 
-TARGETS = $(BUILDDIR)/VirtualDimension.exe $(BUILDDIR)/HookDLL.dll $(BUILDDIR)/langEN.dll
-SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp Settings.cpp \
+TARGETS = Message_vdexe $(BUILDDIR)/VirtualDimension.exe Message_done1	\
+		  Message_hookdll $(BUILDDIR)/HookDLL.dll Message_done2			\
+		  Message_langEN $(BUILDDIR)/langEN.dll Message_done3			\
+		  Message_langFR $(BUILDDIR)/langFR.dll Message_done4
+
+SRC_FILE = ConfigBox.cpp Desktop.cpp DesktopManager.cpp HotKeyManager.cpp \
 VirtualDimension.cpp deskPropsDlg.cpp stdafx.cpp Transparency.cpp AlwaysOnTop.cpp \
 TrayIcon.cpp ShellHook.cpp WindowsManager.cpp Window.cpp movewindow.cpp ToolTip.cpp \
 FastWindow.cpp TrayIconsManager.cpp WindowDialogs.cpp HotKeyControl.cpp \
@@ -34,7 +38,7 @@ OnScreenDisplay.cpp PlatformHelper.cpp SubclassWindow.cpp WindowsList.cpp  \
 WallPaper.cpp BackgroundDisplayMode.cpp BackgroundColor.cpp TaskPool.cpp \
 LinkControl.cpp HotkeyConfig.cpp guids.c ExplorerWrapper.cpp HidingMethod.cpp \
 SharedMenuBuffer.cpp MouseWarp.cpp Config.cpp ApplicationListDlg.cpp Locale.cpp \
-BalloonNotif.cpp CmdLineOptions.cpp CmdLine.cpp 
+BalloonNotif.cpp CmdLineOptions.cpp CmdLine.cpp Settings.cpp 
 RES_FILE = $(BUILDDIR)/VirtualDimension.res
 DEP_FILE = $(addprefix $(BUILDDIR)/,$(addsuffix .P,$(basename $(SRC_FILE))))
 OBJ_FILE = $(DEP_FILE:.P=.o) $(BUILDDIR)/libtransp.a
@@ -53,10 +57,11 @@ endif
 all: ${BUILDDIR} $(TARGETS)
 
 install: install-script.nsi all
-	@echo Building installer...
+	@echo "---------- Building installer ---------------------"
 	@/c/Program\ Files/NSIS/makeNSIS.exe $<
 
 clean:
+	@echo "---------- Cleaning -------------------------------"
 	@if ( [ -d ${BUILDDIR} ] ) then \
 	   echo rm -r ${BUILDDIR};      \
 	   rm -r ${BUILDDIR};           \
@@ -67,6 +72,18 @@ ${BUILDDIR}:
 	   echo mkdir ${BUILDDIR};         \
 	   mkdir ${BUILDDIR};              \
 	fi
+
+Message_vdexe:
+	@echo "---------- Building VirtualDimension.exe ----------"
+
+Message_hookdll:
+	@echo "---------- Building HoolDll.dll -------------------"
+
+Message_lang%:
+	@echo "---------- Building $(subst Message_,,$@).dll --------------------"
+
+Message_done%:
+	@echo "Done."
 
 $(BUILDDIR)/VirtualDimension.exe: ${OBJ_FILE} ${RES_FILE}
 	@echo Linking $@...
@@ -82,7 +99,7 @@ ifndef DEBUG
 	@strip --strip-all $@
 endif
 
-$(BUILDDIR)/%.res: %.rc ${BUILDDIR}
+$(BUILDDIR)/%.res: %.rc
 	@echo $<...
 	@windres -i $< -J rc -o $@ -O coff --include-dir=..
 
@@ -98,7 +115,7 @@ $(BUILDDIR)/libtransp.a: Transp.def
 	@dlltool --def $< --dllname user32.dll  --output-lib $@
 
 
-$(BUILDDIR)/%.o: %.cpp $(BUILDDIR)
+$(BUILDDIR)/%.o: %.cpp
 	@echo $<...
 	@g++ -c -o $@ $< $(CXXFLAGS) -MMD
 	@cp $(BUILDDIR)/$*.d $(BUILDDIR)/$*.P
@@ -106,7 +123,7 @@ $(BUILDDIR)/%.o: %.cpp $(BUILDDIR)
         -e '/^$$/ d' -e 's/$$/ :/' < $(BUILDDIR)/$*.d >> $(BUILDDIR)/$*.P
 	@rm -f $(BUILDDIR)/$*.d
 
-$(BUILDDIR)/%.o: %.c $(BUILDDIR)
+$(BUILDDIR)/%.o: %.c
 	@echo $<...
 	@gcc -c -o $@ $< $(CFLAGS) -MMD
 	@cp $(BUILDDIR)/$*.d $(BUILDDIR)/$*.P

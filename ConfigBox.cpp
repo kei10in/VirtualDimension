@@ -63,8 +63,6 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
          HWND hWnd;
          Settings settings;
 
-         SetDlgItemText(hDlg, IDC_MOUSEWARPCFG_BTN, "more...");
-
          //Setup always on top
          CheckDlgButton(hDlg, IDC_ONTOP_CHECK, ontop->IsAlwaysOnTop() ? BST_CHECKED : BST_UNCHECKED);
 

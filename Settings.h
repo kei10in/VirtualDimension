@@ -84,6 +84,7 @@ public:
    static DECLARE_SETTING(WarpRequiredVKey, int);
    static DECLARE_SETTING(WarpInvertMousePos, bool);
    static DECLARE_SETTING(DefaultHidingMethod, int);
+   static DECLARE_SETTING(LanguageCode,int);
 
    // Other settings
    Config::Group * GetShellIntegrationExceptions() { return GetSubGroup(regSubKeyDisableShellIntegration); }
