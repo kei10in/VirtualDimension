@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -61,7 +61,7 @@ IDI_MINIMIZE_TRAY       ICON                    "minTray.ico"
 // Accelerator
 //
 
-IDC_VIRTUALDIMENSION ACCELERATORS 
+IDC_VIRTUALDIMENSION ACCELERATORS
 BEGIN
     "?",            IDM_ABOUT,              ASCII,  ALT
     "/",            IDM_ABOUT,              ASCII,  ALT
@@ -74,25 +74,25 @@ END
 //
 
 IDD_ABOUTBOX DIALOGEX 22, 17, 325, 92
-STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | 
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER |
     WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    CONTROL         "",IDC_MYICON,"Static",SS_OWNERDRAW | SS_CENTERIMAGE | 
+    CONTROL         "",IDC_MYICON,"Static",SS_OWNERDRAW | SS_CENTERIMAGE |
                     SS_REALSIZEIMAGE,5,6,112,80
     LTEXT           "Virtual Dimension Version 1.0",IDC_PRODUCT,123,7,142,8,
                     SS_NOPREFIX
     LTEXT           "Copyright (C) 2003-2005 Francois Ferrand",IDC_COPYRIGHT,123,
                     17,142,8
     CONTROL         "http://virt-dimension.sourceforge.net",
-                    IDC_HOMEPAGE_LINK,"HyperLinkControl",WS_GROUP | 
-                    WS_TABSTOP,123,30,122,8
+                    IDC_HOMEPAGE_LINK,"HyperLinkControl",WS_GROUP |
+                    WS_TABSTOP,123,30,122,8, WS_EX_TRANSPARENT
     LTEXT           "Virtual Dimension comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions. See the GNU General Public License for details.",
                     IDC_STATIC,123,44,196,32,SS_NOPREFIX
     CONTROL         "Click here to display the GNU General Public License",
                     IDC_GPL_LINK,"HyperLinkControl",WS_GROUP | WS_TABSTOP,
-                    123,78,196,8
+                    123,78,196,8, WS_EX_TRANSPARENT
     DEFPUSHBUTTON   "OK",IDOK,272,6,47,13,WS_GROUP
 END
 
@@ -103,12 +103,12 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "#include ""windows.h""\r\n"
@@ -116,7 +116,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "\r\n"
     "\0"
@@ -184,7 +184,7 @@ IDI_VIRTUALDIMENSION    300                     "logo.gif"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_APP_TITLE           "Virtual Dimension"
     IDC_VIRTUALDIMENSION    "VIRTUALDIMENSION"

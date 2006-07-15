@@ -318,8 +318,8 @@ BEGIN
                     WS_EX_TRANSPARENT
     CONTROL         "Mouse warp",IDC_MOUSEWARP_CHECK,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,16,70,52,10
-	CONTROL         "more...",IDC_MOUSEWARPCFG_BTN,"HyperLinkControl",
-					WS_GROUP | WS_TABSTOP,70,70,30,10
+	CONTROL          "more...",IDC_MOUSEWARPCFG_BTN,"HyperLinkControl",
+                    WS_GROUP | WS_TABSTOP,70,70,30,10, WS_EX_TRANSPARENT
 END
 
 IDD_TROUBLESHOOTING_SETTINGS DIALOGEX 0, 0, 214, 114

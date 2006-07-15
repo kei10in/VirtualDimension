@@ -22,6 +22,7 @@
 #include "LinkControl.h"
 #include "VirtualDimension.h"
 #include <shellapi.h>
+#include <windowsx.h>
 
 static ATOM RegisterHyperLinkClass(HINSTANCE hInstance);
 static LRESULT CALLBACK	HyperLinkWndProc(HWND, UINT, WPARAM, LPARAM);
@@ -120,6 +121,21 @@ static void ResizeToText(HWND hWnd, LPTSTR text)
    SetWindowPos(hWnd, NULL, 0, 0, size.cx+2, size.cy+2, SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
 }
 
+static void RepaintBackground(HWND hWnd)
+{
+   RECT rect;
+   HWND hParentWnd;
+
+   if (GetWindowExStyle(hWnd) & WS_EX_TRANSPARENT)
+   {
+      hParentWnd = GetParent(hWnd);
+      GetWindowRect(hWnd, &rect);
+      ScreenToClient(hParentWnd, (POINT*)&rect);
+      InvalidateRect(hParentWnd, &rect, TRUE);
+      UpdateWindow(hParentWnd);
+   }
+}
+
 static LRESULT CALLBACK HyperLinkWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
    HLControl * hlCtrl;
@@ -153,6 +169,7 @@ static LRESULT CALLBACK HyperLinkWndProc(HWND hWnd, UINT message, WPARAM wParam,
       hlCtrl = (HLControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
       strncpy(hlCtrl->m_text, (LPTSTR)lParam, MAX_PATH);
       ResizeToText(hWnd, hlCtrl->m_text);
+      RepaintBackground(hWnd);
       break;
 
    case WM_GETTEXT:
@@ -164,12 +181,19 @@ static LRESULT CALLBACK HyperLinkWndProc(HWND hWnd, UINT message, WPARAM wParam,
       hlCtrl = (HLControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
       hlCtrl->m_focused = true;
       InvalidateRect(hWnd, NULL, FALSE);
+      RepaintBackground(hWnd);
       break;
 
    case WM_KILLFOCUS:
       hlCtrl = (HLControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
       hlCtrl->m_focused = false;
       InvalidateRect(hWnd, NULL, TRUE);
+      RepaintBackground(hWnd);
+      break;
+
+   case WM_ERASEBKGND:
+      if (GetWindowExStyle(hWnd) & WS_EX_TRANSPARENT)
+         return TRUE;   //skip drawing background if the window is transparent
       break;
 
    case WM_PAINT:
