@@ -422,7 +422,7 @@ LRESULT CALLBACK Window::AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam
 	return FALSE;
 }
 
-LRESULT CALLBACK Window::FilterSettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Window::FilterSettingsProc(HWND /*hDlg*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
    return FALSE;
 }

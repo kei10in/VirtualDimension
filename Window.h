@@ -179,7 +179,7 @@ public:
 
    void FlashWindow(void);
    void UnFlashWindow(void);
-   bool IsWindowFlashing(void)                { return m_BallonMsg; }
+   bool IsWindowFlashing(void)                { return m_BallonMsg ? true : false; }
 
 protected:
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

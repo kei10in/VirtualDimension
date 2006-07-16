@@ -646,7 +646,7 @@ void Window::UnFlashWindow(void)
    }
 }
 
-void Window::OnFlashBallonClick(BalloonNotification::Message msg, int data)
+void Window::OnFlashBallonClick(BalloonNotification::Message /*msg*/, int data)
 {
    Window * wnd = winMan->GetWindow((HWND)data);
    if (wnd)

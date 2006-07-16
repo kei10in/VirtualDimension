@@ -1,19 +1,19 @@
-/* 
- * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager 
+/*
+ * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
  * Copyright (C) 2003-2005 Francois Ferrand
  *
- * This program is free software; you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation; either version 2 of the License, or (at your option) any later 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
  * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License along with 
- * this program; if not, write to the Free Software Foundation, Inc., 59 Temple 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
  * Place, Suite 330, Boston, MA 02111-1307 USA
  *
  */
@@ -50,9 +50,9 @@ DesktopManager::DesktopManager(int width, int height)
    m_bkDisplayMode = NULL;
    m_displayMode = (DisplayMode)-1;
    SetDisplayMode((DisplayMode)settings.LoadSetting(Settings::DisplayMode));
-         
+
    settings.LoadSetting(Settings::PreviewWindowFont, &m_lfPreviewWindowFontInfo);
-   m_hPreviewWindowFont = CreateFontIndirect(&m_lfPreviewWindowFontInfo); 
+   m_hPreviewWindowFont = CreateFontIndirect(&m_lfPreviewWindowFontInfo);
    m_crPreviewWindowFontColor = settings.LoadSetting(Settings::PreviewWindowFontColor);
 
    //Load the desktops
@@ -104,7 +104,7 @@ void DesktopManager::ReSize(int width, int height)
 {
 	if ( (width != m_width) || (height != m_height) )
    {
-      m_width = width; 
+      m_width = width;
       m_height = height;
 
       UpdateLayout();
@@ -166,11 +166,11 @@ LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, 
    //Start drawing
    hdc = BeginPaint(hWnd, &ps);
 
-   //Create the DC used for drawing 
+   //Create the DC used for drawing
    deskHdc = CreateCompatibleDC(hdc);
-   deskBmp = CreateCompatibleBitmap(hdc, m_width, m_height); 
+   deskBmp = CreateCompatibleBitmap(hdc, m_width, m_height);
    SelectObject(deskHdc, deskBmp);
-   
+
    //Draw the background
    rect.left = rect.top = 0;
    rect.bottom = m_height;
@@ -199,7 +199,7 @@ LRESULT DesktopManager::OnPaint(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, 
    //Copy the resulting image to the actual DC
    BitBlt(hdc, 0, 0, m_width, m_height, deskHdc, 0, 0, SRCCOPY);
 
-   //Drawing done ! 
+   //Drawing done !
    EndPaint(hWnd, &ps);
 
    //Cleanup
@@ -229,7 +229,7 @@ Desktop * DesktopManager::AddDesktop(Desktop * desk)
 
       //Update tray icon tooltip
       trayIcon->Update();
-      
+
       //Refresh preview window
       vdWindow.Refresh();
    }
@@ -275,7 +275,7 @@ void DesktopManager::RemoveDesktop(Desktop * desk)
    for(WindowsManager::Iterator it = winMan->GetIterator(); it; it++)
    {
       Window * win = it;
-      
+
       if (win->GetDesk() == desk)
          win->MoveToDesktop(m_currentDesktop);
    }
@@ -370,7 +370,7 @@ void DesktopManager::LoadDesktops()
 
 void DesktopManager::SetNbColumns(int cols)
 {
-   m_nbColumn = cols; 
+   m_nbColumn = cols;
    UpdateLayout();
 }
 
@@ -385,7 +385,7 @@ Desktop* DesktopManager::GetOtherDesk(Desktop * desk, int (DesktopManager::*updp
       return desk;
 
    pos = (this->*updpos)(distance(m_desks.begin(), it), param);
-   
+
    while(pos < 0)
       pos += GetNbDesktops();
    while(pos >= GetNbDesktops())
@@ -446,30 +446,30 @@ bool DesktopManager::ChooseBackgroundDisplayModeOptions(HWND hWnd)
 
 void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)
 {
-   CHOOSEFONT cf; 
+   CHOOSEFONT cf;
 
-   cf.lStructSize = sizeof(CHOOSEFONT); 
-   cf.hwndOwner = hDlg; 
-   cf.hDC = (HDC)NULL; 
-   cf.lpLogFont = &m_lfPreviewWindowFontInfo; 
-   cf.iPointSize = 0; 
-   cf.Flags = CF_SCREENFONTS | CF_EFFECTS | CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT; 
-   cf.rgbColors = m_crPreviewWindowFontColor; 
-   cf.lCustData = 0; 
-   cf.lpfnHook = (LPCFHOOKPROC)NULL; 
-   cf.lpTemplateName = (LPSTR)NULL; 
-   cf.hInstance = (HINSTANCE)vdWindow; 
-   cf.lpszStyle = (LPSTR)NULL; 
-   cf.nFontType = SCREEN_FONTTYPE; 
-   cf.nSizeMin = 0; 
-   cf.nSizeMax = 0; 
+   cf.lStructSize = sizeof(CHOOSEFONT);
+   cf.hwndOwner = hDlg;
+   cf.hDC = (HDC)NULL;
+   cf.lpLogFont = &m_lfPreviewWindowFontInfo;
+   cf.iPointSize = 0;
+   cf.Flags = CF_SCREENFONTS | CF_EFFECTS | CF_FORCEFONTEXIST | CF_INITTOLOGFONTSTRUCT;
+   cf.rgbColors = m_crPreviewWindowFontColor;
+   cf.lCustData = 0;
+   cf.lpfnHook = (LPCFHOOKPROC)NULL;
+   cf.lpTemplateName = (LPSTR)NULL;
+   cf.hInstance = (HINSTANCE)vdWindow;
+   cf.lpszStyle = (LPSTR)NULL;
+   cf.nFontType = SCREEN_FONTTYPE;
+   cf.nSizeMin = 0;
+   cf.nSizeMax = 0;
 
    if (ChooseFont(&cf))
    {
       if (m_hPreviewWindowFont)
          DeleteObject(m_hPreviewWindowFont);
 
-      m_hPreviewWindowFont = CreateFontIndirect(cf.lpLogFont); 
+      m_hPreviewWindowFont = CreateFontIndirect(cf.lpLogFont);
       m_crPreviewWindowFontColor = cf.rgbColors;
 
       vdWindow.Refresh();
@@ -480,8 +480,8 @@ int DesktopManager::DeltaMod(int pos, int param)
 {
 	return pos + param;
 }
- 
-int DesktopManager::LeftMod(int pos, int param)
+
+int DesktopManager::LeftMod(int pos, int /*param*/)
 {
    if (pos == GetNbDesktops()-1)
       //last desktop
@@ -495,7 +495,7 @@ int DesktopManager::LeftMod(int pos, int param)
    return pos;
 }
 
-int DesktopManager::RightMod(int pos, int param)
+int DesktopManager::RightMod(int pos, int /*param*/)
 {
    if (pos == GetNbDesktops() - GetNbDesktops() % GetNbColumns())
       //first col on last line
@@ -509,14 +509,14 @@ int DesktopManager::RightMod(int pos, int param)
    return pos;
 }
 
-int DesktopManager::TopMod(int pos, int param)
+int DesktopManager::TopMod(int pos, int /*param*/)
 {
    if (pos / GetNbColumns() == 0)
    {
       //first row
       if (pos >= GetNbDesktops()%GetNbColumns())
          pos -= GetNbColumns();
-      pos += GetNbDesktops() - GetNbDesktops()%GetNbColumns();  
+      pos += GetNbDesktops() - GetNbDesktops()%GetNbColumns();
    }
    else
       //other
@@ -524,7 +524,7 @@ int DesktopManager::TopMod(int pos, int param)
    return pos;
 }
 
-int DesktopManager::BottomMod(int pos, int param)
+int DesktopManager::BottomMod(int pos, int /*param*/)
 {
    if (pos >= GetNbDesktops() - GetNbColumns())
    {
@@ -537,7 +537,7 @@ int DesktopManager::BottomMod(int pos, int param)
    return pos;
 }
 
-LRESULT DesktopManager::OnCmdSwitchDesktop(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT DesktopManager::OnCmdSwitchDesktop(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
 	Desktop * desk = GetDesktop(lParam);
 	if (desk)
@@ -561,7 +561,7 @@ DesktopManager::NextDesktopEventHandler::~NextDesktopEventHandler()
 
 void DesktopManager::NextDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetNextDesk(deskMan->GetCurrentDesktop())); 
+   deskMan->SwitchToDesktop(deskMan->GetNextDesk(deskMan->GetCurrentDesktop()));
 }
 
 DesktopManager::PrevDesktopEventHandler::PrevDesktopEventHandler()
@@ -578,7 +578,7 @@ DesktopManager::PrevDesktopEventHandler::~PrevDesktopEventHandler()
 
 void DesktopManager::PrevDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetPrevDesk(deskMan->GetCurrentDesktop())); 
+   deskMan->SwitchToDesktop(deskMan->GetPrevDesk(deskMan->GetCurrentDesktop()));
 }
 
 DesktopManager::BottomDesktopEventHandler::BottomDesktopEventHandler()
@@ -595,7 +595,7 @@ DesktopManager::BottomDesktopEventHandler::~BottomDesktopEventHandler()
 
 void DesktopManager::BottomDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetDeskBelow(deskMan->GetCurrentDesktop())); 
+   deskMan->SwitchToDesktop(deskMan->GetDeskBelow(deskMan->GetCurrentDesktop()));
 }
 
 DesktopManager::TopDesktopEventHandler::TopDesktopEventHandler()
@@ -612,7 +612,7 @@ DesktopManager::TopDesktopEventHandler::~TopDesktopEventHandler()
 
 void DesktopManager::TopDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetDeskAbove(deskMan->GetCurrentDesktop())); 
+   deskMan->SwitchToDesktop(deskMan->GetDeskAbove(deskMan->GetCurrentDesktop()));
 }
 
 DesktopManager::LeftDesktopEventHandler::LeftDesktopEventHandler()
@@ -629,7 +629,7 @@ DesktopManager::LeftDesktopEventHandler::~LeftDesktopEventHandler()
 
 void DesktopManager::LeftDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetDeskOnLeft(deskMan->GetCurrentDesktop())); 
+   deskMan->SwitchToDesktop(deskMan->GetDeskOnLeft(deskMan->GetCurrentDesktop()));
 }
 
 DesktopManager::RightDesktopEventHandler::RightDesktopEventHandler()
@@ -646,7 +646,7 @@ DesktopManager::RightDesktopEventHandler::~RightDesktopEventHandler()
 
 void DesktopManager::RightDesktopEventHandler::OnHotkey()
 {
-   deskMan->SwitchToDesktop(deskMan->GetDeskOnRight(deskMan->GetCurrentDesktop())); 
+   deskMan->SwitchToDesktop(deskMan->GetDeskOnRight(deskMan->GetCurrentDesktop()));
 }
 
 Desktop * DesktopManager::GetDesktop(int index) const
