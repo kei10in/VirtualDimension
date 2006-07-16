@@ -26,7 +26,7 @@
 
 Locale Locale::m_instance;
 
-Locale::Locale(void): m_resDll(NULL)
+Locale::Locale(void): m_currentLangCode(0), m_resDll(NULL)
 {
     Settings settings;
     int code;
@@ -35,12 +35,15 @@ Locale::Locale(void): m_resDll(NULL)
     code = settings.LoadSetting(Settings::LanguageCode);
 
     //Try to load that language
-    Reload(code);
+    SetLanguage(code);
 
     // by default, it will stay with ENglish one
     if ( m_resDll == NULL)
+    {
         m_resDll = (HINSTANCE)::LoadLibrary("langEN.dll");
-        
+        m_currentLangCode = 420;
+    }
+
     if (m_resDll == NULL)
     {
        //TODO: try to find another resource library (maybe there is only langFR.dll)
@@ -53,7 +56,7 @@ Locale::~Locale(void)
 	::FreeLibrary(m_resDll);
 }
 
-bool Locale::Reload(int langcode)
+bool Locale::SetLanguage(int langcode)
 {
     bool bResult = false;
 
@@ -74,6 +77,7 @@ bool Locale::Reload(int langcode)
             if (m_resDll)
                ::FreeLibrary(m_resDll);
             m_resDll = hInstTemporary;
+            m_currentLangCode = langcode;
 
             //Save the new language
             Settings    settings;

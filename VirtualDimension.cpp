@@ -893,7 +893,7 @@ LRESULT VirtualDimension::OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LP
 
 LRESULT VirtualDimension::OnCmdLanguageChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    if (Locale::GetInstance().Reload(wParam-WM_VD_LANGUAGE))
+    if (Locale::GetInstance().SetLanguage(wParam-WM_VD_LANGUAGE))
     {
        UpdateSystemMenu();
        CheckMenuItem(m_pLangMenu,(UINT)wParam,MF_BYCOMMAND|MF_CHECKED);

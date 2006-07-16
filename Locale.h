@@ -32,9 +32,10 @@ public:
 	Locale(void);
 	~Locale(void);
 
-	bool Reload(int landcode); // loads anotehr instance for this language
+	bool SetLanguage(int langcode); // loads anotehr instance for this language
+	int GetLanguage(void) const         { return m_currentLangCode; }
 
-	static Locale& GetInstance()					{ return m_instance; }
+	static Locale& GetInstance()			{ return m_instance; }
 
 	operator HINSTANCE()						{ return GetResDll(); }
 	HINSTANCE GetResDll()					{ return m_resDll; }
@@ -53,6 +54,7 @@ public:
 protected:
 	static Locale m_instance;
 
+   int m_currentLangCode;
 	HINSTANCE m_resDll;
 };
 
