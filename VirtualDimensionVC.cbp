@@ -15,7 +15,6 @@
 					<Add option="/MDd" />
 					<Add option="/RTCu" />
 					<Add option="/RTCs" />
-					<Add option="/RTCc" />
 					<Add option="/RTC1" />
 					<Add option="/GL" />
 					<Add option="/Gm" />
