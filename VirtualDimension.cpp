@@ -228,13 +228,13 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
       RemoveMenu(m_pSysMenu, 0, MF_BYCOMMAND);
 
       AppendMenu(m_pSysMenu, MF_SEPARATOR, 0, NULL);
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDM_CONFIGURE)); //"C&onfigure"
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDM_LOCKPREVIEWWND)); //"&Lock the window"
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDM_SHOWCAPTION)); //"S&how the caption"
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDS_CONFIGURE)); //"C&onfigure"
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDS_LOCKPREVIEWWND)); //"&Lock the window"
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDS_SHOWCAPTION)); //"S&how the caption"
 
       if (CreateLangMenu())
-         AppendMenu(m_pSysMenu, MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, Locale::GetInstance().GetString(IDM_LANGUAGE)); //"L&anguage"
-      AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, Locale::GetInstance().GetString(IDM_ABOUT)); //"&About"
+         AppendMenu(m_pSysMenu, MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, Locale::GetInstance().GetString(IDS_LANGUAGEMENU)); //"L&anguage"
+      AppendMenu(m_pSysMenu, MF_STRING, IDM_ABOUT, Locale::GetInstance().GetString(IDS_ABOUT)); //"&About"
       CheckMenuItem(m_pSysMenu, IDM_SHOWCAPTION, m_hasCaption ? MF_CHECKED : MF_UNCHECKED );
    }
 
@@ -891,7 +891,7 @@ LRESULT VirtualDimension::OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LP
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-LRESULT VirtualDimension::OnCmdLanguageChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT VirtualDimension::OnCmdLanguageChange(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
 {
     if (Locale::GetInstance().SetLanguage(wParam-WM_VD_LANGUAGE))
     {
@@ -1075,13 +1075,13 @@ void VirtualDimension::UpdateSystemMenu()
 {
    if (m_pSysMenu)
    {
-      ModifyMenu(m_pSysMenu, IDM_CONFIGURE, MF_BYCOMMAND|MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDM_CONFIGURE)); //"C&onfigure"
-      ModifyMenu(m_pSysMenu, IDM_LOCKPREVIEWWND, MF_BYCOMMAND|MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDM_LOCKPREVIEWWND)); //"&Lock the window"
-      ModifyMenu(m_pSysMenu, IDM_SHOWCAPTION, MF_BYCOMMAND|MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDM_SHOWCAPTION)); //"S&how the caption"
+      ModifyMenu(m_pSysMenu, IDM_CONFIGURE, MF_BYCOMMAND|MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDS_CONFIGURE)); //"C&onfigure"
+      ModifyMenu(m_pSysMenu, IDM_LOCKPREVIEWWND, MF_BYCOMMAND|MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDS_LOCKPREVIEWWND)); //"&Lock the window"
+      ModifyMenu(m_pSysMenu, IDM_SHOWCAPTION, MF_BYCOMMAND|MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDS_SHOWCAPTION)); //"S&how the caption"
 
       if (m_pLangMenu && GetMenuItemCount(m_pLangMenu)>1)
-         ModifyMenu(m_pSysMenu, (UINT_PTR)m_pLangMenu, MF_BYCOMMAND|MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, Locale::GetInstance().GetString(IDM_LANGUAGE)); //"L&anguage"
-      ModifyMenu(m_pSysMenu, IDM_ABOUT, MF_BYCOMMAND|MF_STRING, IDM_ABOUT, Locale::GetInstance().GetString(IDM_ABOUT)); //"&About"
+         ModifyMenu(m_pSysMenu, (UINT_PTR)m_pLangMenu, MF_BYCOMMAND|MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, Locale::GetInstance().GetString(IDS_LANGUAGEMENU)); //"L&anguage"
+      ModifyMenu(m_pSysMenu, IDM_ABOUT, MF_BYCOMMAND|MF_STRING, IDM_ABOUT, Locale::GetInstance().GetString(IDS_ABOUT)); //"&About"
    }
 }
 

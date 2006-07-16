@@ -433,11 +433,11 @@ BEGIN
     IDS_MENU_ALWAYSONTOP    "Always on top"
     IDS_MENU_MINTOTRAY      "Minimize to tray"
     IDS_MENU_TRANSPARENT    "Transparent"
-    IDM_CONFIGURE           "Configure"
-    IDM_LOCKPREVIEWWND      "Lock the window"
-    IDM_SHOWCAPTION         "Show the caption"
-    IDM_LANGUAGE            "Language"
-    IDM_ABOUT               "About"
+    IDS_CONFIGURE           "Configure"
+    IDS_LOCKPREVIEWWND      "Lock the window"
+    IDS_SHOWCAPTION         "Show the caption"
+    IDS_LANGUAGEMENU        "Language"
+    IDS_ABOUT               "About"
 END
 
 STRINGTABLE DISCARDABLE

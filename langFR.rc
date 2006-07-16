@@ -439,11 +439,11 @@ BEGIN
     IDS_MENU_ALWAYSONTOP    "Toujours devant"
     IDS_MENU_MINTOTRAY      "Réduire"
     IDS_MENU_TRANSPARENT    "Fenêtre transparente"
-    IDM_CONFIGURE           "&Paramètres"
-    IDM_LOCKPREVIEWWND      "&Verrouiller la fenêtre"
-    IDM_SHOWCAPTION         "&Afficher la barre de titre"
-    IDM_LANGUAGE            "L&angue"
-    IDM_ABOUT               "A propos..."
+    IDS_CONFIGURE           "&Paramètres"
+    IDS_LOCKPREVIEWWND      "&Verrouiller la fenêtre"
+    IDS_SHOWCAPTION         "&Afficher la barre de titre"
+    IDS_LANGUAGEMENU        "L&angue"
+    IDS_ABOUT               "A propos..."
 END
 
 STRINGTABLE DISCARDABLE

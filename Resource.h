@@ -97,6 +97,11 @@
 #define IDI_MAXIMIZE_HORIZ              145
 #define IDI_MINIMIZE_TRAY               146
 #define IDD_MOUSEWARP_SETTINGS          147
+#define IDS_CONFIGURE                   148
+#define IDS_LOCKPREVIEWWND              149
+#define IDS_SHOWCAPTION                 150
+#define IDS_LANGUAGEMENU                151
+#define IDS_ABOUT                       152
 #define IDC_DESK_LIST                   1001
 #define IDC_DESK_SPIN                   1002
 #define IDC_INSERT_DESK                 1003
