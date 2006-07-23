@@ -1079,19 +1079,25 @@ bool VirtualDimension::CreateLangMenu()
 	return count > 1;
 }
 
+void RenameMenu(HMENU hMenu, UINT cmdId, UINT textId)
+{
+   UINT state = GetMenuState(hMenu, cmdId, MF_BYCOMMAND);
+   ModifyMenu(hMenu, cmdId, MF_BYCOMMAND|state, cmdId, Locale::GetInstance().GetString(textId));
+}
+
 void VirtualDimension::UpdateSystemMenu()
 {
    if (m_pSysMenu)
    {
-      ModifyMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND|MF_STRING, SC_SIZE, Locale::GetInstance().GetString(IDS_MENU_SIZE)); // "&Size"
-      ModifyMenu(m_pSysMenu, SC_MOVE, MF_BYCOMMAND|MF_STRING, SC_MOVE, Locale::GetInstance().GetString(IDS_MENU_MOVE)); // "&Move"
-      ModifyMenu(m_pSysMenu, IDM_CONFIGURE, MF_BYCOMMAND|MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDS_CONFIGURE)); //"C&onfigure"
-      ModifyMenu(m_pSysMenu, IDM_LOCKPREVIEWWND, MF_BYCOMMAND|MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDS_LOCKPREVIEWWND)); //"&Lock the window"
-      ModifyMenu(m_pSysMenu, IDM_SHOWCAPTION, MF_BYCOMMAND|MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDS_SHOWCAPTION)); //"S&how the caption"
+      RenameMenu(m_pSysMenu, SC_SIZE, IDS_MENU_SIZE); // "&Size"
+      RenameMenu(m_pSysMenu, SC_MOVE, IDS_MENU_MOVE); // "&Move"
+      RenameMenu(m_pSysMenu, IDM_CONFIGURE, IDS_CONFIGURE); //"C&onfigure"
+      RenameMenu(m_pSysMenu, IDM_LOCKPREVIEWWND, IDS_LOCKPREVIEWWND); //"&Lock the window"
+      RenameMenu(m_pSysMenu, IDM_SHOWCAPTION, IDS_SHOWCAPTION); //"S&how the caption"
 
       if (m_pLangMenu && GetMenuItemCount(m_pLangMenu)>1)
-         ModifyMenu(m_pSysMenu, (UINT_PTR)m_pLangMenu, MF_BYCOMMAND|MF_STRING|MF_POPUP, (UINT_PTR)m_pLangMenu, Locale::GetInstance().GetString(IDS_LANGUAGEMENU)); //"L&anguage"
-      ModifyMenu(m_pSysMenu, IDM_ABOUT, MF_BYCOMMAND|MF_STRING, IDM_ABOUT, Locale::GetInstance().GetString(IDS_ABOUT)); //"&About"
+         RenameMenu(m_pSysMenu, (UINT_PTR)m_pLangMenu, IDS_LANGUAGEMENU); //"L&anguage"
+      RenameMenu(m_pSysMenu, IDM_ABOUT, IDS_ABOUT); //"&About"
    }
 }
 
