@@ -35,19 +35,14 @@ Locale::Locale(void): m_currentLangCode(0), m_resDll(NULL)
     code = settings.LoadSetting(Settings::LanguageCode);
 
     //Try to load that language
-    SetLanguage(code);
-
-    // by default, it will stay with ENglish one
-    if ( m_resDll == NULL)
+    if ( !SetLanguage(code))
     {
-        m_resDll = (HINSTANCE)::LoadLibrary("langEN.dll");
-        m_currentLangCode = 420;
-    }
-
-    if (m_resDll == NULL)
-    {
-       //TODO: try to find another resource library (maybe there is only langFR.dll)
-       //TODO: if that fails, display error message (hardcoded in any language), and terminate application immediatly
+        // by default, it will stay with ENglish one
+        if ( !SetLanguage(420))
+        {
+            //TODO: try to find another resource library (maybe there is only langFR.dll)
+            //TODO: if that fails, display error message (hardcoded in any language), and terminate application immediatly
+        }
     }
 }
 

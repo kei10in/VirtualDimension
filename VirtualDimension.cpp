@@ -315,8 +315,8 @@ void VirtualDimension::LockPreviewWindow(bool lock)
    {
       style |= WS_THICKFRAME;
 
-      InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_SIZE, "&Size");
-      InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_MOVE, "&Move");
+      InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_SIZE, Locale::GetInstance().GetString(IDS_MENU_SIZE)); // "&Size"
+      InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_MOVE, Locale::GetInstance().GetString(IDS_MENU_MOVE)); // "&Move"
    }
    SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
 }
@@ -893,9 +893,13 @@ LRESULT VirtualDimension::OnNCHitTest(HWND hWnd, UINT message, WPARAM wParam, LP
 
 LRESULT VirtualDimension::OnCmdLanguageChange(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
 {
+    // the current language code + wm_cd_language should give the current checked menu item ...
+    int iPreviousLanguageCode = Locale::GetInstance().GetLanguage();
     if (Locale::GetInstance().SetLanguage(wParam-WM_VD_LANGUAGE))
     {
        UpdateSystemMenu();
+       if (iPreviousLanguageCode > 0)
+           CheckMenuItem(m_pLangMenu,(UINT)iPreviousLanguageCode+WM_VD_LANGUAGE,MF_BYCOMMAND|MF_UNCHECKED);
        CheckMenuItem(m_pLangMenu,(UINT)wParam,MF_BYCOMMAND|MF_CHECKED);
     }
     return 0;
@@ -1036,6 +1040,8 @@ bool VirtualDimension::CreateLangMenu()
 {
 	LocalesIterator it;
 	int count = 0;
+	// languageCode from registry
+	int currentLanguageCode = Locale::GetInstance().GetLanguage();
 
 	//Create the menu
 	m_pLangMenu = CreatePopupMenu();
@@ -1061,6 +1067,8 @@ bool VirtualDimension::CreateLangMenu()
 			iteminfo.hbmpItem = HBMMENU_CALLBACK;
 			iteminfo.wID = WM_VD_LANGUAGE+code; // in order to get WM_COMMAND msg
 			InsertMenuItem(m_pLangMenu, WM_VD_LANGUAGE+code, FALSE, &iteminfo);
+			if (code == currentLanguageCode)
+			    CheckMenuItem(m_pLangMenu,(UINT)code+WM_VD_LANGUAGE,MF_BYCOMMAND|MF_CHECKED);
 
 			// then we connect any menu to the window proc
          SetCommandHandler(WM_VD_LANGUAGE+code, this, &VirtualDimension::OnCmdLanguageChange);
@@ -1075,6 +1083,8 @@ void VirtualDimension::UpdateSystemMenu()
 {
    if (m_pSysMenu)
    {
+      ModifyMenu(m_pSysMenu, SC_SIZE, MF_BYCOMMAND|MF_STRING, SC_SIZE, Locale::GetInstance().GetString(IDS_MENU_SIZE)); // "&Size"
+      ModifyMenu(m_pSysMenu, SC_MOVE, MF_BYCOMMAND|MF_STRING, SC_MOVE, Locale::GetInstance().GetString(IDS_MENU_MOVE)); // "&Move"
       ModifyMenu(m_pSysMenu, IDM_CONFIGURE, MF_BYCOMMAND|MF_STRING, IDM_CONFIGURE, Locale::GetInstance().GetString(IDS_CONFIGURE)); //"C&onfigure"
       ModifyMenu(m_pSysMenu, IDM_LOCKPREVIEWWND, MF_BYCOMMAND|MF_STRING, IDM_LOCKPREVIEWWND, Locale::GetInstance().GetString(IDS_LOCKPREVIEWWND)); //"&Lock the window"
       ModifyMenu(m_pSysMenu, IDM_SHOWCAPTION, MF_BYCOMMAND|MF_STRING, IDM_SHOWCAPTION, Locale::GetInstance().GetString(IDS_SHOWCAPTION)); //"S&how the caption"

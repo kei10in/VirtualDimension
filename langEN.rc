@@ -453,6 +453,8 @@ BEGIN
     IDS_MENU_CLOSEWND       "Close"
     IDS_MENU_KILLWND        "Kill"
     IDS_MENU_WNDPROPERTIES  "Properties"
+    IDS_MENU_SIZE           "&Size"
+    IDS_MENU_MOVE           "&Move"
     IDS_AUTOSETTINGS_ERROR  "Access to the registry failed. Auto-settings will not be saved."
     IDS_WINDOWPROPERTIES    "Window Properties"
     IDS_CONFIRMKILL         "If you kill the window, you may lose some date. Continue ?"

@@ -102,6 +102,8 @@
 #define IDS_SHOWCAPTION                 150
 #define IDS_LANGUAGEMENU                151
 #define IDS_ABOUT                       152
+#define IDS_MENU_SIZE                   153
+#define IDS_MENU_MOVE                   154
 #define IDC_DESK_LIST                   1001
 #define IDC_DESK_SPIN                   1002
 #define IDC_INSERT_DESK                 1003

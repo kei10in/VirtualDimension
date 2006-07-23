@@ -459,6 +459,8 @@ BEGIN
     IDS_MENU_CLOSEWND       "Fermer"
     IDS_MENU_KILLWND        "Tuer"
     IDS_MENU_WNDPROPERTIES  "Propriétés"
+    IDS_MENU_SIZE           "Taille"
+    IDS_MENU_MOVE           "Déplacer"
     IDS_AUTOSETTINGS_ERROR  "Impossible d'écrire dans la base de registre. Les paramètres automatiques ne seront pas sauvegardés."
     IDS_WINDOWPROPERTIES    "Propriétés de la fenêtre"
     IDS_CONFIRMKILL         "Si vous tuez la fenêtre, vous risquez de perdre des données. Continuer ?"
