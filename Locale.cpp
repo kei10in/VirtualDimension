@@ -35,10 +35,10 @@ Locale::Locale(void): m_currentLangCode(0), m_resDll(NULL)
     code = settings.LoadSetting(Settings::LanguageCode);
 
     //Try to load that language
-    if ( !SetLanguage(code))
+    if (!SetLanguage(code))
     {
         // by default, it will stay with ENglish one
-        if ( !SetLanguage(420))
+        if (!SetLanguage(Locale::GetLanguageCode("EN")))
         {
             //TODO: try to find another resource library (maybe there is only langFR.dll)
             //TODO: if that fails, display error message (hardcoded in any language), and terminate application immediatly
@@ -114,6 +114,17 @@ int Locale::MessageBox(HWND hWnd, UINT uIdText, UINT uIdCaption, UINT uType)
 	return ::MessageBox(hWnd, text, title, uType);
 }
 
+int Locale::GetLanguageCode(LPTSTR str)
+{
+   char first = str[0];
+   char second = str[1];
+   if (first >= 'a' && first <= 'z')
+      first -= 'a' - 'A';
+   if (second >= 'a' && second <= 'z')
+      second -= 'a' - 'A';
+	return ((first + 1 - 'A') & 0x1f) | (((second + 1 - 'A') & 0x1f) << 5);
+}
+
 LocalesIterator::LocalesIterator()
 {
 	m_hFind = INVALID_HANDLE_VALUE;
@@ -170,11 +181,5 @@ String LocalesIterator::GetLanguage(HICON * hSmIcon, HICON * hLgIcon)
 
 int LocalesIterator::GetLanguageCode()
 {
-   char first = m_FindFileData.cFileName[4];
-   char second = m_FindFileData.cFileName[5];
-   if (first >= 'a' && first <= 'z')
-      first -= 'a' - 'A';
-   if (second >= 'a' && second <= 'z')
-      second -= 'a' - 'A';
-	return ((first + 1 - 'A') & 0x1f) | (((second + 1 - 'A') & 0x1f) << 5);
+	return Locale::GetLanguageCode(m_FindFileData.cFileName+4);
 }
