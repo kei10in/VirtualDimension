@@ -31,6 +31,11 @@
 #define _WIN32_WINNT 0x0501       // For development purpose only. Should work with other versions as well
 #define _WIN32_IE 0x0500
 
+//Avoid deprecate warning with VS2005
+#define _CRT_SECURE_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
+#define _SCL_SECURE_NO_DEPRECATE
+
 // Windows Header Files:
 #include <windows.h>
 // C RunTime Header Files
