@@ -50,13 +50,13 @@ public:
 #endif
    }
 
+	bool BindActiveDesktop();
    inline bool HasActiveDesktop() const        { return m_pActiveDesktop!=NULL; }
    inline IActiveDesktop * GetActiveDesktop()  { return m_pActiveDesktop; }
 
 protected:
    LRESULT OnTaskbarRestart(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
    void BindTaskbar();
-   void BindActiveDesktop();
 
    /** Pointer to the COM ActiveDesktop interface.
     * Used for getting/changing wallpaper

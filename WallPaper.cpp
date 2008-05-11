@@ -71,7 +71,7 @@ void WallPaper::LoadDefaultWallpaper()
       WCHAR buffer[MAX_PATH];
 
       //Try to get default wallpaper using active desktop
-      if (!explorerWrapper->HasActiveDesktop() ||
+      if (!explorerWrapper->BindActiveDesktop() ||
           explorerWrapper->GetActiveDesktop()->GetWallpaper(buffer, sizeof(buffer)/sizeof(WCHAR), 0) != S_OK ||
           WideCharToMultiByte(CP_OEMCP, 0, buffer, -1, m_defaultWallpaper, sizeof(m_defaultWallpaper), NULL, NULL) == 0)
       {

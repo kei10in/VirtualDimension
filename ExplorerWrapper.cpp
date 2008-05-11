@@ -32,6 +32,8 @@ ExplorerWrapper::ExplorerWrapper(FastWindow * wnd)
    wnd->SetCommandHandler(uTaskbarRestart, this, &ExplorerWrapper::OnTaskbarRestart);
 
    BindTaskbar();
+
+	m_pActiveDesktop = NULL;
    BindActiveDesktop();
 }
 
@@ -70,10 +72,13 @@ void ExplorerWrapper::BindTaskbar()
 #endif
 }
 
-void ExplorerWrapper::BindActiveDesktop()
+bool ExplorerWrapper::BindActiveDesktop()
 {
+	if (m_pActiveDesktop)
+		m_pActiveDesktop->Release();
    if (CoCreateInstance(CLSID_ActiveDesktop, NULL, CLSCTX_INPROC_SERVER, IID_IActiveDesktop, (LPVOID*)&m_pActiveDesktop) != S_OK)
       m_pActiveDesktop = NULL;
+	return m_pActiveDesktop != NULL;
 }
 
 LRESULT ExplorerWrapper::OnTaskbarRestart(HWND /*hWnd*/, UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
