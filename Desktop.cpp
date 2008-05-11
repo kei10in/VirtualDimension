@@ -444,9 +444,9 @@ LPTSTR Desktop::FormatWallpaper(LPTSTR fileName)
       strcpy(fileName, DESKTOP_WALLPAPER_DEFAULT);
       res = "";
    }
-   else if (stricmp(m_wallpaperFile, DESKTOP_WALLPAPER_NONE) == 0)
+   else if (stricmp(fileName, DESKTOP_WALLPAPER_NONE) == 0)
       res = NULL;
-   else if (stricmp(m_wallpaperFile, DESKTOP_WALLPAPER_DEFAULT) == 0)
+   else if (stricmp(fileName, DESKTOP_WALLPAPER_DEFAULT) == 0)
       res = "";
    else
       res = fileName;
@@ -454,7 +454,7 @@ LPTSTR Desktop::FormatWallpaper(LPTSTR fileName)
    return res;
 }
 
-void Desktop::SetWallpaper(LPTSTR fileName)
+void Desktop::SetWallpaper(LPCTSTR fileName)
 {
    strncpy(m_wallpaperFile, fileName, sizeof(m_wallpaperFile)/sizeof(TCHAR));
    m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));

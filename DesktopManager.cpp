@@ -63,6 +63,7 @@ DesktopManager::DesktopManager(int width, int height)
    m_useOSD = settings.LoadSetting(Settings::DesktopNameOSD);
 
    vdWindow.SetMessageHandler(WM_VD_SWITCHDESKTOP, this, &DesktopManager::OnCmdSwitchDesktop);
+   vdWindow.SetMessageHandler(WM_SETTINGCHANGE, this, &DesktopManager::OnSettingsChange);
 }
 
 DesktopManager::~DesktopManager(void)
@@ -133,7 +134,7 @@ void DesktopManager::UpdateLayout()
    {
       RECT rect;
 
-      // Calculate boundign rectangle for the current desktop representation
+      // Calculate bounding rectangle for the current desktop representation
       rect.top = y;
       rect.bottom = y+deltaY;
       rect.left = x;
@@ -544,6 +545,19 @@ LRESULT DesktopManager::OnCmdSwitchDesktop(HWND /*hWnd*/, UINT /*message*/, WPAR
 		SwitchToDesktop(desk);
 	else
 		MessageBox(NULL, "No such desktop", "Error", MB_OK|MB_ICONERROR);
+	return 0;
+}
+
+LRESULT DesktopManager::OnSettingsChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	WallPaper::RefreshDefaultWallpaper();
+
+	LPCTSTR wallpaper;
+	wallpaper = m_currentDesktop ? Desktop::FormatWallpaper(m_currentDesktop->GetWallpaper()) : "";
+	if (wallpaper == NULL || *wallpaper != 0)	//if wallpaper is not set to 'default', ie use windows wallpaper
+		m_currentDesktop->SetWallpaper(WallPaper::GetDefaultWallpaper());
+
+	//TODO: also color may change...
 	return 0;
 }
 
