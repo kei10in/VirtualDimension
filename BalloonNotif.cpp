@@ -133,6 +133,10 @@ LRESULT BalloonNotification::MyTooltipWndProc(HWND hWnd, UINT Msg, WPARAM wParam
       DestroyWindow(hWnd);
       break;
 
+   case WM_RBUTTONDOWN:
+	  DestroyWindow(hWnd);
+      break;
+
    case WM_TIMER:
       if (wParam == BALLOON_NOTIFICATION_TIMEOUT)
          DestroyWindow(hWnd);
