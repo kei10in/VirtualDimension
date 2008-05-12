@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_project_file>
-	<FileVersion major="1" minor="4" />
+	<FileVersion major="1" minor="5" />
 	<Project>
 		<Option title="Virtual Dimension" />
 		<Option makefile="makefile" />
+		<Option default_target="" />
 		<Option compiler="msvc8" />
 		<Build>
 			<Target title="vd.exe - Debug|VC++">
@@ -33,7 +34,7 @@
 				<Linker>
 					<Add option="/DEBUG" />
 					<Add option="/pdb:Debug\VirtualDimension.pdb" />
-					<Add option="/LTCG" />
+					<Add option="/LTCG /DEBUG" />
 					<Add library="comctl32" />
 					<Add library="Version" />
 				</Linker>
@@ -82,7 +83,7 @@
 				<Linker>
 					<Add option="/DEBUG" />
 					<Add option="/INCREMENTAL:NO" />
-					<Add option="/LTCG" />
+					<Add option="/LTCG /DEBUG" />
 				</Linker>
 			</Target>
 			<Target title="HookDll - Release|VC++">
@@ -122,11 +123,11 @@
 					<Add option="/D_WINDOWS" />
 				</Compiler>
 				<Linker>
-					<Add option="/DEBUG" />
 					<Add option="/INCREMENTAL:NO" />
 					<Add option="/LTCG" />
 					<Add option="/NOENTRY" />
 					<Add option="/MACHINE:X86" />
+					<Add option="/DEBUG" />
 				</Linker>
 			</Target>
 			<Target title="langEN - Release|VC++">
@@ -168,11 +169,11 @@
 					<Add option="/D_WINDOWS" />
 				</Compiler>
 				<Linker>
-					<Add option="/DEBUG" />
 					<Add option="/INCREMENTAL:NO" />
 					<Add option="/LTCG" />
 					<Add option="/NOENTRY" />
 					<Add option="/MACHINE:X86" />
+					<Add option="/DEBUG" />
 				</Linker>
 			</Target>
 			<Target title="langFR - Release|VC++">
@@ -198,6 +199,10 @@
 				</Linker>
 			</Target>
 		</Build>
+		<VirtualTargets>
+			<Add alias="Debug|VC++" targets="vd.exe - Debug|VC++;HookDll - Debug|VC++;langEN - Debug|VC++;langFR - Debug|VC++;" />
+			<Add alias="Release|VC++" targets="vd.exe - Release|VC++;HookDll - Release|VC++;langEN - Release|VC++;langFR - Release|VC++;" />
+		</VirtualTargets>
 		<Linker>
 			<Add library="ComCtl32" />
 			<Add library="ComDlg32" />
