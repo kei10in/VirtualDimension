@@ -548,7 +548,7 @@ LRESULT DesktopManager::OnCmdSwitchDesktop(HWND /*hWnd*/, UINT /*message*/, WPAR
 	return 0;
 }
 
-LRESULT DesktopManager::OnSettingsChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT DesktopManager::OnSettingsChange(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	WallPaper::RefreshDefaultWallpaper();
 

@@ -19,6 +19,7 @@
  */
 
 #include "stdafx.h"
+#include "shellapi.h"
 #include "CmdLine.h"
 #include "VirtualDimension.h"
 #include "HookDLL.h"
@@ -36,8 +37,8 @@ public:
    virtual void ParseOption(LPCTSTR arg);
 };
 
-CommandLineInt g_cmdLineTransp('t', 0, 0, 192, CommandLineOption::optional_argument);	//start the application with transparency enabled
-CommandLineFlag g_cmdLineMinToTray('m', 0);												//start the application with MinToTray flag
+//CommandLineInt g_cmdLineTransp('t', 0, 0, 192, CommandLineOption::optional_argument);	//start the application with transparency enabled
+//CommandLineFlag g_cmdLineMinToTray('m', 0);												//start the application with MinToTray flag
 CommandLineInt g_cmdLineDesktop('d', 0, -1, -1, CommandLineOption::optional_argument);	//Desktop on which to start the application. default is current desktop
 CommandLineStartApp g_cmdLineStartApp('x', 0);											//Start an application
 CommandLineSwitchDesktop g_cmdLineSwitchDesk('s', 0);									//Switch current desktop
@@ -45,13 +46,31 @@ CommandLineSwitchDesktop g_cmdLineSwitchDesk('s', 0);									//Switch current d
 void CommandLineStartApp::ParseOption(LPCTSTR arg)
 {
 	//start the specified application !!!
-//	ShellExecute(arg);
+	SHELLEXECUTEINFO info;
+	info.cbSize = sizeof(info);
+	info.fMask = SEE_MASK_NOCLOSEPROCESS|SEE_MASK_FLAG_DDEWAIT;
+	info.lpFile = arg;
+	info.lpDirectory = NULL;
+	info.lpParameters = NULL;
+	info.lpVerb = NULL;
+	info.nShow = SW_SHOW;
+	if (ShellExecuteEx(&info) && (int)info.hInstApp > 32 && info.hProcess)
+	{
+		HWND hWnd = vdWindow.FindWindow();
+		Sleep(500);	//give some time for the window to start...
+		if (hWnd && g_cmdLineDesktop != -1)
+			//would look better to execute the window 'hidden' (minized...), then show it on the right desktop
+			PostMessage(hWnd, WM_VD_STARTONDESKTOP, (WPARAM)GetProcessId(info.hProcess), (LPARAM)g_cmdLineDesktop);
+		CloseHandle(info.hProcess);
+	}
 }
 
 void CommandLineSwitchDesktop::ParseOption(LPCTSTR arg)
 {
 	//switch to the specified desktop
 	int desk = strtol(arg, NULL, 0);
-	PostMessage(vdWindow.FindWindow(), WM_VD_SWITCHDESKTOP, 0, desk);
+	HWND hWnd = vdWindow.FindWindow();
+	if (hWnd)
+	PostMessage(hWnd, WM_VD_SWITCHDESKTOP, 0, desk);
 }
 

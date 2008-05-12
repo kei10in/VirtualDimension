@@ -27,6 +27,7 @@
 #include "DesktopManager.h"
 #include "Locale.h"
 #include "BalloonNotif.h"
+#include "HookDLL.h"
 
 WindowsManager * winMan;
 
@@ -53,6 +54,7 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstFreeDelayedUpdat
 
    vdWindow.SetMessageHandler(uiShellHookMsg, this, &WindowsManager::OnShellHookMessage);
    vdWindow.SetMessageHandler(WM_SETTINGCHANGE, this, &WindowsManager::OnSettingsChange);
+	vdWindow.SetMessageHandler(WM_VD_STARTONDESKTOP, this, &WindowsManager::OnStartOnDesktop);
 }
 
 WindowsManager::~WindowsManager(void)
@@ -374,6 +376,25 @@ HWND WindowsManager::GetPrevWindow(Window * wnd)
       return *(*it);
    else
       return ::GetWindow(*wnd, GW_HWNDPREV);
+}
+
+LRESULT WindowsManager::OnStartOnDesktop(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
+{
+	Desktop * desk = deskMan->GetDesktop(lParam);
+	if (desk)
+	{
+		for(Iterator it = GetIterator(); it; it++)
+		{
+			DWORD process;
+			Window * win = it;
+			GetWindowThreadProcessId(*win, &process);
+			if (process == wParam)
+				win->MoveToDesktop(desk);
+		}
+	}
+	//TODO: if we fail to find the window(s), then log the processId/desktop, so that we do the change once a window is created.
+	//(or this may be done by the command line process)
+	return 0;
 }
 
 // Delayed window update

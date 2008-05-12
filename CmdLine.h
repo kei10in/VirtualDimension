@@ -70,8 +70,8 @@ public:
    static CommandLineOption * GetOption(char opcode);
 
 protected:
-   const UINT m_resid;
-   const ArgType m_argType;
+   UINT m_resid;
+   ArgType m_argType;
 
    static std::map<char, CommandLineOption*> s_argsmap;	/// List of all options
 };
