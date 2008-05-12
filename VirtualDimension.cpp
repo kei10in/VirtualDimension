@@ -1,7 +1,7 @@
 /*
  * Virtual Dimension -  a free, fast, and feature-full virtual desktop manager
  * for the Microsoft Windows platform.
- * Copyright (C) 2003-2008 Francois Ferrand
+ * Copyright (C) 2003-2005 Francois Ferrand
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -251,9 +251,10 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    // Initialize tray icon
    trayIcon = new TrayIcon(hWnd);
 
-   // Initialize transparency
+   // Initialize transparency (set value two times, to make a fade-in)
    transp = new Transparency(hWnd);
-   transp->SetTransparencyLevel(settings.LoadSetting(Settings::TransparencyLevel));
+	transp->SetTransparencyLevel(0);
+   transp->SetTransparencyLevel(settings.LoadSetting(Settings::TransparencyLevel), true);
 
    // Initialize always on top state
    ontop = new AlwaysOnTop(hWnd);
@@ -396,6 +397,7 @@ LRESULT VirtualDimension::OnCmdConfigure(HWND /*hWnd*/, UINT /*message*/, WPARAM
 
 LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
+	//todo: fade-out
 	DestroyWindow(hWnd);
    return 0;
 }
@@ -685,7 +687,7 @@ LRESULT VirtualDimension::OnEndSession(HWND /*hWnd*/, UINT /*message*/, WPARAM w
 {
    if (wParam)
       //The session is ending -> destroy the window
-      DestroyWindow(m_hWnd);
+      DestroyWindow(m_hWnd);	//fade-out ?
 
    return 0;
 }

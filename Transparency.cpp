@@ -21,6 +21,10 @@
 #include "StdAfx.h"
 #include "transparency.h"
 #include "settings.h"
+#include "VirtualDimension.h"
+
+#define TRANSPARENCY_FADE_DELAY	20
+#define TRANSPARENCY_FADE_STEP	5
 
 bool Transparency::transparency_supported = false;
 bool Transparency::transparency_supported_valid = false;
@@ -31,7 +35,7 @@ int Transparency::nbInstance = 0;
 /* m_level gets an initial value of TRANSPARENCY_DISABLED, so that we do not do anything anyway
  * if the level is not set to some other value in the registry
  */
-Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(TRANSPARENCY_DISABLED)
+Transparency::Transparency(HWND hWnd): m_hWnd(hWnd), m_level(TRANSPARENCY_DISABLED), m_curLevel(TRANSPARENCY_DISABLED),  m_fadeTimer(0)
 {
    nbInstance ++;
 }
@@ -47,20 +51,69 @@ Transparency::~Transparency()
 }
 
 /** Change the window which the object controls.
- * The previously selected transparency level is applied to the new window immediatly and automatically.
+ * The previously selected transparency level is applied to the new window immediately and automatically.
  */
 void Transparency::SetWindow(HWND hWnd)
 {
    if (m_hWnd != hWnd)
    {
       m_hWnd = hWnd;
+		StopFade();
       ForceTransparencyLevel(m_level);
    }
 }
 
 /** Set the transparency level.
+ */
+void Transparency::SetTransparencyLevel(unsigned char level, bool fade)
+{
+	m_level = level;
+	if (level == m_curLevel)
+		StopFade();
+	else if (fade && IsTransparencySupported())
+		StartFade();
+	else
+		ForceTransparencyLevel(level);
+}
+
+void Transparency::StopFade()
+{
+	if (m_fadeTimer)
+		vdWindow.DestroyTimer(m_fadeTimer); m_fadeTimer = 0;
+	m_fadeTimer = 0;
+}
+
+void Transparency::StartFade()
+{
+	if (!m_fadeTimer)
+		m_fadeTimer = vdWindow.CreateTimer(this, &Transparency::FadeCb);
+	if (!m_fadeTimer)
+		ForceTransparencyLevel(m_level);
+	else
+		vdWindow.SetTimer(m_fadeTimer, TRANSPARENCY_FADE_DELAY);
+}
+
+LRESULT Transparency::FadeCb(HWND, UINT, WPARAM, LPARAM)
+{
+	if (m_curLevel < m_level)
+		m_curLevel = min((int)m_level, (int)m_curLevel+TRANSPARENCY_FADE_STEP);
+	else if (m_curLevel > m_level)
+		m_curLevel = max((int)m_level, (int)m_curLevel-TRANSPARENCY_FADE_STEP);
+
+	ForceTransparencyLevel(m_curLevel);
+
+	if (m_curLevel == m_level && m_fadeTimer)
+	{
+		vdWindow.DestroyTimer(m_fadeTimer);
+		m_fadeTimer = 0;
+	}
+
+	return 0;
+}
+
+/** Set the actual transparency level.
  * This function is used to change the transparency level of the window, if supported. The change is 
- * performed immediatly. The SetTransparencyLevel() should be used instead whenever possible, for better
+ * performed immediately. The SetTransparencyLevel() should be used instead whenever possible, for better
  * performance, as it does not do anything if it is not needed.
  */
 void Transparency::ForceTransparencyLevel(unsigned char level)
@@ -72,11 +125,11 @@ void Transparency::ForceTransparencyLevel(unsigned char level)
       return;
 
    // Take note of the change
-   m_level = level;
+   m_curLevel = level;
 
    // Update the window
    style = GetWindowLong(m_hWnd, GWL_EXSTYLE);
-   if (m_level == TRANSPARENCY_DISABLED)
+   if (level == TRANSPARENCY_DISABLED)
    {
       // Disable transparency completely
       style &= ~WS_EX_LAYERED;
@@ -89,7 +142,7 @@ void Transparency::ForceTransparencyLevel(unsigned char level)
       SetWindowLong(m_hWnd, GWL_EXSTYLE, style);
 
       // Set the actual transparency level
-      SetLayeredWindowAttributes(m_hWnd, 0, m_level, LWA_ALPHA);
+      SetLayeredWindowAttributes(m_hWnd, 0, level, LWA_ALPHA);
    }
 }
 

@@ -31,14 +31,18 @@ public:
 
    void SetWindow(HWND hWnd);
 
-   void SetTransparencyLevel(unsigned char level)     { if (level != m_level) ForceTransparencyLevel(level); }
-   void ForceTransparencyLevel(unsigned char level);
+   void SetTransparencyLevel(unsigned char level, bool fade = false);
    unsigned char GetTransparencyLevel() const;
 
    static bool IsTransparencySupported();
 
 protected:
    typedef BOOL WINAPI SetLayeredWindowAttributes_t(HWND,COLORREF,BYTE,DWORD);
+	void ForceTransparencyLevel(unsigned char level);
+
+	void StartFade();
+	void StopFade();
+	LRESULT FadeCb(HWND, UINT, WPARAM, LPARAM);
 
    static bool transparency_supported;
    static bool transparency_supported_valid;
@@ -47,7 +51,9 @@ protected:
    static int nbInstance;
 
    HWND m_hWnd;
-   unsigned char m_level;
+	unsigned char m_level;
+	unsigned char m_curLevel;
+	UINT_PTR m_fadeTimer;
 };
  
 #endif /*__TRANSPARENCY_H__*/
