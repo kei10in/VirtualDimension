@@ -1,6 +1,6 @@
 /* 
  * Fast Window - A fast and convenient message dispatching window procedure.
- * Copyright (C) 2003-2005 Francois Ferrand
+ * Copyright (C) 2003-2008 Francois Ferrand
  *
  * This program is free software; you can redistribute it and/or modify it under 
  * the terms of the GNU General Public License as published by the Free Software 
