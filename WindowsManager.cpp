@@ -444,18 +444,6 @@ void WindowsManager::RemoveDelayedUpdateWnd(unsigned int idx)
    m_firstFreeDelayedUpdateWndIdx = idx;
 }
 
-WindowsManager::MoveWindowToNextDesktopEventHandler::MoveWindowToNextDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::MoveWindowToNextDesktopHotkey));
-}
-
-WindowsManager::MoveWindowToNextDesktopEventHandler::~MoveWindowToNextDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::MoveWindowToNextDesktopHotkey,GetHotkey());
-}
-
 void WindowsManager::MoveWindowToNextDesktopEventHandler::OnHotkey()
 {
    Window * window = winMan->GetForegroundWindow();
@@ -466,18 +454,6 @@ void WindowsManager::MoveWindowToNextDesktopEventHandler::OnHotkey()
       window->MoveToDesktop(desk);
 }
 
-WindowsManager::MoveWindowToPrevDesktopEventHandler::MoveWindowToPrevDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::MoveWindowToPreviousDesktopHotkey));
-}
-
-WindowsManager::MoveWindowToPrevDesktopEventHandler::~MoveWindowToPrevDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::MoveWindowToPreviousDesktopHotkey,GetHotkey());
-}
-
 void WindowsManager::MoveWindowToPrevDesktopEventHandler::OnHotkey()
 {
    Window * window = winMan->GetForegroundWindow();
@@ -486,18 +462,6 @@ void WindowsManager::MoveWindowToPrevDesktopEventHandler::OnHotkey()
 	   (window->GetDesk() == deskMan->GetCurrentDesktop()) && 
 	   ((desk = deskMan->GetPrevDesk(window->GetDesk())) != NULL))
       window->MoveToDesktop(desk);
-}
-
-WindowsManager::MoveWindowToDesktopEventHandler::MoveWindowToDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::MoveWindowToDesktopHotkey));
-}
-
-WindowsManager::MoveWindowToDesktopEventHandler::~MoveWindowToDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::MoveWindowToDesktopHotkey,GetHotkey());
 }
 
 void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
@@ -512,35 +476,11 @@ void WindowsManager::MoveWindowToDesktopEventHandler::OnHotkey()
    }
 }
 
-WindowsManager::MaximizeHeightEventHandler::MaximizeHeightEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::MaximizeHeightHotkey));
-}
-
-WindowsManager::MaximizeHeightEventHandler::~MaximizeHeightEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::MaximizeHeightHotkey,GetHotkey());
-}
-
 void WindowsManager::MaximizeHeightEventHandler::OnHotkey()
 {
    Window * window = winMan->GetForegroundWindow();
    if ((window != NULL) && (window->IsOnCurrentDesk()))
       window->MaximizeHeight();
-}
-
-WindowsManager::MaximizeWidthEventHandler::MaximizeWidthEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::MaximizeWidthHotkey));
-}
-
-WindowsManager::MaximizeWidthEventHandler::~MaximizeWidthEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::MaximizeWidthHotkey,GetHotkey());
 }
 
 void WindowsManager::MaximizeWidthEventHandler::OnHotkey()
@@ -550,35 +490,11 @@ void WindowsManager::MaximizeWidthEventHandler::OnHotkey()
       window->MaximizeWidth();
 }
 
-WindowsManager::ToggleAlwaysOnTopEventHandler::ToggleAlwaysOnTopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::AlwaysOnTopHotkey));
-}
-
-WindowsManager::ToggleAlwaysOnTopEventHandler::~ToggleAlwaysOnTopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::AlwaysOnTopHotkey,GetHotkey());
-}
-
 void WindowsManager::ToggleAlwaysOnTopEventHandler::OnHotkey()
 {
    Window * window = winMan->GetForegroundWindow();
    if ((window != NULL) && (window->IsOnCurrentDesk()))
       window->ToggleOnTop();
-}
-
-WindowsManager::ToggleTransparencyEventHandler::ToggleTransparencyEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::TransparencyHotkey));
-}
-
-WindowsManager::ToggleTransparencyEventHandler::~ToggleTransparencyEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::TransparencyHotkey,GetHotkey());
 }
 
 void WindowsManager::ToggleTransparencyEventHandler::OnHotkey()

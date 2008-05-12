@@ -188,18 +188,6 @@ char* TrayIcon::GetText()
       return "";
 }
 
-TrayIcon::ToggleWindowEventHandler::ToggleWindowEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::TogglePreviewWindowHotkey));
-}
-
-TrayIcon::ToggleWindowEventHandler::~ToggleWindowEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::TogglePreviewWindowHotkey,GetHotkey());
-}
-
 void TrayIcon::ToggleWindowEventHandler::OnHotkey()
 {
    if (!IsWindowVisible(vdWindow))

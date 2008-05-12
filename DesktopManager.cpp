@@ -561,33 +561,9 @@ LRESULT DesktopManager::OnSettingsChange(HWND hWnd, UINT message, WPARAM wParam,
 	return 0;
 }
 
-DesktopManager::NextDesktopEventHandler::NextDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::SwitchToNextDesktopHotkey));
-}
-
-DesktopManager::NextDesktopEventHandler::~NextDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::SwitchToNextDesktopHotkey, GetHotkey());
-}
-
 void DesktopManager::NextDesktopEventHandler::OnHotkey()
 {
    deskMan->SwitchToDesktop(deskMan->GetNextDesk(deskMan->GetCurrentDesktop()));
-}
-
-DesktopManager::PrevDesktopEventHandler::PrevDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::SwitchToPreviousDesktopHotkey));
-}
-
-DesktopManager::PrevDesktopEventHandler::~PrevDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::SwitchToPreviousDesktopHotkey, GetHotkey());
 }
 
 void DesktopManager::PrevDesktopEventHandler::OnHotkey()
@@ -595,33 +571,9 @@ void DesktopManager::PrevDesktopEventHandler::OnHotkey()
    deskMan->SwitchToDesktop(deskMan->GetPrevDesk(deskMan->GetCurrentDesktop()));
 }
 
-DesktopManager::BottomDesktopEventHandler::BottomDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::SwitchToBottomDesktopHotkey));
-}
-
-DesktopManager::BottomDesktopEventHandler::~BottomDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::SwitchToBottomDesktopHotkey, GetHotkey());
-}
-
 void DesktopManager::BottomDesktopEventHandler::OnHotkey()
 {
    deskMan->SwitchToDesktop(deskMan->GetDeskBelow(deskMan->GetCurrentDesktop()));
-}
-
-DesktopManager::TopDesktopEventHandler::TopDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::SwitchToTopDesktopHotkey));
-}
-
-DesktopManager::TopDesktopEventHandler::~TopDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::SwitchToTopDesktopHotkey, GetHotkey());
 }
 
 void DesktopManager::TopDesktopEventHandler::OnHotkey()
@@ -629,33 +581,9 @@ void DesktopManager::TopDesktopEventHandler::OnHotkey()
    deskMan->SwitchToDesktop(deskMan->GetDeskAbove(deskMan->GetCurrentDesktop()));
 }
 
-DesktopManager::LeftDesktopEventHandler::LeftDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::SwitchToLeftDesktopHotkey));
-}
-
-DesktopManager::LeftDesktopEventHandler::~LeftDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::SwitchToLeftDesktopHotkey, GetHotkey());
-}
-
 void DesktopManager::LeftDesktopEventHandler::OnHotkey()
 {
    deskMan->SwitchToDesktop(deskMan->GetDeskOnLeft(deskMan->GetCurrentDesktop()));
-}
-
-DesktopManager::RightDesktopEventHandler::RightDesktopEventHandler()
-{
-   Settings s;
-   SetHotkey(s.LoadSetting(Settings::SwitchToRightDesktopHotkey));
-}
-
-DesktopManager::RightDesktopEventHandler::~RightDesktopEventHandler()
-{
-   Settings s;
-   s.SaveSetting(Settings::SwitchToRightDesktopHotkey, GetHotkey());
 }
 
 void DesktopManager::RightDesktopEventHandler::OnHotkey()

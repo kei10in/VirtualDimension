@@ -117,65 +117,51 @@ protected:
 
    // Various hotkeys
    //**************************************************************************
-   class MoveWindowToNextDesktopEventHandler: public ConfigurableHotkey
+   class MoveWindowToNextDesktopEventHandler: public PersistentHotkey<Settings::MoveWindowToNextDesktopHotkey>
    {
    public:
-      MoveWindowToNextDesktopEventHandler();
-      virtual ~MoveWindowToNextDesktopEventHandler();
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Move window to next desk"; }
+      virtual LPCSTR GetName() const	{ return "Move window to next desk"; }
    };
 
-   class MoveWindowToPrevDesktopEventHandler: public ConfigurableHotkey
+   class MoveWindowToPrevDesktopEventHandler: public PersistentHotkey<Settings::MoveWindowToPreviousDesktopHotkey>
    {
    public:
-      MoveWindowToPrevDesktopEventHandler();
-      virtual ~MoveWindowToPrevDesktopEventHandler();
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Move window to previous desk"; }
+      virtual LPCSTR GetName() const	{ return "Move window to previous desk"; }
    };
 
-   class MoveWindowToDesktopEventHandler: public ConfigurableHotkey
+   class MoveWindowToDesktopEventHandler: public PersistentHotkey<Settings::MoveWindowToDesktopHotkey>
    {
    public:
-      MoveWindowToDesktopEventHandler();
-      virtual ~MoveWindowToDesktopEventHandler();
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Move window to some desk"; }
+      virtual LPCSTR GetName() const	{ return "Move window to some desk"; }
    };
 
-   class MaximizeHeightEventHandler: public ConfigurableHotkey
+   class MaximizeHeightEventHandler: public PersistentHotkey<Settings::MaximizeHeightHotkey>
    {
    public:
-      MaximizeHeightEventHandler();
-      virtual ~MaximizeHeightEventHandler();
       virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Maximize height"; }
    };
 
-   class MaximizeWidthEventHandler: public ConfigurableHotkey
+   class MaximizeWidthEventHandler: public PersistentHotkey<Settings::MaximizeWidthHotkey>
    {
    public:
-      MaximizeWidthEventHandler();
-      virtual ~MaximizeWidthEventHandler();
       virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Maximize width"; }
    };
 
-   class ToggleAlwaysOnTopEventHandler: public ConfigurableHotkey
+   class ToggleAlwaysOnTopEventHandler: public PersistentHotkey<Settings::AlwaysOnTopHotkey>
    {
    public:
-      ToggleAlwaysOnTopEventHandler();
-      virtual ~ToggleAlwaysOnTopEventHandler();
-      virtual void OnHotkey();
+		virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Toggle always on top"; }
    };
 
-   class ToggleTransparencyEventHandler: public ConfigurableHotkey
+   class ToggleTransparencyEventHandler: public PersistentHotkey<Settings::TransparencyHotkey>
    {
    public:
-      ToggleTransparencyEventHandler();
-      virtual ~ToggleTransparencyEventHandler();
       virtual void OnHotkey();
       virtual LPCSTR GetName() const   { return "Toggle transparency"; }
    };

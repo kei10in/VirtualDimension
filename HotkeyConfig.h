@@ -24,6 +24,8 @@
 #include <list>
 #include "PlatformHelper.h"
 #include "HotkeyManager.h"
+#include "Config.h"
+#include "Settings.h"
 
 using namespace std;
 
@@ -34,8 +36,10 @@ class ConfigurableHotkey: public HotKeyManager::EventHandler
 public:
    ConfigurableHotkey();
    virtual ~ConfigurableHotkey();
-   virtual int GetHotkey() const;
-   virtual void SetHotkey(int hotkey);
+
+   int GetHotkey() const;
+   bool SetHotkey(int hotkey);
+	virtual void SaveHotkey()	{}
 
    virtual LPCSTR GetName() const = 0;
    
@@ -44,7 +48,22 @@ protected:
 
 private:
    int m_tempHotkey;
-   void Commit()  { SetHotkey(m_tempHotkey); }
+   void Commit()  { if (SetHotkey(m_tempHotkey)) SaveHotkey(); }
+};
+
+template <const Config::Setting<int>& setting> class PersistentHotkey: ConfigurableHotkey
+{
+public:
+	PersistentHotkey()
+	{
+		Settings s;
+		SetHotkey(s.LoadSetting(setting));
+	}
+	virtual void SaveHotkey()
+	{
+		Settings s;
+		s.SaveSetting(setting, GetHotkey());
+	}
 };
 
 class ShortcutsConfigurationDlg

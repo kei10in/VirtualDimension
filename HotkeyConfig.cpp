@@ -28,14 +28,14 @@ list<ConfigurableHotkey*> ShortcutsConfigurationDlg::m_hotkeys;
 
 ConfigurableHotkey::ConfigurableHotkey(): m_hotkey(0)  
 {
-   ShortcutsConfigurationDlg::RegisterHotkey(this); 
+   ShortcutsConfigurationDlg::RegisterHotkey(this);
 }
 
 ConfigurableHotkey::~ConfigurableHotkey()      
 {
    ShortcutsConfigurationDlg::UnRegisterHotkey(this); 
    if (m_hotkey) 
-      HotKeyManager::GetInstance()->UnregisterHotkey(this); 
+      HotKeyManager::GetInstance()->UnregisterHotkey(this);
 }
 
 int ConfigurableHotkey::GetHotkey() const          
@@ -43,13 +43,13 @@ int ConfigurableHotkey::GetHotkey() const
    return m_hotkey; 
 }
       
-void ConfigurableHotkey::SetHotkey(int hotkey)
+bool ConfigurableHotkey::SetHotkey(int hotkey)
 {
    HotKeyManager * keyMan = HotKeyManager::GetInstance();
 
    //If we are not changing the hotkey, nothing to do
    if (hotkey == m_hotkey)
-      return;
+      return false;
 
    //Unregister the previous hotkey
    if (m_hotkey != 0)
@@ -59,10 +59,12 @@ void ConfigurableHotkey::SetHotkey(int hotkey)
 
    //Setting the hotkey to 0 removes the shortcut
    if (m_hotkey == 0)
-      return;
+      return true;
 
    //Register the new hotkey
    keyMan->RegisterHotkey(m_hotkey, this);
+
+	return true;
 }
 
 extern void GetShortcutName(int shortcut, char* str, int bufLen);
