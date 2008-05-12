@@ -92,6 +92,7 @@ protected:
 	bool m_shrinked;
    bool m_lockPreviewWindow;
    bool m_hasCaption;
+	bool m_isWndVisible;
 	int m_autoHideDelay;
    UINT_PTR m_autoHideTimerId;
 
@@ -125,6 +126,7 @@ protected:
 
    LRESULT OnMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnWindowPosChanging(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT OnShowWindow(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	LRESULT OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnTimer(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

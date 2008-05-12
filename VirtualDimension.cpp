@@ -140,9 +140,10 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetSysCommandHandler(IDM_SHOWCAPTION, this, &VirtualDimension::OnCmdShowCaption);
 
    SetMessageHandler(WM_DESTROY, this, &VirtualDimension::OnDestroy);
+	SetMessageHandler(WM_ENDSESSION, this, &VirtualDimension::OnEndSession);
    SetMessageHandler(WM_MOVE, this, &VirtualDimension::OnMove);
    SetMessageHandler(WM_WINDOWPOSCHANGING, this, &VirtualDimension::OnWindowPosChanging);
-   SetMessageHandler(WM_ENDSESSION, this, &VirtualDimension::OnEndSession);
+	SetMessageHandler(WM_SHOWWINDOW, this, &VirtualDimension::OnShowWindow);
 
    SetMessageHandler(WM_LBUTTONDOWN, this, &VirtualDimension::OnLeftButtonDown);
    SetMessageHandler(WM_LBUTTONUP, this, &VirtualDimension::OnLeftButtonUp);
@@ -282,7 +283,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
    SetMessageHandler(WM_PAINT, deskMan, &DesktopManager::OnPaint);
 
    // Show window if needed
-   if (settings.LoadSetting(Settings::ShowWindow))
+   if (m_isWndVisible = (settings.LoadSetting(Settings::ShowWindow) || !trayIcon->HasIcon()))
    {
       ShowWindow(hWnd, nCmdShow);
       Refresh();
@@ -395,19 +396,7 @@ LRESULT VirtualDimension::OnCmdConfigure(HWND /*hWnd*/, UINT /*message*/, WPARAM
 
 LRESULT VirtualDimension::OnCmdExit(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-   Settings settings;
-
-	//Save the snap size
-	settings.SaveSetting(Settings::SnapSize, m_snapSize);
-
-	//Save the auto-hide delay
-	settings.SaveSetting(Settings::AutoHideDelay, m_autoHideDelay);
-
-   //Save the visibility state of the window before it is hidden
-   settings.SaveSetting(Settings::ShowWindow, IsWindowVisible(hWnd) ? true:false);
-
 	DestroyWindow(hWnd);
-
    return 0;
 }
 
@@ -587,7 +576,7 @@ LRESULT VirtualDimension::OnRightButtonDown(HWND hWnd, UINT /*message*/, WPARAM 
    return 0;
 }
 
-LRESULT VirtualDimension::OnDestroy(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+LRESULT VirtualDimension::OnDestroy(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
    RECT pos;
    Settings settings;
@@ -599,6 +588,15 @@ LRESULT VirtualDimension::OnDestroy(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wP
    pos.bottom = m_location.y + deskMan->GetWindowHeight();
    settings.SaveSetting(Settings::WindowPosition, &pos);
 	settings.SaveSetting(Settings::DockedBorders, m_dockedBorders);
+
+	//Save the snap size
+	settings.SaveSetting(Settings::SnapSize, m_snapSize);
+
+	//Save the auto-hide delay
+	settings.SaveSetting(Settings::AutoHideDelay, m_autoHideDelay);
+
+	//Save the visibility state of the window before it is hidden
+	settings.SaveSetting(Settings::ShowWindow, m_isWndVisible);
 
    //Save the locking state of the window
    settings.SaveSetting(Settings::LockPreviewWindow, IsPreviewWindowLocked());
@@ -799,6 +797,12 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 	}
 
    return TRUE;
+}
+
+LRESULT VirtualDimension::OnShowWindow(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
+{
+	m_isWndVisible = (wParam != FALSE);
+	return 0;
 }
 
 LRESULT VirtualDimension::OnTimer(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
