@@ -137,6 +137,10 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
          PostMessageW(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       break;
 
+	case WM_NCMBUTTONDOWN:
+		SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOSIZE);
+		break;
+
    case WM_DESTROY:
 	   {
 			//Restore window procedure
@@ -228,6 +232,10 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
       if (LOWORD(wParam) != WA_INACTIVE)
          PostMessageA(hVDWnd, g_uiShellHookMsg, HSHELL_WINDOWACTIVATED, (LPARAM)hWnd);
       break;
+
+	case WM_NCMBUTTONDOWN:
+		SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOSIZE);
+		break;
 
    case WM_DESTROY:
 	   {
