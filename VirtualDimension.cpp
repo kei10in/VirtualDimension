@@ -47,7 +47,7 @@ TrayIcon * trayIcon;
 AlwaysOnTop * ontop;
 ToolTip * tooltip;
 
-VirtualDimension vdWindow;;
+VirtualDimension vdWindow;
 
 // Forward function definition
 HWND CreateConfigBox();
@@ -105,7 +105,7 @@ VirtualDimension::VirtualDimension()
 bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 {
    HWND hWnd;
-   RECT pos, deskRect;
+   RECT pos;
    Settings settings;
    HWND hwndPrev;
    DWORD dwStyle;
@@ -143,6 +143,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 	SetMessageHandler(WM_ENDSESSION, this, &VirtualDimension::OnEndSession);
    SetMessageHandler(WM_MOVE, this, &VirtualDimension::OnMove);
    SetMessageHandler(WM_WINDOWPOSCHANGING, this, &VirtualDimension::OnWindowPosChanging);
+	SetMessageHandler(WM_DISPLAYCHANGE, this, &VirtualDimension::OnDisplayChange);
 	SetMessageHandler(WM_SHOWWINDOW, this, &VirtualDimension::OnShowWindow);
 
    SetMessageHandler(WM_LBUTTONDOWN, this, &VirtualDimension::OnLeftButtonDown);
@@ -174,29 +175,7 @@ bool VirtualDimension::Start(HINSTANCE hInstance, int nCmdShow)
 
 	// Dock the window to the screen borders
 	m_dockedBorders = settings.LoadSetting(Settings::DockedBorders);
-	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
-	if (m_dockedBorders & DOCK_LEFT)
-	{
-		pos.right -= pos.left - deskRect.left;
-		pos.left = deskRect.left;
-	}
-	if (m_dockedBorders & DOCK_RIGHT)
-	{
-		if (!(m_dockedBorders & DOCK_LEFT))
-			pos.left -= pos.right - deskRect.right;
-		pos.right = deskRect.right;
-	}
-	if (m_dockedBorders & DOCK_TOP)
-	{
-		pos.bottom -= pos.top - deskRect.top;
-		pos.top = deskRect.top;
-	}
-	if (m_dockedBorders & DOCK_BOTTOM)
-	{
-		if (!(m_dockedBorders & DOCK_TOP))
-			pos.top -= pos.bottom - deskRect.bottom;
-		pos.bottom = deskRect.bottom;
-	}
+	DockWindow(pos);
 
 	// Create the main window
 	Create( WS_EX_TOOLWINDOW, m_szWindowClass, m_szTitle, dwStyle,
@@ -799,6 +778,56 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 	}
 
    return TRUE;
+}
+
+/** Update the rectangle, to dock the window.
+ * @return true if the docking caused the rect to change, else false.
+ */
+bool VirtualDimension::DockWindow(RECT & pos)
+{
+	RECT deskRect;
+	bool res = false;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &deskRect, 0);
+	if (m_dockedBorders & DOCK_LEFT)
+	{
+		pos.right -= pos.left - deskRect.left;
+		pos.left = deskRect.left;
+		res = true;
+	}
+	if (m_dockedBorders & DOCK_RIGHT)
+	{
+		if (!(m_dockedBorders & DOCK_LEFT))
+			pos.left -= pos.right - deskRect.right;
+		pos.right = deskRect.right;
+		res = true;
+	}
+	if (m_dockedBorders & DOCK_TOP)
+	{
+		pos.bottom -= pos.top - deskRect.top;
+		pos.top = deskRect.top;
+		res = true;
+	}
+	if (m_dockedBorders & DOCK_BOTTOM)
+	{
+		if (!(m_dockedBorders & DOCK_TOP))
+			pos.top -= pos.bottom - deskRect.bottom;
+		pos.bottom = deskRect.bottom;
+		res = true;
+	}
+	return res;
+}
+
+LRESULT VirtualDimension::OnDisplayChange(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+	RECT  pos;
+	pos.left = m_location.x;
+	pos.top = m_location.y;
+	pos.right = m_location.x + deskMan->GetWindowWidth();
+	pos.bottom = m_location.y + deskMan->GetWindowHeight();
+	AdjustWindowRectEx(&pos, GetWindowStyle(m_hWnd), FALSE, GetWindowExStyle(m_hWnd));
+	if (DockWindow(pos))
+		MoveWindow(m_hWnd, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, TRUE);
+	return 0;
 }
 
 LRESULT VirtualDimension::OnShowWindow(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)

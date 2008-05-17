@@ -107,6 +107,8 @@ protected:
 	bool CreateLangMenu();
 	void UpdateSystemMenu();
 
+	bool DockWindow(RECT & rect);
+
    LRESULT OnCmdAbout(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdLockPreviewWindow(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnCmdShowCaption(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -126,6 +128,7 @@ protected:
 
    LRESULT OnMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    LRESULT OnWindowPosChanging(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT OnDisplayChange(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	LRESULT OnShowWindow(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	LRESULT OnActivateApp(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
