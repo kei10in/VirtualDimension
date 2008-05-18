@@ -37,7 +37,7 @@ public:
 #ifdef HIDEWINDOW_COMINTERFACE
       m_tasklist->AddTab(hWnd);
 #else
-      SendMessage(m_hWndTasklist, m_ShellhookMsg, 1, (LPARAM)hWnd);
+      SendMessage(m_hWndTasklist, m_ShellhookMsg, HSHELL_WINDOWCREATED, (LPARAM)hWnd);
 #endif
    }
 
@@ -46,7 +46,7 @@ public:
 #ifdef HIDEWINDOW_COMINTERFACE
       m_tasklist->DeleteTab(hWnd);
 #else
-      PostMessage(m_hWndTasklist, m_ShellhookMsg, 2, (LPARAM)hWnd);
+      PostMessage(m_hWndTasklist, m_ShellhookMsg, HSHELL_WINDOWDESTROYED, (LPARAM)hWnd);
 #endif
    }
 
