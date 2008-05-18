@@ -820,13 +820,13 @@ bool VirtualDimension::DockWindow(RECT & pos)
 LRESULT VirtualDimension::OnDisplayChange(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
 	RECT  pos;
-	pos.left = m_location.x;
-	pos.top = m_location.y;
-	pos.right = m_location.x + deskMan->GetWindowWidth();
-	pos.bottom = m_location.y + deskMan->GetWindowHeight();
-	AdjustWindowRectEx(&pos, GetWindowStyle(m_hWnd), FALSE, GetWindowExStyle(m_hWnd));
+	GetWindowRect(m_hWnd, &pos);
 	if (DockWindow(pos))
+	{
+		if (!m_shrinked && m_autoHideDelay > 0)
+			SetTimer(m_autoHideTimerId, m_autoHideDelay);	//reset the timer, to avoid hiding the window during the resolution change, as it does not look very nice
 		MoveWindow(m_hWnd, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, TRUE);
+	}
 	return 0;
 }
 
