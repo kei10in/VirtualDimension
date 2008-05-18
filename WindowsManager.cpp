@@ -240,7 +240,7 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
    }
 }
 
-LRESULT WindowsManager::OnWindowSizeMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT WindowsManager::OnWindowSizeMove(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
 	Window * wnd = GetWindow((HWND)wParam);
 	if (wnd)
