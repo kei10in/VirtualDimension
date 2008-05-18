@@ -53,7 +53,7 @@ Window::Window(HWND hWnd): AlwaysOnTop(hWnd), m_hWnd(hWnd), m_hOwnedWnd(GetOwned
                            m_MinToTray(false), m_style(0), m_transp(m_hOwnedWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false), m_autodesk(false),
                             m_hIcon(NULL), m_hDefaulIcon(NULL), m_BallonMsg(NULL), m_HookDllHandle(NULL),
-                           m_switching(false), m_hidden(false)
+                           m_switching(false), m_moving(false), m_hidden(false)
 {
    Settings s;
    Settings::Window settings(&s);

@@ -141,6 +141,14 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 		SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOSIZE);
 		break;
 
+	case WM_ENTERSIZEMOVE:
+		PostMessageW(hVDWnd, WM_VD_WNDSIZEMOVE, (WPARAM)hWnd, TRUE);
+		break;
+
+	case WM_EXITSIZEMOVE:
+		PostMessageW(hVDWnd, WM_VD_WNDSIZEMOVE, (WPARAM)hWnd, FALSE);
+		break;
+
    case WM_DESTROY:
 	   {
 			//Restore window procedure
@@ -235,6 +243,14 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 	case WM_NCMBUTTONDOWN:
 		SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOSIZE);
+		break;
+
+	case WM_ENTERSIZEMOVE:
+		PostMessageA(hVDWnd, WM_VD_WNDSIZEMOVE, (WPARAM)hWnd, TRUE);
+		break;
+
+	case WM_EXITSIZEMOVE:
+		PostMessageA(hVDWnd, WM_VD_WNDSIZEMOVE, (WPARAM)hWnd, FALSE);
 		break;
 
    case WM_DESTROY:

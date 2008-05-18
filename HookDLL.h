@@ -48,7 +48,7 @@ enum MenuItems
 
    VDM_PROPERTIES,
 
-   VDM_MOVETODESK
+   VDM_MOVETODESK,
 };
 
 enum VirtualDimensionMessages
@@ -57,6 +57,7 @@ enum VirtualDimensionMessages
    WM_VD_PREPARE_HOOK_MENU,
    WM_VD_CHECK_MIN_TO_TRAY,
    WM_VD_MOUSEWARP,
+	WM_VD_WNDSIZEMOVE,
 
    WM_VD_STARTONDESKTOP,      /* an application should start on the specified desktop. wParam = processId lParam = deskopIdx */
    WM_VD_SWITCHDESKTOP,       /* switch to some desktop. lParam = desktopIdx */

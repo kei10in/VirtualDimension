@@ -394,7 +394,11 @@ void Desktop::Activate(void)
       if (!win->CheckExists())
          continue;
 
-      if (win->IsOnDesk(this))
+		if (win->IsMoving())
+		{
+			win->MoveToDesktop(this);
+		}
+      else if (win->IsOnDesk(this))
       {
       	HANDLE event;
       	win->UnFlashWindow();

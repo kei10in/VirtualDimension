@@ -729,7 +729,7 @@ LRESULT VirtualDimension::OnWindowPosChanging(HWND /*hWnd*/, UINT /*message*/, W
 	}
 	else
 	{
-		//Contrain to borders
+		//Constrain to borders
 		if (lpwndpos->x < deskRect.left)
 			lpwndpos->x = deskRect.left;
 		if (lpwndpos->x+lpwndpos->cx > deskRect.right)

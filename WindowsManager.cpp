@@ -55,6 +55,7 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstFreeDelayedUpdat
    vdWindow.SetMessageHandler(uiShellHookMsg, this, &WindowsManager::OnShellHookMessage);
    vdWindow.SetMessageHandler(WM_SETTINGCHANGE, this, &WindowsManager::OnSettingsChange);
 	vdWindow.SetMessageHandler(WM_VD_STARTONDESKTOP, this, &WindowsManager::OnStartOnDesktop);
+	vdWindow.SetMessageHandler(WM_VD_WNDSIZEMOVE, this, &WindowsManager::OnWindowSizeMove);
 }
 
 WindowsManager::~WindowsManager(void)
@@ -237,6 +238,14 @@ void WindowsManager::OnWindowActivated(HWND hWnd)
          //Auto move window
          win->MoveToDesktop(deskMan->GetCurrentDesktop());
    }
+}
+
+LRESULT WindowsManager::OnWindowSizeMove(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	Window * wnd = GetWindow((HWND)wParam);
+	if (wnd)
+		wnd->SetMoving(lParam ? true : false);
+	return 0;
 }
 
 void WindowsManager::OnGetMinRect(HWND /*hWnd*/)

@@ -168,6 +168,9 @@ public:
    inline bool IsSwitching() const            { return m_switching || m_hidingMethod->CheckSwitching(this); }
    inline void SetSwitching(bool on)          { m_switching = on; }
 
+	inline bool IsMoving() const					 { return m_moving; }
+	inline void SetMoving(bool moving)			 { m_moving = moving; }
+
    inline bool CheckExists() const            { return IsWindow(m_hWnd) != 0; }
 
    void OnDelayUpdate();
@@ -240,6 +243,7 @@ protected:
    DWORD m_dwProcessId;
 
    bool m_switching;
+	bool m_moving;
 
    bool m_hidden;
    HidingMethod * m_hidingMethod;
