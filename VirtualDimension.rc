@@ -161,7 +161,7 @@ BEGIN
             VALUE "FileDescription", "Virtual Dimension"
             VALUE "FileVersion", "0, 94, 1, 0"
             VALUE "InternalName", "Virtual Dimension"
-            VALUE "LegalCopyright", "Copyright (C) 2003-2006 François Ferrand"
+            VALUE "LegalCopyright", "Copyright (C) 2003-2008 François Ferrand"
             VALUE "OriginalFilename", "VirtualDimension.exe"
             VALUE "ProductName", "Virtual Dimension"
             VALUE "ProductVersion", "0, 94, 1, 0"
