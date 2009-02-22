@@ -55,8 +55,8 @@ ShellHook::ShellHook(HWND hWnd): m_hWnd(hWnd)
    OSVERSIONINFO verInfo;
    verInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
    GetVersionEx(&verInfo);
-   
-   RegisterShellHook(NULL, TRUE);
+
+   //RegisterShellHook(NULL, TRUE);
    
    if (verInfo.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
       RegisterShellHook(hWnd, 1); //Windows 95, Windows 98, or Windows Me.
@@ -69,10 +69,16 @@ ShellHook::~ShellHook(void)
    if (RegisterShellHook == NULL)
       return;
 
-   RegisterShellHook(m_hWnd, 0);
+	//Don't know why, but recent versions of Mingw (>3.2.3) make VD crash when we
+	//call FreeLibrary() a few lines down, if we call RegisterShellHook() now...
+	//The fix is either to not un-register the hook, or not to free the library.
+	//It also works OK if we do not use LoadLibrary(), but simply GetModuleHandle()
+	//and thus do not free the library at the end...
+
+	//RegisterShellHook(m_hWnd, 0);
 
    nbInstance--;
    
    if (nbInstance == 0)
-      FreeLibrary(hinstDLL);
+		FreeLibrary(hinstDLL);
 }
