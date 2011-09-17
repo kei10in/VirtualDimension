@@ -69,7 +69,7 @@ Section "MainSection" SEC01
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   
   SetOutPath $SYSDIR
-  File "C:\Program Files\MinGW\bin\mingwm10.dll"
+  File "C:\MinGW\bin\mingwm10.dll"
   
   !insertmacro MUI_STARTMENU_WRITE_BEGIN VirtualDimension
   CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
