@@ -1,2 +1,5 @@
+*.o
 *.ncb
 *.aps
+mingw-release
+Setup.exe
