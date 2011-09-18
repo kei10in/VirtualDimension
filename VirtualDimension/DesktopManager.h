@@ -106,42 +106,42 @@ protected:
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Activate next desk"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Activate next desk"); }
    };
 
    class PrevDesktopEventHandler: public PersistentHotkey<Settings::SwitchToPreviousDesktopHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Activate previous desk"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Activate previous desk"); }
    };
 
    class BottomDesktopEventHandler: public PersistentHotkey<Settings::SwitchToBottomDesktopHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Activate desk below"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Activate desk below"); }
    };
 
    class TopDesktopEventHandler: public PersistentHotkey<Settings::SwitchToTopDesktopHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Activate desk above"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Activate desk above"); }
    };
 
    class LeftDesktopEventHandler: public PersistentHotkey<Settings::SwitchToLeftDesktopHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Activate desk on the left"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Activate desk on the left"); }
    };
 
    class RightDesktopEventHandler: public PersistentHotkey<Settings::SwitchToRightDesktopHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Activate desk on the right"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Activate desk on the right"); }
    };
 
    int m_nbColumn;

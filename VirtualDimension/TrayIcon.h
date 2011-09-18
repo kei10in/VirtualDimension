@@ -42,7 +42,7 @@ protected:
 
    LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    HICON GetIcon();
-   char* GetText(); 
+   LPCTSTR GetText(); 
 
    LRESULT OnCmdClose(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
    void OnLeftButtonDown();
@@ -56,7 +56,7 @@ protected:
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const									{ return "Show/hide preview window"; }
+      virtual LPCTSTR GetName() const { return TEXT("Show/hide preview window"); }
    };
 
    ToggleWindowEventHandler m_toggleWindowEventHandler;

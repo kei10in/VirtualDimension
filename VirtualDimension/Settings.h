@@ -92,29 +92,29 @@ public:
 
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
-   bool LoadDisableShellIntegration(const char * windowclass);
-   void SaveDisableShellIntegration(const char * windowclass, bool enable);
-   int LoadHidingMethod(const char * windowclass);
-   void SaveHidingMethod(const char * windowclass, int method);
+   bool LoadDisableShellIntegration(LPCTSTR windowclass);
+   void SaveDisableShellIntegration(LPCTSTR windowclass, bool enable);
+   int LoadHidingMethod(LPCTSTR windowclass);
+   void SaveHidingMethod(LPCTSTR windowclass, int method);
 
    class SubkeyList: public Config::RegistryGroup
    {
    public:
-      SubkeyList(Settings * settings, const char regKey[]);
-      SubkeyList(Settings * settings, const char regKey[], int index);
-      SubkeyList(Settings * settings, const char regKey[], char * name, bool create=true);
+      SubkeyList(Settings * settings, LPCTSTR regKey);
+      SubkeyList(Settings * settings, LPCTSTR regKey, int index);
+      SubkeyList(Settings * settings, LPCTSTR regKey, LPCTSTR name, bool create=true);
 
       virtual bool Open(int index);
-      virtual bool Open(const char * name, bool create=true);
+      virtual bool Open(LPCTSTR name, bool create=true);
 
       bool IsValid();
       void Destroy();
 
-      char * GetName(char * buffer, unsigned int length);
-      bool Rename(char * buffer);
+      LPTSTR GetName(LPTSTR buffer, unsigned int length);
+      bool Rename(LPTSTR buffer);
 
    protected:
-      char m_name[MAX_NAME_LENGTH];
+      TCHAR m_name[MAX_NAME_LENGTH];
 
       Config::RegistryGroup m_group;
    };
@@ -124,7 +124,7 @@ public:
    public:
       Desktop(Settings * settings): SubkeyList(settings, regKeyDesktops)                     {}
       Desktop(Settings * settings, int index): SubkeyList(settings, regKeyDesktops, index)   {}
-      Desktop(Settings * settings, char * name): SubkeyList(settings, regKeyDesktops, name)  {}
+      Desktop(Settings * settings, LPCTSTR name): SubkeyList(settings, regKeyDesktops, name)  {}
 
       static DECLARE_SETTING(DeskIndex, int);
       static DECLARE_SETTING(DeskWallpaper, LPTSTR);
@@ -132,7 +132,7 @@ public:
       static DECLARE_SETTING(BackgroundColor, COLORREF);
 
    protected:
-      static const char regKeyDesktops[];
+      static LPCTSTR regKeyDesktops;
    };
 
    class Window: public SubkeyList
@@ -140,10 +140,10 @@ public:
    public:
       Window(Settings * settings): SubkeyList(settings, regKeyWindows)                       {}
       Window(Settings * settings, int index): SubkeyList(settings, regKeyWindows, index) {}
-      Window(Settings * settings, char * name, bool create=false): SubkeyList(settings, regKeyWindows, name, create)  {}
+      Window(Settings * settings, LPCTSTR name, bool create=false): SubkeyList(settings, regKeyWindows, name, create)  {}
 
       bool OpenDefault()                                       { return Open(NULL); }
-      virtual bool Open(const char * name, bool create=false)  { return SubkeyList::Open(name, create); }
+      virtual bool Open(LPCTSTR name, bool create=false)  { return SubkeyList::Open(name, create); }
 
       static DECLARE_SETTING(AlwaysOnTop, bool);
       static DECLARE_SETTING(OnAllDesktops, bool);
@@ -158,21 +158,21 @@ public:
       static DECLARE_SETTING(DesktopIndex, int);
 
    protected:
-      static const char regKeyWindows[];
+      static LPCTSTR regKeyWindows;
    };
 
 protected:
-   static const char regKeyName[];
-   static const char regKeyWindowsStartup[];
+   static LPCTSTR regKeyName;
+   static LPCTSTR regKeyWindowsStartup;
 
-   static const char regSubKeyDisableShellIntegration[];
-   static const char regSubKeyHidingMethods[];
-   static const char regValStartWithWindows[];
+   static LPCTSTR regSubKeyDisableShellIntegration;
+   static LPCTSTR regSubKeyHidingMethods;
+   static LPCTSTR regValStartWithWindows;
 
-   static DWORD LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal);
-   static void SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value);
-   static bool LoadBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length);
-   static void SaveBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length);
+   static DWORD LoadDWord(HKEY regKey, bool keyOpened, LPCTSTR entry, DWORD defVal);
+   static void SaveDWord(HKEY regKey, bool keyOpened, LPCTSTR entry, DWORD value);
+   static bool LoadBinary(HKEY regKey, bool keyOpened, LPCTSTR entry, LPBYTE buffer, DWORD length);
+   static void SaveBinary(HKEY regKey, bool keyOpened, LPCTSTR entry, LPBYTE buffer, DWORD length);
 
    friend class Settings::Desktop;
    friend class Settings::Window;

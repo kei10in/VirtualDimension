@@ -35,14 +35,14 @@ unsigned int Group::LoadSetting(const Setting<LPTSTR> &setting, LPTSTR buffer, u
        (size > length || LoadString(setting.m_name, buffer) == 0))
    {
       size = _tcslen(setting.m_default);
-      strncpy(buffer, setting.m_default, length-1);
+      _tcsncpy(buffer, setting.m_default, length-1);
       buffer[length-1] = 0;
    }
 
    return size;
 }
 
-bool RegistryGroup::Open(HKEY parent, const char * path, bool create)
+bool RegistryGroup::Open(HKEY parent, LPCTSTR path, bool create)
 {
    if (m_opened)
       Close();
@@ -65,7 +65,7 @@ void RegistryGroup::Close()
    m_opened = false;
 }
 
-Group * RegistryGroup::GetSubGroup(const char * path)
+Group * RegistryGroup::GetSubGroup(LPCTSTR path)
 {
    RegistryGroup * m_subgroup = new RegistryGroup();
 
@@ -78,7 +78,7 @@ Group * RegistryGroup::GetSubGroup(const char * path)
    return m_subgroup;
 }
 
-DWORD RegistryGroup::LoadDWord(const char * entry, DWORD defVal)
+DWORD RegistryGroup::LoadDWord(LPCTSTR entry, DWORD defVal)
 {
    DWORD size;
    DWORD val;
@@ -97,13 +97,13 @@ DWORD RegistryGroup::LoadDWord(const char * entry, DWORD defVal)
    return val;
 }
 
-void RegistryGroup::SaveDWord(const char * entry, DWORD value)
+void RegistryGroup::SaveDWord(LPCTSTR entry, DWORD value)
 {
    if (m_opened)
       RegSetValueEx(m_regKey, entry, 0, REG_DWORD, (LPBYTE)&value, sizeof(value));
 }
 
-bool RegistryGroup::LoadBinary(const char * entry, LPBYTE buffer, DWORD length, LPBYTE defval)
+bool RegistryGroup::LoadBinary(LPCTSTR entry, LPBYTE buffer, DWORD length, LPBYTE defval)
 {
    DWORD size;
    DWORD type;
@@ -124,13 +124,13 @@ bool RegistryGroup::LoadBinary(const char * entry, LPBYTE buffer, DWORD length, 
    return res;
 }
 
-void RegistryGroup::SaveBinary(const char * entry, LPBYTE buffer, DWORD length)
+void RegistryGroup::SaveBinary(LPCTSTR entry, LPBYTE buffer, DWORD length)
 {
    if (m_opened)
       RegSetValueEx(m_regKey, entry, 0, REG_BINARY, buffer, length);
 }
 
-unsigned int RegistryGroup::LoadString(const char * entry, LPTSTR buffer)
+unsigned int RegistryGroup::LoadString(LPCTSTR entry, LPTSTR buffer)
 {
    DWORD size;
    DWORD type;
@@ -148,7 +148,7 @@ unsigned int RegistryGroup::LoadString(const char * entry, LPTSTR buffer)
    return size;
 }
 
-void RegistryGroup::SaveString(const char * entry, LPTSTR buffer)
+void RegistryGroup::SaveString(LPCTSTR entry, LPTSTR buffer)
 {
    DWORD len;
 
@@ -157,12 +157,12 @@ void RegistryGroup::SaveString(const char * entry, LPTSTR buffer)
       RegSetValueEx(m_regKey, entry, 0, REG_SZ, (LPBYTE)buffer, len);
 }
 
-bool RegistryGroup::RemoveEntry(LPTSTR entry)
+bool RegistryGroup::RemoveEntry(LPCTSTR entry)
 {
    return m_opened && RegDeleteValue(m_regKey, entry);
 }
 
-bool RegistryGroup::RemoveGroup(LPTSTR group)
+bool RegistryGroup::RemoveGroup(LPCTSTR group)
 {
    return m_opened && RegDeleteKey(m_regKey, group);
 }

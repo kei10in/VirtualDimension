@@ -123,49 +123,49 @@ protected:
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Move window to next desk"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Move window to next desk"); }
    };
 
    class MoveWindowToPrevDesktopEventHandler: public PersistentHotkey<Settings::MoveWindowToPreviousDesktopHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Move window to previous desk"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Move window to previous desk"); }
    };
 
    class MoveWindowToDesktopEventHandler: public PersistentHotkey<Settings::MoveWindowToDesktopHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const	{ return "Move window to some desk"; }
+      virtual LPCTSTR GetName() const	{ return TEXT("Move window to some desk"); }
    };
 
    class MaximizeHeightEventHandler: public PersistentHotkey<Settings::MaximizeHeightHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Maximize height"; }
+      virtual LPCTSTR GetName() const   { return TEXT("Maximize height"); }
    };
 
    class MaximizeWidthEventHandler: public PersistentHotkey<Settings::MaximizeWidthHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Maximize width"; }
+      virtual LPCTSTR GetName() const   { return TEXT("Maximize width"); }
    };
 
    class ToggleAlwaysOnTopEventHandler: public PersistentHotkey<Settings::AlwaysOnTopHotkey>
    {
    public:
 		virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Toggle always on top"; }
+      virtual LPCTSTR GetName() const   { return TEXT("Toggle always on top"); }
    };
 
    class ToggleTransparencyEventHandler: public PersistentHotkey<Settings::TransparencyHotkey>
    {
    public:
       virtual void OnHotkey();
-      virtual LPCSTR GetName() const   { return "Toggle transparency"; }
+      virtual LPCTSTR GetName() const   { return TEXT("Toggle transparency"); }
    };
 
    MoveWindowToNextDesktopEventHandler m_moveToNextDeskEH;

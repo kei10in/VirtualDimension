@@ -27,7 +27,7 @@ public:
    class Tool 
    {
    protected:
-      virtual char * GetText() = 0;
+      virtual LPCTSTR GetText() = 0;
       virtual void GetRect(LPRECT rect) = 0;
       friend class ToolTip;
    };

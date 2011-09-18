@@ -19,6 +19,7 @@
  */
 
 #include "StdAfx.h"
+#include <vector>
 #include "tooltip.h"
 #include "virtualdimension.h"
 #include "settings.h"
@@ -62,7 +63,10 @@ void ToolTip::SetTool(Tool * tool, LPRECT rect)
 
    ti.uFlags = TTF_SUBCLASS;
    ti.hinst = vdWindow;
-   ti.lpszText = tool->GetText();
+   std::vector<TCHAR> svec(
+	   tool->GetText(),
+	   tool->GetText() + _tcslen(tool->GetText()) + 1);
+   ti.lpszText = &(svec[0]);
    if (rect)
       ti.rect = *rect;
    else

@@ -73,7 +73,7 @@ bool TrayIconsManager::AddIcon(TrayIconHandler* handler)
    data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
    data.uCallbackMessage = handler->m_callbackMessage;
    data.hIcon = handler->GetIcon();
-   strcpy(data.szTip, handler->GetText());
+   _tcscpy_s(data.szTip, _countof(data.szTip), handler->GetText());
 
    res = Shell_NotifyIcon(NIM_ADD, &data);
 
@@ -129,7 +129,7 @@ void TrayIconsManager::TrayIconHandler::Update()
    data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
    data.uCallbackMessage = m_callbackMessage;
    data.hIcon = GetIcon();
-   strcpy(data.szTip, GetText());
+   _tcscpy_s(data.szTip, _countof(data.szTip), GetText());
 
    Shell_NotifyIcon(NIM_MODIFY, &data);
 }
@@ -145,9 +145,9 @@ void TrayIconsManager::TrayIconHandler::DisplayBalloon(LPTSTR message, LPTSTR ti
    data.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_INFO;
    data.uCallbackMessage = m_callbackMessage;
    data.hIcon = GetIcon();
-   strcpy(data.szTip, GetText());
-   strncpy(data.szInfo, message ? message : "", sizeof(data.szInfo));
-   strncpy(data.szInfoTitle, title ? title : "", sizeof(data.szInfoTitle));
+   _tcscpy_s(data.szTip, _countof(data.szTip), GetText());
+   _tcscpy_s(data.szInfo, _countof(data.szInfo), message ? message : TEXT(""));
+   _tcscpy_s(data.szInfoTitle, _countof(data.szInfoTitle), title ? title : TEXT(""));
    data.uTimeout = timeout;
    data.dwInfoFlags = flags;
 

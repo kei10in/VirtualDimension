@@ -19,6 +19,7 @@
 */
 
 #include "StdAfx.h"
+#include <vector>
 #include <WindowsX.h>
 #include <CommDlg.h>
 #include <Commctrl.h>
@@ -74,20 +75,22 @@ void ApplicationListDlg::InitDialog()
    {
       column.fmt = LVCFMT_LEFT;
       column.cx = 70;
-      column.pszText = (LPTSTR)m_valTitle;
+	  std::vector<TCHAR> svec(
+		  m_valTitle, m_valTitle + _tcslen(m_valTitle) + 1);
+      column.pszText = &(svec[0]);
       column.iSubItem = 0;
       ListView_InsertColumn(m_hAppListWnd, 1, &column);
 
       if (m_values)
       {
-         m_hParamEditCtrl = CreateWindow("COMBOBOX", "", WS_BORDER|WS_CHILD|CBS_DROPDOWNLIST, 0, 0, 10, 10, m_hAppListWnd, NULL, GetModuleHandle(NULL), 0);
+         m_hParamEditCtrl = CreateWindow(TEXT("COMBOBOX"), TEXT(""), WS_BORDER|WS_CHILD|CBS_DROPDOWNLIST, 0, 0, 10, 10, m_hAppListWnd, NULL, GetModuleHandle(NULL), 0);
 
          const LPCTSTR * val = m_values;
          while(*val)
             ComboBox_AddString(m_hParamEditCtrl, *val++);
       }
       else
-         m_hParamEditCtrl = CreateWindow("EDIT", "", WS_BORDER|WS_CHILD|ES_NUMBER|ES_AUTOHSCROLL, 0, 0, 0, 0, m_hAppListWnd, NULL, GetModuleHandle(NULL), 0);
+         m_hParamEditCtrl = CreateWindow(TEXT("EDIT"), TEXT(""), WS_BORDER|WS_CHILD|ES_NUMBER|ES_AUTOHSCROLL, 0, 0, 0, 0, m_hAppListWnd, NULL, GetModuleHandle(NULL), 0);
 
       SetWindowFont(m_hParamEditCtrl, GetWindowFont(m_hDlg), FALSE);
    }
@@ -158,7 +161,7 @@ void ApplicationListDlg::OnRemoveApplBtn()
 
 void ApplicationListDlg::BeginEdit(int item)
 {
-   char buf[6];
+   TCHAR buf[6];
    DWORD param = GetProgramParam(item);
 
    m_editedItemIndex = item;
@@ -166,8 +169,10 @@ void ApplicationListDlg::BeginEdit(int item)
    //Set the param value
    if (m_values)
       ComboBox_SetCurSel(m_hParamEditCtrl, param);
-   else
-      SetWindowText(m_hParamEditCtrl, itoa(param, buf, 10));
+   else {
+	  _itot_s(param, buf, _countof(buf), 10);
+      SetWindowText(m_hParamEditCtrl, buf);
+   }
 
    //Display the window at the correct location
    RECT rect;
@@ -182,7 +187,7 @@ void ApplicationListDlg::BeginEdit(int item)
 void ApplicationListDlg::EndEdit()
 {
    DWORD param;
-   char buf[6];
+   TCHAR buf[6];
 
    if (m_values)
    {
@@ -190,8 +195,8 @@ void ApplicationListDlg::EndEdit()
    }
    else
    {
-      GetWindowText(m_hParamEditCtrl, buf, 6);
-      param = atoi(buf);
+      GetWindowText(m_hParamEditCtrl, buf, _countof(buf));
+      param = _ttoi(buf);
    }
 
    //Update the list
@@ -319,12 +324,15 @@ void ApplicationListDlg::SetProgramParam(int item, DWORD param)
    //Setup sub-item in the list
    if (m_values)
    {
-      ListView_SetItemText(m_hAppListWnd, item, 1, (LPTSTR)m_values[param]);
+	   std::vector<TCHAR> svec(
+		   m_values[param],
+		   m_values[param] + _tcslen(m_values[param]) + 1);
+      ListView_SetItemText(m_hAppListWnd, item, 1, &(svec[0]));
    }
    else if (m_valTitle) //else, this is not needed, as the data will not be shown/changed anyway
    {
-      char buf[6];
-      itoa(param, buf, 10);
+      TCHAR buf[6];
+      _itot_s(param, buf, _countof(buf), 10);
       ListView_SetItemText(m_hAppListWnd, item, 1, buf);
    }
 }

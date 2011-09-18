@@ -458,9 +458,9 @@ void DesktopManager::ChoosePreviewWindowFont(HWND hDlg)
    cf.rgbColors = m_crPreviewWindowFontColor;
    cf.lCustData = 0;
    cf.lpfnHook = (LPCFHOOKPROC)NULL;
-   cf.lpTemplateName = (LPSTR)NULL;
+   cf.lpTemplateName = NULL;
    cf.hInstance = (HINSTANCE)vdWindow;
-   cf.lpszStyle = (LPSTR)NULL;
+   cf.lpszStyle = NULL;
    cf.nFontType = SCREEN_FONTTYPE;
    cf.nSizeMin = 0;
    cf.nSizeMax = 0;
@@ -544,7 +544,7 @@ LRESULT DesktopManager::OnCmdSwitchDesktop(HWND /*hWnd*/, UINT /*message*/, WPAR
 	if (desk)
 		SwitchToDesktop(desk);
 	else
-		MessageBox(NULL, "No such desktop", "Error", MB_OK|MB_ICONERROR);
+		MessageBox(NULL, TEXT("No such desktop"), TEXT("Error"), MB_OK|MB_ICONERROR);
 	return 0;
 }
 
@@ -553,7 +553,7 @@ LRESULT DesktopManager::OnSettingsChange(HWND /*hWnd*/, UINT /*message*/, WPARAM
 	WallPaper::RefreshDefaultWallpaper();
 
 	LPCTSTR wallpaper;
-	wallpaper = m_currentDesktop ? Desktop::FormatWallpaper(m_currentDesktop->GetWallpaper()) : "";
+	wallpaper = m_currentDesktop ? Desktop::FormatWallpaper(m_currentDesktop->GetWallpaper()) : TEXT("");
 	if (wallpaper == NULL || *wallpaper != 0)	//if wallpaper is not set to 'default', ie use windows wallpaper
 		m_currentDesktop->SetWallpaper(WallPaper::GetDefaultWallpaper());
 

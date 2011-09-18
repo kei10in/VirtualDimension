@@ -19,6 +19,7 @@
  */
 
 #include "StdAfx.h"
+#include <vector>
 #include "HotkeyConfig.h"
 #include "VirtualDimension.h"
 #include "Resource.h"
@@ -67,13 +68,16 @@ bool ConfigurableHotkey::SetHotkey(int hotkey)
 	return true;
 }
 
-extern void GetShortcutName(int shortcut, char* str, int bufLen);
+extern void GetShortcutName(int shortcut, LPTSTR str, int bufLen);
 
 void ShortcutsConfigurationDlg::InsertItem(ConfigurableHotkey* hotkey)
 {
    LVITEM item;
 
-   item.pszText = (LPSTR)hotkey->GetName();
+   std::vector<TCHAR> svec(
+	   hotkey->GetName(),
+	   hotkey->GetName() + _tcslen(hotkey->GetName()) + 1);
+   item.pszText = &(svec[0]);
    item.iItem = ListView_GetItemCount(m_listViewWnd);
    item.iSubItem = 0;
    item.lParam = (LPARAM)hotkey;
@@ -95,8 +99,8 @@ ConfigurableHotkey* ShortcutsConfigurationDlg::GetItemHotkey(int index)
 
 void ShortcutsConfigurationDlg::SetItemShortcut(int index, int shortcut)
 {
-   char buffer[50];
-   GetShortcutName(shortcut, buffer, sizeof(buffer)/sizeof(char));
+	TCHAR buffer[50] = {};
+   GetShortcutName(shortcut, buffer, _countof(buffer));
    ListView_SetItemText(m_listViewWnd, index, 1, buffer);
 
    GetItemHotkey(index)->m_tempHotkey = shortcut;
@@ -170,7 +174,7 @@ ShortcutsConfigurationDlg::ShortcutsConfigurationDlg(HWND hDlg)
       ListView_SetColumnWidth(m_listViewWnd, i, -2);
 
    //Create the edit control
-   m_editCtrl = CreateWindow("AlternateHotKeyControl", "", WS_BORDER | WS_CHILD | WS_TABSTOP, 0, 0, 10, 10, 
+   m_editCtrl = CreateWindow(TEXT("AlternateHotKeyControl"), TEXT(""), WS_BORDER | WS_CHILD | WS_TABSTOP, 0, 0, 10, 10, 
                              m_listViewWnd, NULL, vdWindow, 0);
 }
 

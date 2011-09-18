@@ -38,7 +38,7 @@ Locale::Locale(void): m_currentLangCode(0), m_resDll(NULL)
     if (!SetLanguage(code))
     {
         // by default, it will stay with ENglish one
-        if (!SetLanguage(Locale::GetLanguageCode("EN")))
+        if (!SetLanguage(Locale::GetLanguageCode(TEXT("EN"))))
         {
             //TODO: try to find another resource library (maybe there is only langFR.dll)
             //TODO: if that fails, display error message (hardcoded in any language), and terminate application immediatly
@@ -62,8 +62,8 @@ bool Locale::SetLanguage(int langcode)
 
     if (langcode)
     {
-        char buffer[16];
-        sprintf(buffer,"lang%c%c.dll", 'A'-1+(langcode & 0x1f), 'A'-1+((langcode >> 5) & 0x1f));
+        TCHAR buffer[16];
+        _stprintf_s(buffer, _countof(buffer), TEXT("lang%c%c.dll"), TEXT('A')-1+(langcode & 0x1f), TEXT('A')-1+((langcode >> 5) & 0x1f));
         HINSTANCE hInstTemporary = (HINSTANCE)::LoadLibrary(buffer);
         if ( hInstTemporary != NULL)
         {
@@ -96,6 +96,9 @@ String Locale::GetString(HINSTANCE hinst, UINT uID)
 	return str;
 }
 
+/**
+ * Return string resource byte size
+ */
 int Locale::GetStringSize(HINSTANCE hinst, UINT uID)
 {
 	HRSRC hrsrc = FindResource(hinst, MAKEINTRESOURCE((uID>>4)+1), RT_STRING);
@@ -114,15 +117,15 @@ int Locale::MessageBox(HWND hWnd, UINT uIdText, UINT uIdCaption, UINT uType)
 	return ::MessageBox(hWnd, text, title, uType);
 }
 
-int Locale::GetLanguageCode(LPTSTR str)
+int Locale::GetLanguageCode(LPCTSTR str)
 {
-   char first = str[0];
-   char second = str[1];
-   if (first >= 'a' && first <= 'z')
-      first -= 'a' - 'A';
-   if (second >= 'a' && second <= 'z')
-      second -= 'a' - 'A';
-	return ((first + 1 - 'A') & 0x1f) | (((second + 1 - 'A') & 0x1f) << 5);
+   TCHAR first = str[0];
+   TCHAR second = str[1];
+   if (first >= TEXT('a') && first <= TEXT('z'))
+      first -= TEXT('a') - TEXT('A');
+   if (second >= TEXT('a') && second <= TEXT('z'))
+      second -= TEXT('a') - TEXT('A');
+	return ((first + 1 - TEXT('A')) & 0x1f) | (((second + 1 - TEXT('A')) & 0x1f) << 5);
 }
 
 LocalesIterator::LocalesIterator()
@@ -141,17 +144,17 @@ bool LocalesIterator::GetNext()
 	*m_FindFileData.cFileName = 0;	//empty the file name
 	if (m_hFind == INVALID_HANDLE_VALUE)
 	{
-		char path[MAX_PATH];
-		char * ptr;
+		TCHAR path[MAX_PATH];
+		TCHAR* ptr;
 
 		//Build the mask, including path
 		GetModuleFileName(NULL, path, MAX_PATH);
-		ptr = strrchr(path, '\\');
+		ptr = _tcsrchr(path, TEXT('\\'));
 		if (ptr)
 			*(ptr+1) = 0;	//strip file name (but keep back-slash)
 		else
 			*path = 0;		//strange path -> search in current directory
-		strcat(path, "lang*.dll");
+		_tcscat(path, TEXT("lang*.dll"));
 
 		//Begin the search
 		m_hFind = FindFirstFile(path, &m_FindFileData);

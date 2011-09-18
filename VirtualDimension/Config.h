@@ -34,14 +34,14 @@ template <class T> class SettingType: public BinarySetting { };
 template <class T> class Setting: public SettingType<T>
 {
 public:
-   Setting(T defval, char * name): m_default(defval), m_name(name) { }
-   Setting(const T* defval, char * name): m_default(*defval), m_name(name) { }
+   Setting(T defval, LPTSTR name): m_default(defval), m_name(name) { }
+   Setting(const T* defval, LPTSTR name): m_default(*defval), m_name(name) { }
    T m_default;
-   char * m_name;
+   LPTSTR m_name;
 };
 
 #define DECLARE_SETTING(name, type)                const Config::Setting<type> name
-#define DEFINE_SETTING(clas, name, type, defval)   const Config::Setting<type> clas::name(defval, #name)
+#define DEFINE_SETTING(clas, name, type, defval)   const Config::Setting<type> clas::name(defval, TEXT(#name))
 
 //Common settings types
 DECLARE_SETTINGTYPE(int, DWordSetting);
@@ -60,11 +60,11 @@ public:
    virtual ~Group()     { }
 
    // Group selection
-   virtual bool Open(const char * path, bool create=true) = 0;
+   virtual bool Open(LPCTSTR path, bool create=true) = 0;
    virtual void Close() = 0;
    bool IsOpened()      { return m_opened; }
 
-   virtual Group * GetSubGroup(const char * path) = 0;
+   virtual Group * GetSubGroup(LPCTSTR path) = 0;
 
    //TODO: Warning: Missing GetDefaultSetting() for binary and strings !
 
@@ -84,15 +84,15 @@ public:
    inline void SaveSetting(const Setting<LPTSTR> &setting, LPTSTR buffer)                                { SaveSetting(setting, buffer, setting); }
 
    // Load level accessors
-   virtual DWORD LoadDWord(const char * entry, DWORD defVal) = 0;
-   virtual void SaveDWord(const char * entry, DWORD value) = 0;
-   virtual bool LoadBinary(const char * entry, LPBYTE buffer, DWORD length, LPBYTE defval) = 0;
-   virtual void SaveBinary(const char * entry, LPBYTE buffer, DWORD length) = 0;
-   virtual unsigned int LoadString(const char * entry, LPTSTR buffer) = 0;
-   virtual void SaveString(const char * entry, LPTSTR buffer) = 0;
+   virtual DWORD LoadDWord(LPCTSTR entry, DWORD defVal) = 0;
+   virtual void SaveDWord(LPCTSTR entry, DWORD value) = 0;
+   virtual bool LoadBinary(LPCTSTR entry, LPBYTE buffer, DWORD length, LPBYTE defval) = 0;
+   virtual void SaveBinary(LPCTSTR entry, LPBYTE buffer, DWORD length) = 0;
+   virtual unsigned int LoadString(LPCTSTR entry, LPTSTR buffer) = 0;
+   virtual void SaveString(LPCTSTR entry, LPTSTR buffer) = 0;
 
-   virtual bool RemoveEntry(LPTSTR entry) = 0;
-   virtual bool RemoveGroup(LPTSTR group) = 0;
+   virtual bool RemoveEntry(LPCTSTR entry) = 0;
+   virtual bool RemoveGroup(LPCTSTR group) = 0;
 
    virtual BOOL EnumEntry(DWORD dwIndex, LPTSTR lpName, LPDWORD lpcName) = 0;
    virtual BOOL EnumGroup(DWORD dwIndex, LPTSTR lpName, DWORD cName) = 0;
@@ -151,31 +151,31 @@ class RegistryGroup: public Group
 {
 public:
    RegistryGroup()                                                                  { }
-   RegistryGroup(const char * path, bool create=true)                               { Open(HKEY_CURRENT_USER, path, create); }
-   RegistryGroup(RegistryGroup & parent, const char * relpath, bool create=true)    { Open(parent.m_regKey, relpath, create); }
+   RegistryGroup(LPCTSTR path, bool create=true)                               { Open(HKEY_CURRENT_USER, path, create); }
+   RegistryGroup(RegistryGroup & parent, LPCTSTR relpath, bool create=true)    { Open(parent.m_regKey, relpath, create); }
    virtual ~RegistryGroup()                                                         { Close(); }
 
    virtual void Close();
 
    //TODO: Open(path) should parse the string to find if it begins with HKEY_CURRENT_USER/..., and open the correct key accordingly
-   virtual bool Open(const char * path, bool create=true)                              { return Open(HKEY_CURRENT_USER, path, create); }
-   virtual bool Open(RegistryGroup & parent, const char * relpath, bool create=true)   { return Open(parent.m_regKey, relpath, create); }
-   bool Open(HKEY parent, const char * path, bool create=true);
+   virtual bool Open(LPCTSTR path, bool create=true)                              { return Open(HKEY_CURRENT_USER, path, create); }
+   virtual bool Open(RegistryGroup & parent, LPCTSTR relpath, bool create=true)   { return Open(parent.m_regKey, relpath, create); }
+   bool Open(HKEY parent, LPCTSTR path, bool create=true);
 
-   virtual Group * GetSubGroup(const char * path);
+   virtual Group * GetSubGroup(LPCTSTR path);
 
    operator HKEY()                                               { return m_regKey; }
 
    // Load level accessors
-   virtual DWORD LoadDWord(const char * entry, DWORD defVal);
-   virtual void SaveDWord(const char * entry, DWORD value);
-   virtual bool LoadBinary(const char * entry, LPBYTE buffer, DWORD length, LPBYTE defval);
-   virtual void SaveBinary(const char * entry, LPBYTE buffer, DWORD length);
-   virtual unsigned int LoadString(const char * entry, LPTSTR buffer);
-   virtual void SaveString(const char * entry, LPTSTR buffer);
+   virtual DWORD LoadDWord(LPCTSTR entry, DWORD defVal);
+   virtual void SaveDWord(LPCTSTR entry, DWORD value);
+   virtual bool LoadBinary(LPCTSTR entry, LPBYTE buffer, DWORD length, LPBYTE defval);
+   virtual void SaveBinary(LPCTSTR entry, LPBYTE buffer, DWORD length);
+   virtual unsigned int LoadString(LPCTSTR entry, LPTSTR buffer);
+   virtual void SaveString(LPCTSTR entry, LPTSTR buffer);
 
-   virtual bool RemoveEntry(LPTSTR entry);
-   virtual bool RemoveGroup(LPTSTR group);
+   virtual bool RemoveEntry(LPCTSTR entry);
+   virtual bool RemoveGroup(LPCTSTR group);
 
    virtual BOOL EnumEntry(DWORD dwIndex, LPTSTR lpName, LPDWORD lpcName);
    virtual BOOL EnumGroup(DWORD dwIndex, LPTSTR lpName, DWORD cName);

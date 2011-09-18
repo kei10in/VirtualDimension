@@ -19,13 +19,14 @@
  */
 
 #include "StdAfx.h"
+#include <vector>
 #include "settings.h"
 
-const char Settings::regKeyName[] = "Software\\Typz Software\\Virtual Dimension\\";
+LPCTSTR Settings::regKeyName = TEXT("Software\\Typz Software\\Virtual Dimension\\");
 
 static const RECT DefaultWindowPosition = {10, 10, 110, 110};
-static const LOGFONT DefaultPreviewWindowFont = {-12/*height*/,0,0,0,FW_BOLD/*weight*/,FALSE/*italic*/,0,0,0,0,0,0,0,"Arial"/*fontname*/};
-static const LOGFONT DefaultOSDFont = {-29/*height*/,0,0,0,FW_BOLD/*weight*/,TRUE/*italic*/,0,0,0,0,0,0,0,"Arial"/*fontname*/};
+static const LOGFONT DefaultPreviewWindowFont = {-12/*height*/,0,0,0,FW_BOLD/*weight*/,FALSE/*italic*/,0,0,0,0,0,0,0,TEXT("Arial")/*fontname*/};
+static const LOGFONT DefaultOSDFont = {-29/*height*/,0,0,0,FW_BOLD/*weight*/,TRUE/*italic*/,0,0,0,0,0,0,0,TEXT("Arial")/*fontname*/};
 static const POINT DefaultOSDPosition = {50,50};
 
 DEFINE_SETTING(Settings, WindowPosition, RECT, &DefaultWindowPosition);
@@ -62,7 +63,7 @@ DEFINE_SETTING(Settings, TransparencyHotkey, int, 0);
 DEFINE_SETTING(Settings, TogglePreviewWindowHotkey, int, 0);
 DEFINE_SETTING(Settings, DisplayMode, int, 0);
 DEFINE_SETTING(Settings, BackgroundColor, COLORREF, RGB(0xc0,0xc0,0xc0));
-DEFINE_SETTING(Settings, BackgroundPicture, LPTSTR, "");
+DEFINE_SETTING(Settings, BackgroundPicture, LPTSTR, TEXT(""));
 DEFINE_SETTING(Settings, DesktopNameOSD, bool, false);
 DEFINE_SETTING(Settings, PreviewWindowFont, LOGFONT, &DefaultPreviewWindowFont);
 DEFINE_SETTING(Settings, PreviewWindowFontColor, COLORREF, RGB(0,0,0));
@@ -87,7 +88,7 @@ Settings::Settings(void): RegistryGroup(regKeyName)
 {
 }
 
-DWORD Settings::LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD defVal)
+DWORD Settings::LoadDWord(HKEY regKey, bool keyOpened, LPCTSTR entry, DWORD defVal)
 {
    DWORD size;
    DWORD val;
@@ -104,13 +105,13 @@ DWORD Settings::LoadDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD
    return val;
 }
 
-void Settings::SaveDWord(HKEY regKey, bool keyOpened, const char * entry, DWORD value)
+void Settings::SaveDWord(HKEY regKey, bool keyOpened, LPCTSTR entry, DWORD value)
 {
    if (keyOpened)
       RegSetValueEx(regKey, entry, 0, REG_DWORD, (LPBYTE)&value, sizeof(value));
 }
 
-bool Settings::LoadBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length)
+bool Settings::LoadBinary(HKEY regKey, bool keyOpened, LPCTSTR entry, LPBYTE buffer, DWORD length)
 {
    DWORD size;
 
@@ -120,14 +121,14 @@ bool Settings::LoadBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYT
           (RegQueryValueEx(regKey, entry, NULL, NULL, buffer, &size) == ERROR_SUCCESS);
 }
 
-void Settings::SaveBinary(HKEY regKey, bool keyOpened, const char * entry, LPBYTE buffer, DWORD length)
+void Settings::SaveBinary(HKEY regKey, bool keyOpened, LPCTSTR entry, LPBYTE buffer, DWORD length)
 {
    if (keyOpened)
       RegSetValueEx(regKey, entry, 0, REG_BINARY, buffer, length);
 }
 
-const char Settings::regKeyWindowsStartup[] = "Software\\Microsoft\\Windows\\CurrentVersion\\Run\\";
-const char Settings::regValStartWithWindows[] = "Virtual Dimension";
+LPCTSTR Settings::regKeyWindowsStartup = TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Run\\");
+LPCTSTR Settings::regValStartWithWindows = TEXT("Virtual Dimension");
 
 bool Settings::LoadStartWithWindows()
 {
@@ -150,8 +151,8 @@ void Settings::SaveStartWithWindows(bool start)
       if (start)
       {
          TCHAR buffer[256];
-         GetModuleFileName(NULL, buffer, sizeof(buffer)/sizeof(TCHAR));
-         RegSetValueEx(regKey, regValStartWithWindows, 0, REG_SZ, (LPBYTE)buffer, sizeof(buffer)/sizeof(TCHAR));
+         GetModuleFileName(NULL, buffer, _countof(buffer));
+         RegSetValueEx(regKey, regValStartWithWindows, 0, REG_SZ, (LPBYTE)buffer, _countof(buffer));
       }
       else
          RegDeleteValue(regKey, regValStartWithWindows);
@@ -159,10 +160,10 @@ void Settings::SaveStartWithWindows(bool start)
    }
 }
 
-const char Settings::regSubKeyDisableShellIntegration[] = "DisableShellIntegration";
-const char Settings::regSubKeyHidingMethods[] = "HidingMethodsTweaks";
+LPCTSTR Settings::regSubKeyDisableShellIntegration = TEXT("DisableShellIntegration");
+LPCTSTR Settings::regSubKeyHidingMethods = TEXT("HidingMethodsTweaks");
 
-bool Settings::LoadDisableShellIntegration(const char * windowclass)
+bool Settings::LoadDisableShellIntegration(LPCTSTR windowclass)
 {
    HKEY regKey=NULL;
    bool res;
@@ -177,7 +178,7 @@ bool Settings::LoadDisableShellIntegration(const char * windowclass)
    return res;
 }
 
-void Settings::SaveDisableShellIntegration(const char * windowclass, bool enable)
+void Settings::SaveDisableShellIntegration(LPCTSTR windowclass, bool enable)
 {
    HKEY regKey=NULL;
 
@@ -195,7 +196,7 @@ void Settings::SaveDisableShellIntegration(const char * windowclass, bool enable
    }
 }
 
-int Settings::LoadHidingMethod(const char * windowclass)
+int Settings::LoadHidingMethod(LPCTSTR windowclass)
 {
    HKEY regKey=NULL;
    DWORD val;
@@ -212,7 +213,7 @@ int Settings::LoadHidingMethod(const char * windowclass)
    return res;
 }
 
-void Settings::SaveHidingMethod(const char * windowclass, int method)
+void Settings::SaveHidingMethod(LPCTSTR windowclass, int method)
 {
    HKEY regKey=NULL;
 
@@ -228,31 +229,31 @@ void Settings::SaveHidingMethod(const char * windowclass, int method)
    }
 }
 
-const char Settings::Desktop::regKeyDesktops[] = "Desktops";
+LPCTSTR Settings::Desktop::regKeyDesktops = TEXT("Desktops");
 
 DEFINE_SETTING(Settings::Desktop, DeskIndex, int, 0);
-DEFINE_SETTING(Settings::Desktop, DeskWallpaper, LPTSTR, "");
+DEFINE_SETTING(Settings::Desktop, DeskWallpaper, LPTSTR, TEXT(""));
 DEFINE_SETTING(Settings::Desktop, DeskHotkey, int, 0);
 DEFINE_SETTING(Settings::Desktop, BackgroundColor, COLORREF, GetSysColor(COLOR_DESKTOP));
 
-Settings::SubkeyList::SubkeyList(Settings * settings, const char regKey[]): m_group(*settings, regKey)
+Settings::SubkeyList::SubkeyList(Settings * settings, LPCTSTR regKey): m_group(*settings, regKey)
 {
    *m_name = 0;
 }
 
-Settings::SubkeyList::SubkeyList(Settings * settings, const char regKey[], int index): m_group(*settings, regKey)
+Settings::SubkeyList::SubkeyList(Settings * settings, LPCTSTR regKey, int index): m_group(*settings, regKey)
 {
    Open(index);
 }
 
-Settings::SubkeyList::SubkeyList(Settings * settings, const char regKey[], char * name, bool create): m_group(*settings, regKey)
+Settings::SubkeyList::SubkeyList(Settings * settings, LPCTSTR regKey, LPCTSTR name, bool create): m_group(*settings, regKey)
 {
    Open(name, create);
 }
 
-bool Settings::SubkeyList::Open(const char * name, bool create)
+bool Settings::SubkeyList::Open(LPCTSTR name, bool create)
 {
-	strcpy(m_name, name);
+	_tcscpy_s(m_name, _countof(m_name), name);
 	return Config::RegistryGroup::Open(m_group, name, create);
 }
 
@@ -264,7 +265,7 @@ bool Settings::SubkeyList::Open(int index)
    if (m_opened)
       Close();
 
-   length = sizeof(m_name);
+   length = _countof(m_name);
    m_opened =
       (m_group.IsOpened()) &&
       (((result = RegEnumKeyEx(m_group, index, m_name, &length, NULL, NULL, NULL, NULL)) == ERROR_SUCCESS) || (result == ERROR_MORE_DATA)) &&
@@ -289,23 +290,21 @@ void Settings::SubkeyList::Destroy()
       RegDeleteKey(m_group, m_name);
 }
 
-char * Settings::SubkeyList::GetName(char * buffer, unsigned int length)
+LPTSTR Settings::SubkeyList::GetName(LPTSTR buffer, unsigned int length)
 {
    if (m_opened && (buffer != NULL))
-      strncpy(buffer, m_name, length);
+      _tcscpy_s(buffer, length, m_name);
 
    return buffer;
 }
 
-bool Settings::SubkeyList::Rename(char * buffer)
+bool Settings::SubkeyList::Rename(LPTSTR buffer)
 {
    HKEY newKey;
    DWORD index, max_index;
-   LPSTR value;
-   LPBYTE data;
    DWORD value_len, type, data_len;
 
-   if (!m_opened || (strncmp(buffer, m_name, MAX_NAME_LENGTH) == 0))
+   if (!m_opened || (_tcsncmp(buffer, m_name, MAX_NAME_LENGTH) == 0))
       return m_opened;
 
    if ( (!m_group) ||
@@ -316,24 +315,24 @@ bool Settings::SubkeyList::Rename(char * buffer)
    RegQueryInfoKey(newKey, NULL, NULL, NULL, NULL, NULL, NULL,
       &max_index, &value_len, &data_len, NULL, NULL);
 
-   value = new TCHAR[value_len+1];  //Returned length does not include the trailing NULL character
-   data = new BYTE[data_len];
+   std::vector<TCHAR> value(value_len+1);  //Returned length does not include the trailing NULL character
+   std::vector<BYTE> data(data_len);
 
    for(index = 0; index < max_index; index ++)
    {
-      RegEnumValue(m_regKey, index, value, &value_len, 0, &type, data, &data_len);
-      RegSetValueEx(newKey, value, 0, type, data, data_len);
+      RegEnumValue(m_regKey, index, &(value[0]), &value_len, 0, &type, &(data[0]), &data_len);
+      RegSetValueEx(newKey, &(value[0]), 0, type, &(data[0]), data_len);
    }
 
    Destroy();
    m_regKey = newKey;
    m_opened = true;
-   strncpy(m_name, buffer, MAX_NAME_LENGTH);
+   _tcsncpy_s(m_name, _countof(m_name), buffer, MAX_NAME_LENGTH);
 
    return true;
 }
 
-const char Settings::Window::regKeyWindows[] = "Windows";
+LPCTSTR Settings::Window::regKeyWindows = TEXT("Windows");
 
 static const RECT DefaultWindowAutoPosition = { 0, 200, 0, 300 };
 

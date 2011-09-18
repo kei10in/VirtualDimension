@@ -58,16 +58,16 @@ void ExplorerWrapper::BindTaskbar()
 
 #else
 
-   m_ShellhookMsg = RegisterWindowMessage("SHELLHOOK");
+   m_ShellhookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
 
-   HWND hwndTray = FindWindowEx(NULL, NULL, "Shell_TrayWnd", NULL);
-   HWND hwndBar = FindWindowEx(hwndTray, NULL, "ReBarWindow32", NULL );
+   HWND hwndTray = FindWindowEx(NULL, NULL, TEXT("Shell_TrayWnd"), NULL);
+   HWND hwndBar = FindWindowEx(hwndTray, NULL, TEXT("ReBarWindow32"), NULL );
 
    // Maybe "RebarWindow32" is not a child to "Shell_TrayWnd", then try this
    if( hwndBar == NULL )
       hwndBar = hwndTray;
 
-   m_hWndTasklist = FindWindowEx(hwndBar, NULL, "MSTaskSwWClass", NULL);
+   m_hWndTasklist = FindWindowEx(hwndBar, NULL, TEXT("MSTaskSwWClass"), NULL);
 
 #endif
 }

@@ -29,8 +29,8 @@ public:
    OnScreenDisplayWnd();
    ~OnScreenDisplayWnd();
    void Create();
-   void Display(char * str, int timeout);
-   void Display(char * str)               { Display(str, m_timeout); }
+   void Display(LPCTSTR str, int timeout);
+   void Display(LPCTSTR str)               { Display(str, m_timeout); }
    
    int GetDefaultTimeout() const          { return m_timeout; }
    void SetDefaultTimeout(int timeout)    { m_timeout = timeout; }
@@ -51,7 +51,7 @@ public:
 protected:
    HWND m_hWnd;
 
-   char m_text[50];
+   TCHAR m_text[50];
    int m_timeout;
 
    int m_lastTimeout;

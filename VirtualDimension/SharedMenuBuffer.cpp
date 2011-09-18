@@ -77,7 +77,7 @@ bool SharedMenuBuffer::ReadMenu(HMENU hMenu, UINT (*filter)(UINT))
    return result;
 }
 
-bool SharedMenuBuffer::InsertMenu(UINT_PTR id, LPCSTR text, BOOL check)
+bool SharedMenuBuffer::InsertMenu(UINT_PTR id, LPCTSTR text, BOOL check)
 {
    //Create a view of the file if none yet
    if (m_hViewPtr == NULL)
@@ -94,7 +94,7 @@ bool SharedMenuBuffer::InsertMenu(UINT_PTR id, LPCSTR text, BOOL check)
    //Insert the data in the buffer
    ItemType(m_pBuffer) = (char)(check ? MENUITEM_CHECKED : MENUITEM_UNCHECKED);
    ItemId(m_pBuffer) = id;
-   strcpy(ItemName(m_pBuffer), text ? text : "");
+   _tcscpy(ItemName(m_pBuffer), text ? text : TEXT(""));
 
    //Move the insertion pointer
    m_pBuffer += ItemLength(m_pBuffer);

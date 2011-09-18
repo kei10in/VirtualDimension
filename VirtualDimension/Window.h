@@ -152,9 +152,9 @@ public:
    operator HWND()                            { return m_hWnd; }
 
    HICON GetIcon(void);
-   char * GetText()
+   LPCTSTR GetText()
    {
-      GetWindowText(m_hWnd, m_name, sizeof(m_name)/sizeof(char));
+      GetWindowText(m_hWnd, m_name, _countof(m_name));
       return m_name;
    }
    void GetRect(LPRECT /*rect*/)  { return; }
@@ -221,7 +221,7 @@ protected:
    Desktop * m_desk;
    bool m_MinToTray;
    bool m_iconic;
-   char m_name[255];
+   TCHAR m_name[255];
    LONG_PTR m_style;
    bool m_setStyle;
 

@@ -54,7 +54,7 @@ void Desktop::DesktopProperties::InitDialog(HWND hDlg)
 
    //Setup the desktop's name
    hWnd = GetDlgItem(hDlg, IDC_NAME);
-   SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)sizeof(m_desk->m_name), (LPARAM)0);
+   SendMessage(hWnd, EM_LIMITTEXT, (WPARAM)_countof(m_desk->m_name), (LPARAM)0);
    SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)m_desk->GetText());
 
    SendDlgItemMessage(hDlg, IDC_HOTKEY, HKM_SETHOTKEY, (WPARAM)m_desk->GetHotkey(), 0);
@@ -67,7 +67,7 @@ bool Desktop::DesktopProperties::Apply(HWND hDlg)
 {
    //Change desktop name
    TCHAR name[80];   
-   GetDlgItemText(hDlg, IDC_NAME, name, sizeof(name));
+   GetDlgItemText(hDlg, IDC_NAME, name, _countof(name));
    m_desk->Rename(name);
 
    //Change wallpaper
@@ -90,7 +90,7 @@ void Desktop::DesktopProperties::OnWallpaperChanged(HWND hDlg, HWND ctrl)
    SendMessage(ctrl, WM_GETTEXT, MAX_PATH, (LPARAM)m_wallpaper);
    if (m_picture)
       m_picture->Release();
-   if (stricmp(m_wallpaper, DESKTOP_WALLPAPER_DEFAULT) == 0)
+   if (_tcsicmp(m_wallpaper, DESKTOP_WALLPAPER_DEFAULT) == 0)
       m_picture = PlatformHelper::OpenImage(WallPaper::GetDefaultWallpaper());
    else
       m_picture = PlatformHelper::OpenImage(m_wallpaper);
@@ -138,9 +138,9 @@ void Desktop::DesktopProperties::OnChooseWallpaper(HWND hDlg)
    HMENU hPopupMenu = GetSubMenu(hMenu, 0);
 
    //Prepare the menu
-   if (stricmp(m_wallpaper, DESKTOP_WALLPAPER_DEFAULT)==0)
+   if (_tcsicmp(m_wallpaper, DESKTOP_WALLPAPER_DEFAULT)==0)
       CheckMenuItem(hPopupMenu, IDC_DEFAULT_WALLPAPER, MF_CHECKED|MF_BYCOMMAND);
-   else if (stricmp(m_wallpaper, DESKTOP_WALLPAPER_NONE)==0)
+   else if (_tcsicmp(m_wallpaper, DESKTOP_WALLPAPER_NONE)==0)
       CheckMenuItem(hPopupMenu, IDC_NO_WALLPAPER, MF_CHECKED|MF_BYCOMMAND);
    else
       CheckMenuItem(hPopupMenu, IDC_BROWSE_WALLPAPER, MF_CHECKED|MF_BYCOMMAND);

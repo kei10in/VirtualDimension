@@ -63,17 +63,17 @@ public:
    /** Register an option.
     * This setp is needed for the option to be recognized.
     */
-   static void RegisterOption(char opcode, CommandLineOption* option);
+   static void RegisterOption(TCHAR opcode, CommandLineOption* option);
 
    /** Get an option.
 	*/
-   static CommandLineOption * GetOption(char opcode);
+   static CommandLineOption * GetOption(TCHAR opcode);
 
 protected:
    UINT m_resid;
    ArgType m_argType;
 
-   static std::map<char, CommandLineOption*> s_argsmap;	/// List of all options
+   static std::map<TCHAR, CommandLineOption*> s_argsmap;	/// List of all options
 };
 
 /** Simple option class to parse a flag.
@@ -105,8 +105,8 @@ public:
    {
 		if (arg)
 		{
-			char * ptr;
-			int val = strtol(arg, &ptr, 0);
+			TCHAR* ptr;
+			int val = _tcstol(arg, &ptr, 0);
 			if (ptr != arg)
 				m_flag = val;
 		}
@@ -126,7 +126,7 @@ protected:
  */
 class CommandLineStr : public CommandLineOption {
 public:
-   CommandLineStr(char opcode, UINT resid, LPCTSTR defval="", LPCTSTR optval="", ArgType type=required_argument):
+   CommandLineStr(char opcode, UINT resid, LPCTSTR defval=TEXT(""), LPCTSTR optval=TEXT(""), ArgType type=required_argument):
       CommandLineOption(opcode, resid, type), m_str(defval), m_optval(optval)
    {}
 

@@ -38,7 +38,7 @@ ShellHook::ShellHook(HWND hWnd): m_hWnd(hWnd)
 {
    if (nbInstance == 0)
    {
-      hinstDLL = LoadLibrary((LPCTSTR) "shell32.dll");
+      hinstDLL = LoadLibrary(TEXT("shell32.dll"));
 
       RegisterShellHook = (RegisterShellHookProc*)GetProcAddress(hinstDLL, (LPCSTR)181);
       if (RegisterShellHook == NULL)

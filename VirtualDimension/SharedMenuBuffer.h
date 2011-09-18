@@ -41,7 +41,7 @@ public:
 
    /** Insert a menu item description in the buffer.
     */
-   bool InsertMenu(UINT_PTR id, LPCSTR text, BOOL check);
+   bool InsertMenu(UINT_PTR id, LPCTSTR text, BOOL check);
 
    bool InsertSeparator()              { return InsertMenu(0, NULL, FALSE);  }
 
@@ -52,8 +52,8 @@ protected:
 
    char& ItemType(char * buffer)       { return *buffer; }
    UINT_PTR& ItemId(char * buffer)     { return *(UINT_PTR*)(buffer+ITEMTYPE_LEN); }
-   char* ItemName(char * buffer)       { return buffer+ITEMTYPE_LEN+ITEMID_LEN; }
-   int ItemLength(char * buffer)       { return strlen(ItemName(buffer))+1+ITEMTYPE_LEN+ITEMID_LEN; }
+   TCHAR* ItemName(char * buffer)      { return (TCHAR*)(buffer+ITEMTYPE_LEN+ITEMID_LEN); }
+   int ItemLength(char * buffer)       { return _tcslen(ItemName(buffer))+1+ITEMTYPE_LEN+ITEMID_LEN; }
 
    enum {
       MENUITEM_NONE,

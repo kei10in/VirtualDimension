@@ -1041,8 +1041,8 @@ void VirtualDimension::UnShrink(void)
 
 	if (!m_lockPreviewWindow)
 	{
-		InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_SIZE, "&Size");
-		InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_MOVE, "&Move");
+		InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_SIZE, TEXT("&Size"));
+		InsertMenu(m_pSysMenu, 0, MF_BYPOSITION, SC_MOVE, TEXT("&Move"));
 	}
 
 	//Restore the windows position
@@ -1096,7 +1096,9 @@ bool VirtualDimension::CreateLangMenu()
 
 			iteminfo.cbSize = sizeof(MENUITEMINFO);
 			iteminfo.fMask = MIIM_DATA|MIIM_STRING|MIIM_FTYPE|MIIM_BITMAP|MIIM_ID;
-			iteminfo.dwTypeData = (LPSTR)name.c_str();
+			std::vector<TCHAR> svec(name.begin(), name.end());
+			svec.push_back(TEXT('\0'));
+			iteminfo.dwTypeData = &(svec[0]);
 			iteminfo.fType = MFT_STRING;
 			iteminfo.dwItemData = (ULONG_PTR)hicon;
 			iteminfo.hbmpItem = HBMMENU_CALLBACK;
@@ -1159,25 +1161,25 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
       lpVersionInfo = malloc(vinfSize);
       GetFileVersionInfo(text, dwHandle, vinfSize, lpVersionInfo);
 
-      VerQueryValue(lpVersionInfo, "\\StringFileInfo\\040904b0\\ProductName", (LPVOID*)&lpVal, &dwValSize);
-      strncpy(text, lpVal, dwValSize);
-      strcat(text, " v");
-      VerQueryValue(lpVersionInfo, "\\StringFileInfo\\040904b0\\ProductVersion", (LPVOID*)&lpVal, &dwValSize);
-      lpVal = strtok(lpVal, ", \t");
-      strcat(text, lpVal);
-      strcat(text, ".");
-      lpVal = strtok(NULL, ", \t");
-      strcat(text, lpVal);
-		lpVal = strtok(NULL, ", \t");
-		if (*lpVal != '0')
+      VerQueryValue(lpVersionInfo, TEXT("\\StringFileInfo\\040904b0\\ProductName"), (LPVOID*)&lpVal, &dwValSize);
+      _tcsncpy_s(text, _countof(text), lpVal, dwValSize);
+      _tcscat_s(text, _countof(text), TEXT(" v"));
+      VerQueryValue(lpVersionInfo, TEXT("\\StringFileInfo\\040904b0\\ProductVersion"), (LPVOID*)&lpVal, &dwValSize);
+      lpVal = _tcstok(lpVal, TEXT(", \t"));
+      _tcscat(text, lpVal);
+      _tcscat(text, TEXT("."));
+      lpVal = _tcstok(NULL, TEXT(", \t"));
+      _tcscat(text, lpVal);
+		lpVal = _tcstok(NULL, TEXT(", \t"));
+		if (*lpVal != TEXT('0'))
 		{
-			*lpVal += 'a' - '0';
-			strcat(text, lpVal);
+			*lpVal += TEXT('a') - TEXT('0');
+			_tcscat(text, lpVal);
 		}
       SetDlgItemText(hDlg, IDC_PRODUCT, text);
 
-      VerQueryValue(lpVersionInfo, "\\StringFileInfo\\040904b0\\LegalCopyright", (LPVOID*)&lpVal, &dwValSize);
-      strncpy(text, lpVal, dwValSize);
+      VerQueryValue(lpVersionInfo, TEXT("\\StringFileInfo\\040904b0\\LegalCopyright"), (LPVOID*)&lpVal, &dwValSize);
+      _tcsncpy_s(text, _countof(text), lpVal, dwValSize);
       SetDlgItemText(hDlg, IDC_COPYRIGHT, text);
 
       free(lpVersionInfo);
@@ -1199,7 +1201,7 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
       case IDC_HOMEPAGE_LINK:
          if (HIWORD(wParam) == STN_CLICKED)
          {
-            ShellExecute(hDlg, "open", "http://virt-dimension.sourceforge.net",
+            ShellExecute(hDlg, TEXT("open"), TEXT("http://virt-dimension.sourceforge.net"),
                          NULL, NULL, SW_SHOWNORMAL);
          }
          break;
@@ -1207,7 +1209,7 @@ LRESULT CALLBACK VirtualDimension::About(HWND hDlg, UINT message, WPARAM wParam,
       case IDC_GPL_LINK:
          if (HIWORD(wParam) == STN_CLICKED)
          {
-            ShellExecute(hDlg, "open", "LICENSE.html",
+            ShellExecute(hDlg, TEXT("open"), TEXT("LICENSE.html"),
                          NULL, NULL, SW_SHOWNORMAL);
          }
          break;

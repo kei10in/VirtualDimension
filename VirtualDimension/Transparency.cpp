@@ -150,7 +150,7 @@ bool Transparency::IsTransparencySupported()
 {
    if (!transparency_supported_valid)
    {
-      hinstDLL = LoadLibrary((LPCSTR)"user32.dll");
+      hinstDLL = LoadLibrary(TEXT("user32.dll"));
       if (hinstDLL != NULL)
          SetLayeredWindowAttributes = (SetLayeredWindowAttributes_t*)GetProcAddress(hinstDLL, "SetLayeredWindowAttributes");
 

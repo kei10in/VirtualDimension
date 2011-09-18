@@ -39,16 +39,16 @@ LRESULT CALLBACK DeskProperties(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 
 void FormatTransparencyLevel(HWND hWnd, int level)
 {
-   char buffer[15];
+   TCHAR buffer[15];
 
    if (level == TRANSPARENCY_DISABLED)
 	{
-		char * disabled;
+		LPTSTR disabled;
 		locGetString(disabled, IDS_DISABLED);
-		sprintf(buffer, "%3i (%s)", level, disabled);
+		_stprintf_s(buffer, _countof(buffer), TEXT("%3i (%s)"), level, disabled);
 	}
    else
-      sprintf(buffer, "%3i", level);
+      _stprintf_s(buffer, _countof(buffer), TEXT("%3i"), level);
 
    SendMessage(hWnd, WM_SETTEXT, 0, (LPARAM)buffer);
 }
@@ -193,7 +193,7 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
 // Message handler for the display settings page.
 LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	char * text;
+	LPTSTR text;
 
 	switch (message)
 	{
@@ -726,7 +726,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       case IDC_HIDINGMETHODEXCEPTIONS_BTN:
          {
 				LPCTSTR values[4];
-				char * coltext;
+				LPTSTR coltext;
             Settings settings;
 				locGetString(values[0], IDS_METHOD_HIDE);
 				locGetString(values[1], IDS_METHOD_MINIMIZE);
@@ -835,7 +835,7 @@ HWND CreateConfigBox()
    propsheet.hwndParent = vdWindow;
    propsheet.hInstance = hresinst;
    propsheet.pszCaption = MAKEINTRESOURCE(IDS_DLGNAME_SETTINGS);
-   propsheet.nPages = sizeof(pages)/sizeof(PROPSHEETPAGE);
+   propsheet.nPages = _countof(pages);
    propsheet.ppsp = pages;
 
    return (HWND)PropertySheet(&propsheet);

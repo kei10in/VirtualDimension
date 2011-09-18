@@ -42,7 +42,7 @@ PlatformHelper::SetMenuInfo_t * PlatformHelper::SetMenuInfo = NULL;
 
 PlatformHelper::PlatformHelper(void)
 {
-   hPSAPILib = LoadLibrary("psapi.dll");
+   hPSAPILib = LoadLibrary(TEXT("psapi.dll"));
    pGetModuleFileNameEx = (GetModuleFileNameEx_t *)GetProcAddress(hPSAPILib, "GetModuleFileNameExA");
 
    if (pGetModuleFileNameEx)
@@ -50,7 +50,7 @@ PlatformHelper::PlatformHelper(void)
    else
       GetWindowFileName = GetWindowFileName9x;
 
-   hMSImg32Lib = LoadLibrary("msimg32.dll");
+   hMSImg32Lib = LoadLibrary(TEXT("msimg32.dll"));
    pAlphaBlend = (AlphaBlend_t *)GetProcAddress(hMSImg32Lib, "AlphaBlend");
 
    if (pAlphaBlend)
@@ -58,7 +58,7 @@ PlatformHelper::PlatformHelper(void)
    else
       AlphaBlend = AlphaBlendEmul;
 
-   SetMenuInfo = (SetMenuInfo_t*)GetProcAddress(GetModuleHandle("User32.dll"), "SetMenuInfo");
+   SetMenuInfo = (SetMenuInfo_t*)GetProcAddress(GetModuleHandle(TEXT("User32.dll")), "SetMenuInfo");
    if (SetMenuInfo == NULL)
       SetMenuInfo = (SetMenuInfo_t*)SetMenuInfoDummy;
 }
@@ -88,7 +88,7 @@ DWORD PlatformHelper::GetWindowFileNameNT(HWND hWnd, LPTSTR lpFileName, int nBuf
 DWORD PlatformHelper::GetWindowFileName9x(HWND, LPTSTR lpFileName, int nBufLen)
 {
    if (nBufLen > 0)
-      *lpFileName = '\000';
+     *lpFileName = TEXT('\000');
    return 0;
 }
 

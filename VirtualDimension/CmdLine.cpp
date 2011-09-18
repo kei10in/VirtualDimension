@@ -24,7 +24,7 @@
 
 using namespace std;
 
-map<char, CommandLineOption*> CommandLineOption::s_argsmap;
+map<TCHAR, CommandLineOption*> CommandLineOption::s_argsmap;
 
 CommandLineOption::CommandLineOption(char opcode, UINT resid, ArgType arg): m_resid(resid), m_argType(arg)
 {
@@ -47,10 +47,10 @@ bool CommandLineParser::ProcessArg(LPCTSTR arg)
    switch(m_argState)
    {
    case NONE:
-      if (arg[0] != '-')
-         res = (MessageBox(NULL, arg, "No an option", MB_ICONERROR), false); //no an option
+      if (arg[0] != TEXT('-'))
+         res = (MessageBox(NULL, arg, TEXT("No an option"), MB_ICONERROR), false); //no an option
       else if ((m_curOption = CommandLineOption::GetOption(arg[1])) == NULL)
-         res = (MessageBox(NULL, arg, "Invalid option", MB_ICONERROR), false); //invalid option
+         res = (MessageBox(NULL, arg, TEXT("Invalid option"), MB_ICONERROR), false); //invalid option
       else if (m_curOption->GetArgType() == CommandLineOption::required_argument)
          m_argState = REQARG;
       else if (m_curOption->GetArgType() == CommandLineOption::optional_argument)
@@ -102,7 +102,7 @@ bool CommandLineParser::EndParsing()
       break;
 
    case REQARG:
-      MessageBox(NULL, "The last argument needs an argument, which is not provided", "Invalid command line", MB_ICONERROR);
+      MessageBox(NULL, TEXT("The last argument needs an argument, which is not provided"), TEXT("Invalid command line"), MB_ICONERROR);
       res = false;
       break;
 
@@ -153,7 +153,7 @@ bool CommandLineParser::ParseCommandLine(LPTSTR cmdline)
       case IDLE:
          if (token == QUOTE)
          {
-            arg = "";
+            arg = TEXT("");
             state = STRARG;
          }
          else if (token != SPACE)
@@ -167,7 +167,7 @@ bool CommandLineParser::ParseCommandLine(LPTSTR cmdline)
          if (token == SPACE)
          {
             res = ProcessArg(arg);
-            arg = "";
+            arg = TEXT("");
          }
          else if (token == QUOTE)
             state = STRARG;
@@ -186,7 +186,7 @@ bool CommandLineParser::ParseCommandLine(LPTSTR cmdline)
 
    //Process the last argument, which may not have been processed yet
    //(e.g. if it was not followed by spaces)
-   if (res && arg != "")
+   if (res && arg != TEXT(""))
       res = ProcessArg(arg);
 
    if (res)
@@ -198,13 +198,13 @@ bool CommandLineParser::ParseCommandLine(LPTSTR cmdline)
 	return res;
 }
 
-CommandLineOption * CommandLineOption::GetOption(char opcode)
+CommandLineOption * CommandLineOption::GetOption(TCHAR opcode)
 {
-   map<char, CommandLineOption*>::iterator it = s_argsmap.find(opcode);
+   map<TCHAR, CommandLineOption*>::iterator it = s_argsmap.find(opcode);
    return it == s_argsmap.end() ? NULL : (*it).second;
 }
 
-void CommandLineOption::RegisterOption(char opcode, CommandLineOption* option)
+void CommandLineOption::RegisterOption(TCHAR opcode, CommandLineOption* option)
 {
    s_argsmap[opcode] = option;
 }

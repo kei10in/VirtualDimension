@@ -51,7 +51,7 @@ public:
 
 	int MessageBox(HWND hWnd, UINT uIdText, UINT uIdCaption, UINT uType);
 
-   static int GetLanguageCode(LPTSTR str);
+   static int GetLanguageCode(LPCTSTR str);
 
 protected:
 	static Locale m_instance;

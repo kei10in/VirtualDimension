@@ -25,7 +25,7 @@ typedef struct RemoteStartupArgs {
 	HINSTANCE (WINAPI *fnLoadLibrary)(LPCTSTR);
    BOOL (WINAPI *fnFreeLibrary)(HINSTANCE);
    FARPROC (WINAPI *fnGetProcAddress)(HINSTANCE,LPCSTR);
-	CHAR pbLibFile[MAX_PATH * sizeof(CHAR)];
+	TCHAR pbLibFile[MAX_PATH];
    int fnIndex;
    HWND hWnd;
    int data;
@@ -104,7 +104,7 @@ static PVOID AllocProcessMemory (HANDLE hProcess, DWORD dwNumBytes) {
 	CONTEXT Context;
 	DWORD dwThreadId, dwNumBytesXferred;
 	HANDLE hThread;
-	HINSTANCE hinstKrnl = GetModuleHandle(__TEXT("Kernel32"));
+	HINSTANCE hinstKrnl = GetModuleHandle(TEXT("Kernel32"));
 	PVOID pvMem;
 	MEMORY_BASIC_INFORMATION mbi;
 
@@ -164,7 +164,7 @@ HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data)
    const int cbCodeSize = ((LPBYTE)AfterRemoteStartup - (LPBYTE)RemoteStartup);
 	const DWORD cbMemSize = cbCodeSize + sizeof(RemoteStartupArgs) + 3;
    HANDLE hProcess;
-	HINSTANCE hinstKrnl = GetModuleHandle("Kernel32");
+	HINSTANCE hinstKrnl = GetModuleHandle(TEXT("Kernel32"));
 	PDWORD pdwCodeRemote = NULL;
    RemoteStartupArgs args;
    RemoteStartupArgs * pArgsRemote;
@@ -210,7 +210,7 @@ HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data)
    args.hWnd = hWnd;
    args.data = data;
    args.fnIndex = 0x1;
-   DWORD result = SearchPathA(NULL, "HookDLL.dll", NULL, MAX_PATH, args.pbLibFile, NULL);
+   DWORD result = SearchPath(NULL, TEXT("HookDLL.dll"), NULL, MAX_PATH, args.pbLibFile, NULL);
    if ((result < 0) || (result > MAX_PATH))
    {
       FreeProcessMemory(hProcess, pdwCodeRemote);
@@ -253,7 +253,7 @@ bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd)
    const int cbCodeSize = ((LPBYTE)AfterRemoteCleanup - (LPBYTE)RemoteCleanup);
 	const DWORD cbMemSize = cbCodeSize + sizeof(RemoteCleanupArgs) + 3;
    HANDLE hProcess;
-	HINSTANCE hinstKrnl = GetModuleHandle("Kernel32");
+	HINSTANCE hinstKrnl = GetModuleHandle(TEXT("Kernel32"));
 	PDWORD pdwCodeRemote = NULL;
    RemoteCleanupArgs args;
    RemoteCleanupArgs * pArgsRemote;

@@ -291,7 +291,7 @@ HOOKDLL_API DWORD WINAPI doHookWindow(HWND hWnd, int data)
       ReleaseMutex(pHookData->m_hMutex);
 
       // Also, get the VD window again, just to be sure...
-      hVDWnd = FindWindow("VIRTUALDIMENSION", NULL);
+      hVDWnd = FindWindow(TEXT("VIRTUALDIMENSION"), NULL);
 
       // Special return value to tell that things went OK but we were already hooked
       return HOOK_OK_REHOOK;
@@ -405,7 +405,7 @@ HMENU SetupMenu(HWND hWnd)
 	if (hMenu)
 	{
 		hSubMenu = CreatePopupMenu();
-		InsertMenu(hMenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING, (unsigned int)hSubMenu, "Virtual Dimension");
+		InsertMenu(hMenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING, (unsigned int)hSubMenu, TEXT("Virtual Dimension"));
 		InsertMenu(hMenu, 1, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
 	}
 
@@ -480,12 +480,12 @@ BOOL APIENTRY DllMain( HANDLE /*hModule*/,
 	case DLL_PROCESS_ATTACH:
       if (g_iProcessCount == 0)
 		{
-         g_aPropName = GlobalAddAtom("Virtual Dimension hook data property");
-			g_uiHookMessageId = RegisterWindowMessage("Virtual Dimension Message");
+            g_aPropName = GlobalAddAtom(TEXT("Virtual Dimension hook data property"));
+			g_uiHookMessageId = RegisterWindowMessage(TEXT("Virtual Dimension Message"));
 			g_uiShellHookMsg = RegisterWindowMessage(TEXT("SHELLHOOK"));
 		}
       //update hVDWnd each time, so that it may work again after a VD crash
-		hVDWnd = FindWindow("VIRTUALDIMENSION", NULL);
+      hVDWnd = FindWindow(TEXT("VIRTUALDIMENSION"), NULL);
       g_iProcessCount++;
       break;
 

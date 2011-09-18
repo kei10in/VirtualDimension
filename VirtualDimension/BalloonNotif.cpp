@@ -19,6 +19,7 @@
  */
  
 #include "stdafx.h"
+#include <vector>
 #include "BalloonNotif.h"
 #include "VirtualDimension.h"
 #include "PlatformHelper.h"
@@ -52,7 +53,7 @@ BalloonNotification::BalloonNotification(void): m_tooltipWndProc(NULL), m_toolti
 
 		// Register the new class
 		cls.hInstance = (HINSTANCE)GetModuleHandle(NULL);
-		cls.lpszClassName = "Balloon Notification Tooltips";
+		cls.lpszClassName = TEXT("Balloon Notification Tooltips");
 		//cls.style |= CS_GLOBALCLASS;
 		m_tooltipClass = MAKEINTATOM(RegisterClassEx(&cls));
 	}
@@ -93,7 +94,8 @@ BalloonNotification::Message BalloonNotification::Add(LPCTSTR text, LPCTSTR titl
       ti.hwnd = vdWindow;
       ti.uId = 0;
       ti.hinst = NULL;
-      ti.lpszText = (LPSTR)text;
+	  std::vector<TCHAR> svec(text, text + _tcslen(text) + 1);
+      ti.lpszText = &(svec[0]);
       
       memset(&ti.rect, 0, sizeof(ti.rect));
       SendMessage(hwndToolTips, TTM_ADDTOOL, 0, (LPARAM) &ti);

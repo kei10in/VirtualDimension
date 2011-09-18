@@ -33,7 +33,7 @@ WallPaper::WallPaper()
    LoadDefaultWallpaper();
 
    m_fileName = m_bmpFileName = NULL;
-   SetImage("");
+   SetImage(TEXT(""));
 }
 
 WallPaper::WallPaper(LPTSTR fileName)
@@ -68,15 +68,32 @@ void WallPaper::LoadDefaultWallpaper()
 {
    if (!m_defaultWallpaperInit)
    {
-      WCHAR buffer[MAX_PATH];
+      bool loaded(false);
 
       //Try to get default wallpaper using active desktop
-      if (!explorerWrapper->BindActiveDesktop() ||
-          explorerWrapper->GetActiveDesktop()->GetWallpaper(buffer, sizeof(buffer)/sizeof(WCHAR), 0) != S_OK ||
-          WideCharToMultiByte(CP_OEMCP, 0, buffer, -1, m_defaultWallpaper, sizeof(m_defaultWallpaper), NULL, NULL) == 0)
-      {
+      bool successToBind = explorerWrapper->BindActiveDesktop();
+      if (successToBind) {
+          WCHAR buffer[MAX_PATH];
+          HRESULT result = explorerWrapper
+                           ->GetActiveDesktop()
+                           ->GetWallpaper(
+                               buffer, _countof(buffer), 0);
+          if (result == S_OK) {
+#ifdef UNICODE
+              wcscpy_s(m_defaultWallpaper, _countof(m_defaultWallpaper),
+                       buffer);
+              loaded = true;
+#else // UNICODE
+              int n = WideCharToMultiByte(
+                  CP_ACP, 0, buffer, -1,
+                  m_defaultWallpaper, sizeof(m_defaultWallpaper), NULL, NULL);
+              loaded = (n == 0 ? false : true);
+#endif // UNICODE
+          }
+      }
+      if (!loaded) {
          //If we could not get the default wallpaper properly from active desktop, try to get it from system parameters...
-         SystemParametersInfo(SPI_GETDESKWALLPAPER, sizeof(m_defaultWallpaper)/sizeof(TCHAR), m_defaultWallpaper, 0);
+         SystemParametersInfo(SPI_GETDESKWALLPAPER, _countof(m_defaultWallpaper), m_defaultWallpaper, 0);
       }
 
       m_defaultWallpaperInit = true;
@@ -179,7 +196,7 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
 			}
 			else if (wallpaper->m_fileName)
 			{
-				if (strnicmp(wallpaper->m_fileName + strlen(wallpaper->m_fileName)-4, ".bmp", 4) == 0)
+				if (_tcsnicmp(wallpaper->m_fileName + _tcslen(wallpaper->m_fileName)-4, TEXT(".bmp"), 4) == 0)
 				{
 					wallpaper->m_bmpFileName = wallpaper->m_fileName;
 
@@ -196,7 +213,7 @@ DWORD WINAPI WallPaper::WallPaperLoader::ThreadProc(LPVOID lpParameter)
 					}
 
 					wallpaper->m_bmpFileName = new TCHAR[MAX_PATH];
-					if ( (GetTempFileName(tempPath, "VDIMG", 0, wallpaper->m_bmpFileName) == 0) ||
+					if ( (GetTempFileName(tempPath, TEXT("VDIMG"), 0, wallpaper->m_bmpFileName) == 0) ||
 						  (!PlatformHelper::SaveAsBitmap(picture, wallpaper->m_bmpFileName)) )
 					{
 						delete wallpaper->m_bmpFileName;

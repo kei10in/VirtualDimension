@@ -41,7 +41,7 @@ public:
    bool SetHotkey(int hotkey);
 	virtual void SaveHotkey()	{}
 
-   virtual LPCSTR GetName() const = 0;
+   virtual LPCTSTR GetName() const = 0;
    
 protected:
    int m_hotkey;

@@ -68,7 +68,7 @@ void CommandLineStartApp::ParseOption(LPCTSTR arg)
 void CommandLineSwitchDesktop::ParseOption(LPCTSTR arg)
 {
 	//switch to the specified desktop
-	int desk = strtol(arg, NULL, 0);
+	int desk = _tcstol(arg, NULL, 0);
 	HWND hWnd = vdWindow.FindWindow();
 	if (hWnd)
 	PostMessage(hWnd, WM_VD_SWITCHDESKTOP, 0, desk);

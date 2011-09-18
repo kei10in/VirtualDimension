@@ -68,7 +68,7 @@ void OnScreenDisplayWnd::Create()
    RegisterClass();
 
    m_hWnd = CreateWindowEx( WS_EX_TOPMOST | (m_isTransparent ? WS_EX_TRANSPARENT : 0) | WS_EX_TOOLWINDOW, 
-                            (LPTSTR)MAKEINTRESOURCE(s_classAtom), "OSD", WS_POPUP, 
+                            MAKEINTRESOURCE(s_classAtom), TEXT("OSD"), WS_POPUP, 
                             m_position.x, m_position.y, 0, 0, 
                             NULL, NULL, vdWindow, this);
    ShowWindowAsync(m_hWnd, SW_HIDE);
@@ -77,19 +77,19 @@ void OnScreenDisplayWnd::Create()
    m_transp->SetTransparencyLevel(m_hasBackground ? m_transpLevel : (unsigned char)255 );
 }
 
-void OnScreenDisplayWnd::Display(char * str, int timeout)
+void OnScreenDisplayWnd::Display(LPCTSTR str, int timeout)
 {
    SIZE size;
    HFONT defFont;
    HDC hdc;
 
    if (str != m_text)
-      strncpy(m_text, str, sizeof(m_text));
+      _tcscpy_s(m_text, _countof(m_text), str);
 
    hdc = GetWindowDC(m_hWnd);
    defFont = (HFONT)SelectObject(hdc, m_font);
    SetTextColor(hdc, m_fgColor);
-   GetTextExtentPoint32(hdc, m_text, strlen(m_text), &size);
+   GetTextExtentPoint32(hdc, m_text, _tcslen(m_text), &size);
    SelectObject(hdc, defFont);
    ReleaseDC(m_hWnd, hdc);
 
@@ -120,9 +120,9 @@ void OnScreenDisplayWnd::SelectFont()
    cf.rgbColors = m_fgColor; 
    cf.lCustData = 0; 
    cf.lpfnHook = (LPCFHOOKPROC)NULL; 
-   cf.lpTemplateName = (LPSTR)NULL; 
+   cf.lpTemplateName = NULL; 
    cf.hInstance = (HINSTANCE)vdWindow; 
-   cf.lpszStyle = (LPSTR)NULL; 
+   cf.lpszStyle = NULL; 
    cf.nFontType = SCREEN_FONTTYPE; 
    cf.nSizeMin = 0; 
    cf.nSizeMax = 0; 
@@ -272,7 +272,7 @@ void OnScreenDisplayWnd::RegisterClass()
 	wcex.hCursor		  = LoadCursor(NULL, IDC_ARROW);
    wcex.hbrBackground  = NULL;
 	wcex.lpszMenuName	  = NULL;
-	wcex.lpszClassName  = "OSDWindow";
+	wcex.lpszClassName  = TEXT("OSDWindow");
 	wcex.hIconSm		  = NULL;
 
 	s_classAtom = RegisterClassEx(&wcex);

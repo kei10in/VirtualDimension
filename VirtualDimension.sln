@@ -2,9 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VirtualDimension", "VirtualDimension\VirtualDimension.vcxproj", "{072C4555-C783-4A08-820D-85B18037A642}"
-	ProjectSection(ProjectDependencies) = postProject
-		{265B9C52-B588-4462-B3CF-4CF4650C5834} = {265B9C52-B588-4462-B3CF-4CF4650C5834}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HookDLL", "VirtualDimension\HookDLL.vcxproj", "{265B9C52-B588-4462-B3CF-4CF4650C5834}"
 EndProject

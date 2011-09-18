@@ -122,8 +122,11 @@ void TrayIcon::OnContextMenu()
       else
          mii.fState = MFS_UNCHECKED;
       mii.dwItemData = (DWORD)desk;
-      mii.dwTypeData = desk->GetText();
-      mii.cch = strlen(mii.dwTypeData);
+	  std::vector<TCHAR> svec(
+		  desk->GetText(),
+		  desk->GetText() + _tcslen(desk->GetText()) + 1);
+      mii.dwTypeData = &(svec[0]);
+      mii.cch = _tcslen(mii.dwTypeData);
       mii.wID = WM_USER + i++;
       InsertMenuItem(hmenuTrackPopup, 0, TRUE, &mii);
    }
@@ -177,15 +180,15 @@ LRESULT TrayIcon::OnCmdClose(HWND hWnd, UINT /*message*/, WPARAM /*wParam*/, LPA
 
 HICON TrayIcon::GetIcon()
 {
-   return LoadIcon(vdWindow, (LPCSTR)IDI_VIRTUALDIMENSION); 
+   return LoadIcon(vdWindow, MAKEINTRESOURCE(IDI_VIRTUALDIMENSION));
 }
 
-char* TrayIcon::GetText()
+LPCTSTR TrayIcon::GetText()
 {
    if (deskMan && deskMan->GetCurrentDesktop())
       return deskMan->GetCurrentDesktop()->GetText();
    else
-      return "";
+      return TEXT("");
 }
 
 void TrayIcon::ToggleWindowEventHandler::OnHotkey()

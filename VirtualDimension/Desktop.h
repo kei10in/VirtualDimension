@@ -34,8 +34,8 @@
 using namespace std;
 class Window;
 
-#define DESKTOP_WALLPAPER_DEFAULT   "<default>"
-#define DESKTOP_WALLPAPER_NONE      "<none>"
+#define DESKTOP_WALLPAPER_DEFAULT   TEXT("<default>")
+#define DESKTOP_WALLPAPER_NONE      TEXT("<none>")
 
 class Desktop: public ToolTip::Tool, HotKeyManager::EventHandler
 {
@@ -52,7 +52,7 @@ public:
    void UpdateLayout();
    Window* GetWindowFromPoint(int x, int y);
 
-   void Rename(char * name);
+   void Rename(LPCTSTR name);
    void Remove();
    void Save();
 
@@ -74,7 +74,7 @@ public:
    COLORREF GetBackgroundColor() const   { return m_bkColor; }
    void SetBackgroundColor(COLORREF col);
 
-   char * GetText()           { return m_name; }
+   LPCTSTR GetText()           { return m_name; }
    void GetRect(LPRECT rect)  { *rect = m_rect; }
 
    static bool deskOrder(Desktop * first, Desktop * second);
@@ -93,7 +93,7 @@ protected:
    bool m_active;
 
    int m_index;
-   char m_name[80];
+   TCHAR m_name[80];
    int m_hotkey;
    RECT m_rect;
 

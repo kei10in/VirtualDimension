@@ -37,7 +37,7 @@ public:
    protected:
 	   virtual LRESULT OnTrayIconMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
       virtual HICON GetIcon() = 0;
-      virtual char* GetText() = 0;
+      virtual LPCTSTR GetText() = 0;
    private:
 	   UINT m_callbackMessage;
 	   friend class TrayIconsManager;

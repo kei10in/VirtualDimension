@@ -32,25 +32,25 @@
 
 Desktop::Desktop(int i)
 {
-	char * basename;
+	LPTSTR basename;
 
    m_active = false;
    m_hotkey = 0;
    m_rect.bottom = m_rect.left = m_rect.right = m_rect.top = 0;
-   strcpy(m_wallpaperFile, DESKTOP_WALLPAPER_DEFAULT);
+   _tcscpy_s(m_wallpaperFile, _countof(m_wallpaperFile), DESKTOP_WALLPAPER_DEFAULT);
    m_bkColor = GetSysColor(COLOR_DESKTOP);
 
    m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));
    m_wallpaper.SetColor(m_bkColor);
 
 	locGetString(basename, IDS_DESKTOP_BASENAME);
-   sprintf(m_name, "%s%i", basename, i);
+   _stprintf_s(m_name, _countof(m_name), TEXT("%s%i"), basename, i);
 }
 
 Desktop::Desktop(Settings::Desktop * desktop)
 {
-   desktop->GetName(m_name, sizeof(m_name));
-   desktop->LoadSetting(Settings::Desktop::DeskWallpaper, m_wallpaperFile, sizeof(m_wallpaperFile));
+   desktop->GetName(m_name, _countof(m_name));
+   desktop->LoadSetting(Settings::Desktop::DeskWallpaper, m_wallpaperFile, _countof(m_wallpaperFile));
    m_index = desktop->LoadSetting(Settings::Desktop::DeskIndex);
    m_hotkey = desktop->LoadSetting(Settings::Desktop::DeskHotkey);
    m_bkColor = desktop->LoadSetting(Settings::Desktop::BackgroundColor);
@@ -114,11 +114,11 @@ HMENU Desktop::BuildMenu()
       if (!win->IsOnDesk(this))
          continue;
 
-      SendMessageTimeout(*win, WM_GETTEXT, (WPARAM)sizeof(buffer), (LPARAM)buffer, SMTO_ABORTIFHUNG, 50, &res);
+      SendMessageTimeout(*win, WM_GETTEXT, (WPARAM)_countof(buffer), (LPARAM)buffer, SMTO_ABORTIFHUNG, 50, &res);
 
       mii.dwItemData = (DWORD)win->GetIcon();
       mii.dwTypeData = buffer;
-      mii.cch = strlen(buffer);
+      mii.cch = _tcslen(buffer);
       mii.wID = WM_USER+(int)win;	//this is not really clean, and could theoretically overflow...  no real problem, though...
       mii.hbmpItem = HBMMENU_CALLBACK;
 
@@ -185,10 +185,10 @@ void Desktop::UpdateLayout()
 
 void Desktop::Draw(HDC hDc)
 {
-   char buffer[20];
+   TCHAR buffer[20];
 
    //Print desktop name in the middle
-   sprintf(buffer, "%.19s", m_name);
+   _stprintf_s(buffer, _countof(buffer), TEXT("%.19s"), m_name);
    SetBkMode(hDc, TRANSPARENT);
    DrawText(hDc, buffer, -1, &m_rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
@@ -269,7 +269,7 @@ Window* Desktop::GetWindowFromPoint(int X, int Y)
    return NULL;
 }
 
-void Desktop::Rename(char * name)
+void Desktop::Rename(LPCTSTR name)
 {
    Settings settings;
    Settings::Desktop desktop(&settings, m_name);
@@ -278,7 +278,7 @@ void Desktop::Rename(char * name)
    desktop.Destroy();
 
    /* copy the new name */
-   strncpy(m_name, name, sizeof(m_name));
+   _tcscpy_s(m_name, _countof(m_name), name);
 }
 
 void Desktop::Remove()
@@ -445,13 +445,13 @@ LPTSTR Desktop::FormatWallpaper(LPTSTR fileName)
 
    if (*fileName == 0)
    {
-      strcpy(fileName, DESKTOP_WALLPAPER_DEFAULT);
-      res = "";
+      _tcscpy(fileName, DESKTOP_WALLPAPER_DEFAULT);
+      res = TEXT("");
    }
-   else if (stricmp(fileName, DESKTOP_WALLPAPER_NONE) == 0)
+   else if (_tcsicmp(fileName, DESKTOP_WALLPAPER_NONE) == 0)
       res = NULL;
-   else if (stricmp(fileName, DESKTOP_WALLPAPER_DEFAULT) == 0)
-      res = "";
+   else if (_tcsicmp(fileName, DESKTOP_WALLPAPER_DEFAULT) == 0)
+      res = TEXT("");
    else
       res = fileName;
 
@@ -460,7 +460,7 @@ LPTSTR Desktop::FormatWallpaper(LPTSTR fileName)
 
 void Desktop::SetWallpaper(LPCTSTR fileName)
 {
-   strncpy(m_wallpaperFile, fileName, sizeof(m_wallpaperFile)/sizeof(TCHAR));
+   _tcscpy_s(m_wallpaperFile, _countof(m_wallpaperFile), fileName);
    m_wallpaper.SetImage(FormatWallpaper(m_wallpaperFile));
 }
 

@@ -46,7 +46,7 @@ HidingMethod* Window::s_hiding_methods[] =
    &s_mover_method
 };
 
-const ATOM Window::s_VDPropertyTag = GlobalAddAtom("ViRtUaL DiMeNsIoN rocks !");
+const ATOM Window::s_VDPropertyTag = GlobalAddAtom(TEXT("ViRtUaL DiMeNsIoN rocks !"));
 
 
 Window::Window(HWND hWnd): AlwaysOnTop(hWnd), m_hWnd(hWnd), m_hOwnedWnd(GetOwnedWindow(hWnd)),
@@ -60,7 +60,7 @@ Window::Window(HWND hWnd): AlwaysOnTop(hWnd), m_hWnd(hWnd), m_hOwnedWnd(GetOwned
    unsigned int method;
 
    //Try to see if there are some special settings for this window
-   GetClassName(m_hWnd, m_className, sizeof(m_className)/sizeof(TCHAR));
+   GetClassName(m_hWnd, m_className, _countof(m_className));
    OpenSettings(settings, false);
 
    //Setup the hiding method to use (try to restore from tag, if present)
@@ -268,7 +268,7 @@ void Window::InsertMenuItem(HMENU menu, bool checked, HANDLE bmp, UINT id, UINT 
 
 void Window::InsertMenuInfo(SharedMenuBuffer& menuinfo, UINT id, UINT uIdStr, bool checked)
 {
-	char * text;
+	LPTSTR text;
 	locGetString(text, uIdStr);
 	menuinfo.InsertMenu(id, text, checked);
 }
@@ -632,7 +632,7 @@ void Window::FlashWindow(void)
 {
    if (!IsOnCurrentDesk() && !IsWindowFlashing())
    {
-      m_BallonMsg = msgManager.Add("This window requires attention!\r\nClick here to activate it.",
+      m_BallonMsg = msgManager.Add(TEXT("This window requires attention!\r\nClick here to activate it."),
                                    GetText(), (int)GetIcon(), &OnFlashBallonClick, (int)m_hWnd);
    }
 }

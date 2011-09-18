@@ -23,7 +23,7 @@
 
 static ATOM RegisterHotkeyClass(HINSTANCE hInstance);
 static LRESULT CALLBACK	HotKeyWndProc(HWND, UINT, WPARAM, LPARAM);
-static void BuildDisplayString(char mods, char vk, short scancode, char* str, int bufLen);
+static void BuildDisplayString(char mods, char vk, short scancode, LPTSTR str, int bufLen);
 static void RepositionCaret(HWND hWnd, char * str);
 
 void InitHotkeyControl()
@@ -53,34 +53,34 @@ static ATOM RegisterHotkeyClass(HINSTANCE hInstance)
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= NULL;
-	wcex.lpszClassName	= "AlternateHotKeyControl";
+	wcex.lpszClassName	= TEXT("AlternateHotKeyControl");
 	wcex.hIconSm		= NULL;
 
 	return RegisterClassEx(&wcex);
 }
 
-void GetShortcutName(int shortcut, char* str, int bufLen)
+void GetShortcutName(int shortcut, LPTSTR str, int bufLen)
 {
    BuildDisplayString((char)((shortcut>>8)&0xff), (char)(shortcut&0xff), (short)((shortcut>>16)&0xffff), str, bufLen);
 }
 
-static void BuildDisplayString(char mods, char vk, short scancode, char* str, int bufLen)
+static void BuildDisplayString(char mods, char vk, short scancode, LPTSTR str, int bufLen)
 {
-   strncpy(str, " ", bufLen);
+   _tcscpy_s(str, bufLen, TEXT(" "));
    if (mods & MOD_CONTROL)
-      strncat(str, "CTRL+", bufLen);
+      _tcscat_s(str, bufLen, TEXT("CTRL+"));
    if (mods & MOD_ALT)
-      strncat(str, "ALT+", bufLen);
+      _tcscat_s(str, bufLen, TEXT("ALT+"));
    if (mods & MOD_SHIFT)
-      strncat(str, "SHIFT+", bufLen);
+      _tcscat_s(str, bufLen, TEXT("SHIFT+"));
    if (mods & MOD_WIN)
-      strncat(str, "WIN+", bufLen);
+      _tcscat_s(str, bufLen, TEXT("WIN+"));
 
    if (scancode == 0)
       scancode = (short)MapVirtualKey(vk, 0);
-   char keyName[20];
-   GetKeyNameText(scancode << 16, keyName, 20);
-   strncat(str, keyName, bufLen);
+   TCHAR keyName[20] = {};
+   GetKeyNameText(scancode << 16, keyName, _countof(keyName));
+   _tcscat_s(str, bufLen, keyName);
 }
 
 static HFONT GetFont(HWND hWnd)
@@ -98,12 +98,12 @@ static HFONT GetFont(HWND hWnd)
       return font;
 }
 
-static void RepositionCaret(HWND hWnd, char * str)
+static void RepositionCaret(HWND hWnd, LPTSTR str)
 {
    SIZE size;
    HDC hdc = GetDC(hWnd);
    SelectObject(hdc, GetFont(hWnd));
-   GetTextExtentPoint32(hdc, str, strlen(str), &size);
+   GetTextExtentPoint32(hdc, str, _tcslen(str), &size);
    ReleaseDC(hWnd, hdc);
 
    RECT rect;
@@ -152,7 +152,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
       hkCtrl = (HKControl *)GetWindowLongPtr(hWnd, 0);
       hkCtrl->key = (int)(wParam);
       BuildDisplayString((char)(hkCtrl->key>>8), (char)(hkCtrl->key&0xff), (short)((hkCtrl->key>>16)&0xffff),
-                         hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
+                         hkCtrl->text, _countof(hkCtrl->text));
       if (GetFocus() == hWnd)
          RepositionCaret(hWnd, hkCtrl->text);
       InvalidateRect(hWnd, NULL, TRUE);
@@ -233,7 +233,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
          }
 
          BuildDisplayString(hkCtrl->flags, (char)(hkCtrl->key&0xff), (short)(hkCtrl->key>>16),
-                            hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
+                            hkCtrl->text, _countof(hkCtrl->text));
          RepositionCaret(hWnd, hkCtrl->text);
          InvalidateRect(hWnd, NULL, TRUE);
          SendMessage(GetParent(hWnd), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(hWnd), HKN_CHANGE), (LPARAM)hWnd);
@@ -267,7 +267,7 @@ static LRESULT CALLBACK HotKeyWndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
          if (hkCtrl->key == 0)
          {
-            BuildDisplayString(hkCtrl->flags, 0, 0, hkCtrl->text, sizeof(hkCtrl->text)/sizeof(char));
+            BuildDisplayString(hkCtrl->flags, 0, 0, hkCtrl->text, _countof(hkCtrl->text));
             RepositionCaret(hWnd, hkCtrl->text);
             InvalidateRect(hWnd, NULL, TRUE);
          }

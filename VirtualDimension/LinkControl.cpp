@@ -56,7 +56,7 @@ static ATOM RegisterHyperLinkClass(HINSTANCE hInstance)
    wcex.hCursor		= LoadCursor(NULL, IDC_HAND);
    wcex.hbrBackground= (HBRUSH)(COLOR_3DFACE+1);
 	wcex.lpszMenuName	= NULL;
-	wcex.lpszClassName= "HyperLinkControl";
+	wcex.lpszClassName= TEXT("HyperLinkControl");
 	wcex.hIconSm		= NULL;
 
 	return RegisterClassEx(&wcex);
@@ -114,7 +114,7 @@ static void ResizeToText(HWND hWnd, LPTSTR text)
    HDC hdc = GetDC(hWnd);
 
    SelectObject(hdc, GetHyperLinkFont(hWnd, hdc));
-   GetTextExtentPoint32(hdc, text, strlen(text), &size);
+   GetTextExtentPoint32(hdc, text, _tcslen(text), &size);
 
    ReleaseDC(hWnd, hdc);
 
@@ -172,14 +172,14 @@ static LRESULT CALLBACK HyperLinkWndProc(HWND hWnd, UINT message, WPARAM wParam,
 
    case WM_SETTEXT:
       hlCtrl = (HLControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      strncpy(hlCtrl->m_text, (LPTSTR)lParam, MAX_PATH);
+      _tcscpy_s(hlCtrl->m_text, _countof(hlCtrl->m_text), (LPTSTR)lParam);
       ResizeToText(hWnd, hlCtrl->m_text);
       RepaintBackground(hWnd);
       break;
 
    case WM_GETTEXT:
       hlCtrl = (HLControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-      strncpy((LPTSTR)lParam, hlCtrl->m_text, (int)wParam);
+      _tcsncpy((LPTSTR)lParam, hlCtrl->m_text, (int)wParam);
       break;
 
    case WM_SETFOCUS:
