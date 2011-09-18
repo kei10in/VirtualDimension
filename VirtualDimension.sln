@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VirtualDimension", "VirtualDimension\VirtualDimension.vcxproj", "{072C4555-C783-4A08-820D-85B18037A642}"
+	ProjectSection(ProjectDependencies) = postProject
+		{265B9C52-B588-4462-B3CF-4CF4650C5834} = {265B9C52-B588-4462-B3CF-4CF4650C5834}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HookDLL", "VirtualDimension\HookDLL.vcxproj", "{265B9C52-B588-4462-B3CF-4CF4650C5834}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "langEN", "VirtualDimension\langEN.vcxproj", "{338D23CB-26AA-4BB7-827D-E056CB5BE2F5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "langFR", "VirtualDimension\langFR.vcxproj", "{C79F1482-A67C-4F2A-A12C-A3D3701944E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{072C4555-C783-4A08-820D-85B18037A642}.Debug|Win32.ActiveCfg = Debug|Win32
+		{072C4555-C783-4A08-820D-85B18037A642}.Debug|Win32.Build.0 = Debug|Win32
+		{072C4555-C783-4A08-820D-85B18037A642}.Release|Win32.ActiveCfg = Release|Win32
+		{072C4555-C783-4A08-820D-85B18037A642}.Release|Win32.Build.0 = Release|Win32
+		{265B9C52-B588-4462-B3CF-4CF4650C5834}.Debug|Win32.ActiveCfg = Debug|Win32
+		{265B9C52-B588-4462-B3CF-4CF4650C5834}.Debug|Win32.Build.0 = Debug|Win32
+		{265B9C52-B588-4462-B3CF-4CF4650C5834}.Release|Win32.ActiveCfg = Release|Win32
+		{265B9C52-B588-4462-B3CF-4CF4650C5834}.Release|Win32.Build.0 = Release|Win32
+		{338D23CB-26AA-4BB7-827D-E056CB5BE2F5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{338D23CB-26AA-4BB7-827D-E056CB5BE2F5}.Debug|Win32.Build.0 = Debug|Win32
+		{338D23CB-26AA-4BB7-827D-E056CB5BE2F5}.Release|Win32.ActiveCfg = Release|Win32
+		{338D23CB-26AA-4BB7-827D-E056CB5BE2F5}.Release|Win32.Build.0 = Release|Win32
+		{C79F1482-A67C-4F2A-A12C-A3D3701944E0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C79F1482-A67C-4F2A-A12C-A3D3701944E0}.Debug|Win32.Build.0 = Debug|Win32
+		{C79F1482-A67C-4F2A-A12C-A3D3701944E0}.Release|Win32.ActiveCfg = Release|Win32
+		{C79F1482-A67C-4F2A-A12C-A3D3701944E0}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

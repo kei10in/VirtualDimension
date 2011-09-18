@@ -27,6 +27,7 @@
 // English (U.S.) resources
 
 LANGUAGE LANG_ENGLISH,SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //

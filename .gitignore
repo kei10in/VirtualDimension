@@ -1,5 +1,12 @@
 *.o
+*.suo
+*.sdf
+*.opensdf
 *.ncb
 *.aps
+*.vcxproj.user
+[Db]ebug/
+[Rr]elease/
+ipch/
 mingw-release
 Setup.exe

@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AlwaysOnTop.cpp" />
+    <ClCompile Include="ApplicationListDlg.cpp" />
+    <ClCompile Include="BackgroundColor.cpp" />
+    <ClCompile Include="BackgroundDisplayMode.cpp" />
+    <ClCompile Include="BalloonNotif.cpp" />
+    <ClCompile Include="CmdLine.cpp" />
+    <ClCompile Include="CmdLineOptions.cpp" />
+    <ClCompile Include="Config.cpp" />
+    <ClCompile Include="ConfigBox.cpp" />
+    <ClCompile Include="deskPropsDlg.cpp" />
+    <ClCompile Include="Desktop.cpp" />
+    <ClCompile Include="DesktopManager.cpp" />
+    <ClCompile Include="ExplorerWrapper.cpp" />
+    <ClCompile Include="FastWindow.cpp" />
+    <ClCompile Include="HidingMethod.cpp" />
+    <ClCompile Include="HotkeyConfig.cpp" />
+    <ClCompile Include="HotKeyControl.cpp" />
+    <ClCompile Include="HotKeyManager.cpp" />
+    <ClCompile Include="LinkControl.cpp" />
+    <ClCompile Include="Locale.cpp" />
+    <ClCompile Include="MouseWarp.cpp" />
+    <ClCompile Include="movewindow.cpp" />
+    <ClCompile Include="OnScreenDisplay.cpp" />
+    <ClCompile Include="PlatformHelper.cpp" />
+    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="SharedMenuBuffer.cpp" />
+    <ClCompile Include="ShellHook.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="SubclassWindow.cpp" />
+    <ClCompile Include="TaskPool.cpp" />
+    <ClCompile Include="ToolTip.cpp" />
+    <ClCompile Include="Transparency.cpp" />
+    <ClCompile Include="TrayIcon.cpp" />
+    <ClCompile Include="TrayIconsManager.cpp" />
+    <ClCompile Include="VirtualDimension.cpp" />
+    <ClCompile Include="WallPaper.cpp" />
+    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="WindowDialogs.cpp" />
+    <ClCompile Include="WindowsList.cpp" />
+    <ClCompile Include="WindowsManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AlwaysOnTop.h" />
+    <ClInclude Include="ApplicationListDlg.h" />
+    <ClInclude Include="BackgroundColor.h" />
+    <ClInclude Include="BackgroundDisplayMode.h" />
+    <ClInclude Include="BalloonNotif.h" />
+    <ClInclude Include="CmdLine.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Desktop.h" />
+    <ClInclude Include="DesktopManager.h" />
+    <ClInclude Include="ExplorerWrapper.h" />
+    <ClInclude Include="FastWindow.h" />
+    <ClInclude Include="HidingMethod.h" />
+    <ClInclude Include="HotkeyConfig.h" />
+    <ClInclude Include="HotKeyControl.h" />
+    <ClInclude Include="HotKeyManager.h" />
+    <ClInclude Include="LinkControl.h" />
+    <ClInclude Include="Locale.h" />
+    <ClInclude Include="MouseWarp.h" />
+    <ClInclude Include="movewindow.h" />
+    <ClInclude Include="OnScreenDisplay.h" />
+    <ClInclude Include="PlatformHelper.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="SharedMenuBuffer.h" />
+    <ClInclude Include="ShellHook.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StdString.h" />
+    <ClInclude Include="TaskPool.h" />
+    <ClInclude Include="ToolTip.h" />
+    <ClInclude Include="Transparency.h" />
+    <ClInclude Include="TrayIcon.h" />
+    <ClInclude Include="TrayIconsManager.h" />
+    <ClInclude Include="VirtualDimension.h" />
+    <ClInclude Include="WallPaper.h" />
+    <ClInclude Include="Window.h" />
+    <ClInclude Include="WindowsList.h" />
+    <ClInclude Include="WindowsManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="defaultapp_sm.ico" />
+    <None Include="english.ico" />
+    <None Include="french.ico" />
+    <None Include="kill.bmp" />
+    <None Include="kill.ico" />
+    <None Include="logo.gif" />
+    <None Include="maxH.bmp" />
+    <None Include="maxH.ico" />
+    <None Include="maxV.bmp" />
+    <None Include="maxV.ico" />
+    <None Include="minTray.bmp" />
+    <None Include="minTray.ico" />
+    <None Include="Transp.def" />
+    <None Include="VirtualDimension.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="VirtualDimension.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="VirtualDimension.rc" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{072C4555-C783-4A08-820D-85B18037A642}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>VirtualDimension</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>ComCtl32.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>ComCtl32.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

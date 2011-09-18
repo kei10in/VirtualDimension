@@ -21,6 +21,7 @@
 #include "StdAfx.h"
 #include <WindowsX.h>
 #include <CommDlg.h>
+#include <Commctrl.h>
 #include <ShellAPI.h>
 #include "Resource.h"
 #include "ApplicationListDlg.h"
