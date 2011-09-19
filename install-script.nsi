@@ -61,15 +61,12 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
   File "LICENSE.html"
-  File "mingw-release\HookDLL.dll"
-  File "mingw-release\langEN.dll"
-  File "mingw-release\VirtualDimension.exe"
+  File "Release\HookDLL.dll"
+  File "Release\langEN.dll"
+  File "Release\VirtualDimension.exe"
 
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
-  
-  SetOutPath $SYSDIR
-  File "C:\MinGW\bin\mingwm10.dll"
   
   !insertmacro MUI_STARTMENU_WRITE_BEGIN VirtualDimension
   CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
@@ -90,7 +87,6 @@ Section Uninstall
   Delete "$INSTDIR\HookDLL.dll"
   Delete "$INSTDIR\VirtualDimension.exe"
   Delete "$INSTDIR\Uninstall.exe"
-  Delete "$SYSDIR\mingwm10.dll"
 
   !insertmacro MUI_STARTMENU_GETFOLDER VirtualDimension $STARTMENU_FOLDER
 
