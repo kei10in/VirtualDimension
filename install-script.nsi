@@ -66,6 +66,11 @@ Section "MainSection" SEC01
   File "Release\VirtualDimension.exe"
 
   ;Create uninstaller
+  ; Write the uninstall keys for Windows
+  WriteREgStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "DisplayName" "Virtual Dimension"
+  WriteREgStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteREgStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "NoModify" 1
+  WriteREgStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Virtual Dimension" "NoRepair" 1
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   
   !insertmacro MUI_STARTMENU_WRITE_BEGIN VirtualDimension
