@@ -29,12 +29,12 @@ unsigned int Group::LoadSetting(const Setting<LPTSTR> &setting, LPTSTR buffer, u
 
    size = LoadString(setting.m_name, NULL);
    if (!size)
-      size = _tcslen(setting.m_default);
+      size = (DWORD)_tcslen(setting.m_default);
 
    if (buffer &&
        (size > length || LoadString(setting.m_name, buffer) == 0))
    {
-      size = _tcslen(setting.m_default);
+      size = (DWORD)_tcslen(setting.m_default);
       _tcsncpy(buffer, setting.m_default, length-1);
       buffer[length-1] = 0;
    }

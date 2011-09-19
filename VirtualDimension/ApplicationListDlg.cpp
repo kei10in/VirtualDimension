@@ -45,7 +45,7 @@ ApplicationListDlg::~ApplicationListDlg(void)
 
 int ApplicationListDlg::ShowDialog(HINSTANCE hinstance, HWND hWndParent)
 {
-   return ::DialogBoxParam(hinstance, MAKEINTRESOURCE(IDD_APPLLIST_DLG), hWndParent, &DlgProc, (LPARAM)this);
+   return (int)::DialogBoxParam(hinstance, MAKEINTRESOURCE(IDD_APPLLIST_DLG), hWndParent, &DlgProc, (LPARAM)this);
 }
 
 void ApplicationListDlg::InitDialog()
@@ -346,7 +346,7 @@ DWORD ApplicationListDlg::GetProgramParam(int item)
    lvitem.iSubItem = 0;
    ListView_GetItem(m_hAppListWnd, &lvitem);
 
-   return lvitem.lParam;
+   return (DWORD)lvitem.lParam;
 }
 
 INT_PTR CALLBACK ApplicationListDlg::DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)

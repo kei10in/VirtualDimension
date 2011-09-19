@@ -131,7 +131,7 @@ LRESULT BalloonNotification::MyTooltipWndProc(HWND hWnd, UINT Msg, WPARAM wParam
    case WM_LBUTTONDOWN:
       cb = (ClickCb)GetWindowLongPtr(hWnd, msgManager.m_tooltipWndExtra);
       if (cb)
-         (*cb)(hWnd, GetWindowLongPtr(hWnd, msgManager.m_tooltipWndExtra+sizeof(int)));
+         (*cb)(hWnd, (int)GetWindowLongPtr(hWnd, msgManager.m_tooltipWndExtra+(int)sizeof(int)));
       DestroyWindow(hWnd);
       break;
 

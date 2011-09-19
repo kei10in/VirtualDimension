@@ -126,7 +126,7 @@ void TrayIcon::OnContextMenu()
 		  desk->GetText(),
 		  desk->GetText() + _tcslen(desk->GetText()) + 1);
       mii.dwTypeData = &(svec[0]);
-      mii.cch = _tcslen(mii.dwTypeData);
+      mii.cch = (UINT)_tcslen(mii.dwTypeData);
       mii.wID = WM_USER + i++;
       InsertMenuItem(hmenuTrackPopup, 0, TRUE, &mii);
    }

@@ -58,11 +58,11 @@ LRESULT CALLBACK Window::PropertiesProc(HWND hDlg, UINT message, WPARAM /*wParam
       switch (pnmh->code)
       {
       case PSN_KILLACTIVE:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
          return TRUE;
       }
       break;
@@ -221,7 +221,7 @@ LRESULT CALLBACK Window::SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LP
          case TB_PAGEUP:
          case TB_TOP :
          default:
-            pos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+            pos = (int)SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
             break;
          }
          FormatTransparencyLevel(GetDlgItem(hDlg, IDC_TRANSP_DISP), pos);
@@ -234,13 +234,13 @@ LRESULT CALLBACK Window::SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LP
       switch (pnmh->code)
       {
       case PSN_KILLACTIVE:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
          self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
          self->OnApplySettingsBtn(hDlg);
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
          return TRUE;
       }
       break;
@@ -408,13 +408,13 @@ LRESULT CALLBACK Window::AutoSettingsProc(HWND hDlg, UINT message, WPARAM wParam
       switch (pnmh->code)
       {
       case PSN_KILLACTIVE:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
          self = (Window *)GetWindowLongPtr(hDlg, DWLP_USER);
          self->OnApplyAutoSettingsBtn(hDlg);
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
          return TRUE;
       }
       break;

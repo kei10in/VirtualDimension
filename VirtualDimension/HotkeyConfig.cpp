@@ -130,7 +130,7 @@ void ShortcutsConfigurationDlg::BeginEdit(int item)
 
 void ShortcutsConfigurationDlg::EndEdit()
 {
-   int key = (LPARAM)SendMessage(m_editCtrl, HKM_GETHOTKEY, 0, 0);
+   int key = (int)SendMessage(m_editCtrl, HKM_GETHOTKEY, 0, 0);
 
    //Update the list
    SetItemShortcut(m_editedItemIndex, key);
@@ -291,12 +291,12 @@ LRESULT CALLBACK ShortcutsConfigurationDlg::DlgProc(HWND hDlg, UINT message, WPA
          self = (ShortcutsConfigurationDlg*)GetWindowLongPtr(hDlg, DWLP_USER);
          if (self->IsEditing())
             self->EndEdit();
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
          self = (ShortcutsConfigurationDlg*)GetWindowLongPtr(hDlg, DWLP_USER);
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, self->OnApply());
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, self->OnApply());
          return TRUE; 
       }
       break;

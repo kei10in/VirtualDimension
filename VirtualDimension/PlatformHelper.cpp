@@ -76,7 +76,7 @@ DWORD PlatformHelper::GetWindowFileNameNT(HWND hWnd, LPTSTR lpFileName, int nBuf
    HANDLE hProcess;
    DWORD res;
 
-   hInstance = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
+   hInstance = (HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE);
    GetWindowThreadProcessId(hWnd, &pId);
    hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pId);
    res = pGetModuleFileNameEx(hProcess, hInstance, lpFileName, nBufLen);

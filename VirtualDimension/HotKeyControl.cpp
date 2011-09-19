@@ -103,7 +103,7 @@ static void RepositionCaret(HWND hWnd, LPTSTR str)
    SIZE size;
    HDC hdc = GetDC(hWnd);
    SelectObject(hdc, GetFont(hWnd));
-   GetTextExtentPoint32(hdc, str, _tcslen(str), &size);
+   GetTextExtentPoint32(hdc, str, (int)_tcslen(str), &size);
    ReleaseDC(hWnd, hdc);
 
    RECT rect;

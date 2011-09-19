@@ -187,7 +187,7 @@ void HidingMethodMinimize::Show(Window * wnd)
 
 void HidingMethodMinimize::Hide(Window * wnd)
 {
-   LONG_PTR oldstyle = GetWindowLongPtr(*wnd, GWL_EXSTYLE) & 0x7fffffff;
+   DWORD oldstyle = (DWORD)GetWindowLongPtr(*wnd, GWL_EXSTYLE) & 0x7fffffff;
 
    //Minimize the application
    int iconic = wnd->IsIconic() ? 1 : 0;
@@ -252,7 +252,7 @@ void HidingMethodMove::Hide(Window * wnd)
                 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
 
    // This removes window from taskbar and alt+tab list
-   LONG_PTR style = GetWindowLongPtr(*wnd, GWL_EXSTYLE);
+   DWORD style = (DWORD)GetWindowLongPtr(*wnd, GWL_EXSTYLE);
    SetWindowLongPtr(*wnd, GWL_EXSTYLE, 
                     style & (~WS_EX_APPWINDOW) | WS_EX_TOOLWINDOW);
    SetWindowData(wnd, style);

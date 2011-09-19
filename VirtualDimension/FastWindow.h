@@ -144,13 +144,14 @@ protected:
    };
 
    typedef std::map<UINT, Handler> MessageMap;
+   typedef std::map<UINT_PTR, Handler> TimerIDMap;
 
    HWND m_hWnd;
    MessageMap m_messageMap;
    MessageMap m_commandMap;
    MessageMap m_syscommandMap;
    MessageMap m_notifyMap;
-   MessageMap m_timersMap;
+   TimerIDMap m_timersMap;
    UINT_PTR m_freeTimerId;
 
    LRESULT CommandHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam);

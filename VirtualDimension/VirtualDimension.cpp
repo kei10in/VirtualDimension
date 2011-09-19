@@ -930,7 +930,7 @@ LRESULT VirtualDimension::OnCmdLanguageChange(HWND /*hWnd*/, UINT /*message*/, W
 {
     // the current language code + wm_cd_language should give the current checked menu item ...
     int iPreviousLanguageCode = Locale::GetInstance().GetLanguage();
-    if (Locale::GetInstance().SetLanguage(wParam-WM_VD_LANGUAGE))
+    if (Locale::GetInstance().SetLanguage((int)(wParam-WM_VD_LANGUAGE)))
     {
        UpdateSystemMenu();
        if (iPreviousLanguageCode > 0)
@@ -1002,7 +1002,7 @@ void VirtualDimension::Shrink(void)
 	SetMessageHandler(WM_PAINT, this, &VirtualDimension::OnPaint);
 
 	//Change the style of the window
-	style = GetWindowLongPtr(m_hWnd, GWL_STYLE);
+	style = (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE);
 	style &= ~WS_CAPTION;
 	style &= ~WS_DLGFRAME;
 	style &= ~WS_BORDER;
@@ -1034,7 +1034,7 @@ void VirtualDimension::UnShrink(void)
 	SetMessageHandler(WM_PAINT, deskMan, &DesktopManager::OnPaint);
 
 	//Restore the window's style
-	style = GetWindowLongPtr(m_hWnd, GWL_STYLE);
+	style = (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE);
 	style |= (m_hasCaption ? WS_CAPTION : WS_DLGFRAME);
 	style |= (m_lockPreviewWindow ? 0 : WS_THICKFRAME);
 	SetWindowLongPtr(m_hWnd, GWL_STYLE, style);
@@ -1050,7 +1050,7 @@ void VirtualDimension::UnShrink(void)
 	pos.right = pos.left + deskMan->GetWindowWidth();
 	pos.top = m_location.y;
 	pos.bottom = pos.top + deskMan->GetWindowHeight();
-	AdjustWindowRectEx(&pos, GetWindowLongPtr(m_hWnd, GWL_STYLE), FALSE, GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
+	AdjustWindowRectEx(&pos, (DWORD)GetWindowLongPtr(m_hWnd, GWL_STYLE), FALSE, (DWORD)GetWindowLongPtr(m_hWnd, GWL_EXSTYLE));
 
 	//Apply the changes
 	SetWindowPos(m_hWnd, NULL, pos.left, pos.top, pos.right-pos.left, pos.bottom-pos.top, SWP_DRAWFRAME | SWP_NOZORDER | SWP_FRAMECHANGED);
@@ -1133,7 +1133,7 @@ void VirtualDimension::UpdateSystemMenu()
       RenameMenu(m_pSysMenu, IDM_SHOWCAPTION, IDS_SHOWCAPTION); //"S&how the caption"
 
       if (m_pLangMenu && GetMenuItemCount(m_pLangMenu)>1)
-         RenameMenu(m_pSysMenu, (UINT_PTR)m_pLangMenu, IDS_LANGUAGEMENU); //"L&anguage"
+         RenameMenu(m_pSysMenu, (UINT)m_pLangMenu, IDS_LANGUAGEMENU); //"L&anguage"
       RenameMenu(m_pSysMenu, IDM_ABOUT, IDS_ABOUT); //"&About"
    }
 }

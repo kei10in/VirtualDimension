@@ -389,7 +389,7 @@ HWND WindowsManager::GetPrevWindow(Window * wnd)
 
 LRESULT WindowsManager::OnStartOnDesktop(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM lParam)
 {
-	Desktop * desk = deskMan->GetDesktop(lParam);
+	Desktop * desk = deskMan->GetDesktop((int)lParam);
 	if (desk)
 	{
 		for(Iterator it = GetIterator(); it; it++)
@@ -421,14 +421,14 @@ void WindowsManager::CancelDelayedUpdate(Window * win)
 
    if (it != m_delayedUpdateWndTab.end())
    {
-      int idx = distance(m_delayedUpdateWndTab.begin(), it);
+      UINT idx = static_cast<UINT>(distance(m_delayedUpdateWndTab.begin(), it));
       RemoveDelayedUpdateWnd(idx);
    }
 }
 
 void CALLBACK WindowsManager::OnDelayedUpdateTimer(HWND /*hwnd*/, UINT /*uMsg*/, UINT_PTR idEvent, DWORD /*dwTime*/)
 {
-   unsigned int idx = idEvent - FIRST_WINDOW_MANAGER_TIMER;
+   unsigned int idx = static_cast<unsigned int>(idEvent - FIRST_WINDOW_MANAGER_TIMER);
    assert(idx < winMan->m_delayedUpdateWndTab.size());
    assert(winMan->m_delayedUpdateWndTab[idx] != NULL);
    TRACE("DelayedUpdateTimer");
@@ -450,7 +450,7 @@ unsigned int WindowsManager::AddDelayedUpdateWnd(Window * wnd)
    }
    else
    {
-      idx = m_delayedUpdateWndTab.size();
+      idx = static_cast<unsigned int>(m_delayedUpdateWndTab.size());
       m_delayedUpdateWndTab.push_back(wnd);
       m_delayedUpdateNextTab.push_back(-1);
    }

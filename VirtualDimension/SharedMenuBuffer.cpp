@@ -77,7 +77,7 @@ bool SharedMenuBuffer::ReadMenu(HMENU hMenu, UINT (*filter)(UINT))
    return result;
 }
 
-bool SharedMenuBuffer::InsertMenu(UINT_PTR id, LPCTSTR text, BOOL check)
+bool SharedMenuBuffer::InsertMenu(UINT id, LPCTSTR text, BOOL check)
 {
    //Create a view of the file if none yet
    if (m_hViewPtr == NULL)

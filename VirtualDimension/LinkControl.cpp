@@ -114,7 +114,7 @@ static void ResizeToText(HWND hWnd, LPTSTR text)
    HDC hdc = GetDC(hWnd);
 
    SelectObject(hdc, GetHyperLinkFont(hWnd, hdc));
-   GetTextExtentPoint32(hdc, text, _tcslen(text), &size);
+   GetTextExtentPoint32(hdc, text, (int)_tcslen(text), &size);
 
    ReleaseDC(hWnd, hdc);
 

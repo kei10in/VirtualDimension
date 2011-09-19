@@ -108,7 +108,7 @@ HMENU Desktop::BuildMenu()
    for(it = winMan->GetIterator(); it; it++)
    {
       TCHAR buffer[50];
-      DWORD res;
+      DWORD_PTR res;
       Window * win = it;
 
       if (!win->IsOnDesk(this))
@@ -118,7 +118,7 @@ HMENU Desktop::BuildMenu()
 
       mii.dwItemData = (DWORD)win->GetIcon();
       mii.dwTypeData = buffer;
-      mii.cch = _tcslen(buffer);
+      mii.cch = static_cast<UINT>(_tcslen(buffer));
       mii.wID = WM_USER+(int)win;	//this is not really clean, and could theoretically overflow...  no real problem, though...
       mii.hbmpItem = HBMMENU_CALLBACK;
 

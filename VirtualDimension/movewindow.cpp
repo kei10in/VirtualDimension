@@ -41,7 +41,7 @@ void ApplySettings(HWND hDlg)
    {
       //Get the current selection
       hWnd = GetDlgItem(hDlg, IDC_DESK_LIST);
-      curSel = SendMessage(hWnd, LB_GETCURSEL, 0, 0);
+      curSel = (int)SendMessage(hWnd, LB_GETCURSEL, 0, 0);
       if (curSel == LB_ERR)
          return;
 

@@ -78,7 +78,7 @@ void TaskPool::SetThreadCount(LONG count)
 void TaskPool::QueueJob(JobProc * fun, void * arg, HANDLE * event)
 {
    static JobInfo info;
-   int length;
+   LONG length;
 
    //Get access to the queue
    WaitForSingleObject(m_hQueueMutex, INFINITE);
@@ -95,7 +95,7 @@ void TaskPool::QueueJob(JobProc * fun, void * arg, HANDLE * event)
    m_jobsQueue.push_back(info);
 
    //Get the length of the queue
-   length = m_jobsQueue.size();
+   length = static_cast<LONG>(m_jobsQueue.size());
 
    //Release access to the queue
    ReleaseMutex(m_hQueueMutex);

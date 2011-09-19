@@ -108,9 +108,9 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
       switch(LOWORD(wParam))
       {
       case IDC_TRAYICON_CHECK: {
-         HRESULT res = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
+         LRESULT res = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
          HWND hWnd = GetDlgItem(hDlg, IDC_CLOSETOTRAY_CHECK);
-         EnableWindow(hWnd, res);
+         EnableWindow(hWnd, (BOOL)res);
          }break;
 
       case IDC_MOUSEWARPCFG_BTN:
@@ -126,7 +126,7 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
       switch (pnmh->code)
       {
       case PSN_KILLACTIVE:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
@@ -181,7 +181,7 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             mousewarp->EnableWarp(IsDlgButtonChecked(hDlg, IDC_MOUSEWARP_CHECK) == BST_CHECKED);
 
             //Apply succeeded
-            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+            SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
          }
          return TRUE;
       }
@@ -291,7 +291,7 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
          case TB_PAGEUP:
          case TB_TOP :
          default:
-            pos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+            pos = (int)SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
             break;
          }
 
@@ -305,12 +305,12 @@ LRESULT CALLBACK DisplayConfiguration(HWND hDlg, UINT message, WPARAM wParam, LP
       switch (pnmh->code)
       {
       case PSN_KILLACTIVE:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
          //Apply succeeded
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
          return TRUE;
       }
       break;
@@ -541,11 +541,11 @@ LRESULT CALLBACK DeskConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARA
          switch (pnmh->code)
          {
          case PSN_KILLACTIVE:
-            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+            SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
             return TRUE;
 
          case PSN_APPLY:
-            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+            SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
             return TRUE;
          }
       }
@@ -662,7 +662,7 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
       switch (pnmh->code)
       {
       case PSN_KILLACTIVE:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
@@ -690,7 +690,7 @@ LRESULT CALLBACK OSDConfiguration(HWND hDlg, UINT message, WPARAM wParam, LPARAM
             osd->SetDefaultTimeout(GetDlgItemInt(hDlg, IDC_TIMEOUT_EDIT, NULL, FALSE));
 
             //Apply succeeded
-            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+            SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
          }
          return TRUE;
       }
@@ -757,7 +757,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       switch (pnmh->code)
       {
       case PSN_KILLACTIVE:
-         SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, FALSE);
+         SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, FALSE);
          return TRUE;
 
       case PSN_APPLY:
@@ -775,7 +775,7 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
                }
 
             //Apply succeeded
-            SetWindowLong(pnmh->hwndFrom, DWL_MSGRESULT, PSNRET_NOERROR);
+            SetWindowLongPtr(pnmh->hwndFrom, DWLP_MSGRESULT, PSNRET_NOERROR);
          }
          return TRUE;
       }

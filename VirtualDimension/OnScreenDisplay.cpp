@@ -89,7 +89,7 @@ void OnScreenDisplayWnd::Display(LPCTSTR str, int timeout)
    hdc = GetWindowDC(m_hWnd);
    defFont = (HFONT)SelectObject(hdc, m_font);
    SetTextColor(hdc, m_fgColor);
-   GetTextExtentPoint32(hdc, m_text, _tcslen(m_text), &size);
+   GetTextExtentPoint32(hdc, m_text, (int)_tcslen(m_text), &size);
    SelectObject(hdc, defFont);
    ReleaseDC(m_hWnd, hdc);
 

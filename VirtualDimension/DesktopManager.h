@@ -43,7 +43,7 @@ public:
    Desktop * GetFirstDesktop();
    Desktop * GetNextDesktop();
    void Sort();
-   int GetNbDesktops() const { return m_desks.size(); }
+   int GetNbDesktops() const { return (int)m_desks.size(); }
 
    int GetNbColumns() const { return m_nbColumn; }
    void SetNbColumns(int cols);

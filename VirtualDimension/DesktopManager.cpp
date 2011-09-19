@@ -385,7 +385,7 @@ Desktop* DesktopManager::GetOtherDesk(Desktop * desk, int (DesktopManager::*updp
    if (it == m_desks.end())
       return desk;
 
-   pos = (this->*updpos)(distance(m_desks.begin(), it), param);
+   pos = (this->*updpos)((int)distance(m_desks.begin(), it), param);
 
    while(pos < 0)
       pos += GetNbDesktops();
@@ -540,7 +540,7 @@ int DesktopManager::BottomMod(int pos, int /*param*/)
 
 LRESULT DesktopManager::OnCmdSwitchDesktop(HWND /*hWnd*/, UINT /*message*/, WPARAM /*wParam*/, LPARAM lParam)
 {
-	Desktop * desk = GetDesktop(lParam);
+	Desktop * desk = GetDesktop((int)lParam);
 	if (desk)
 		SwitchToDesktop(desk);
 	else

@@ -225,17 +225,17 @@ HICON Window::GetIcon(void)
    m_hIcon = NULL;
 
    //Get normal icon
-	if (SendMessageTimeout(m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD)&m_hIcon) &&
+	if (SendMessageTimeout(m_hWnd, WM_GETICON, ICON_SMALL, 0, SMTO_ABORTIFHUNG, 100, (PDWORD_PTR)&m_hIcon) &&
        m_hIcon)
       return m_hIcon;
 
    //Get drag icon
-   if (SendMessageTimeout(m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (LPDWORD)&m_hIcon) &&
+   if (SendMessageTimeout(m_hWnd, WM_QUERYDRAGICON, 0, 0, SMTO_ABORTIFHUNG, 100, (PDWORD_PTR)&m_hIcon) &&
        m_hIcon)
       return m_hIcon;
 
    //Get class icon
-   m_hIcon = (HICON) GetClassLong( m_hWnd, GCL_HICONSM );
+   m_hIcon = (HICON) GetClassLongPtr( m_hWnd, GCLP_HICONSM );
    if (m_hIcon)
       return m_hIcon;
 

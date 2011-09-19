@@ -69,7 +69,7 @@ LRESULT CALLBACK hookWndProcW(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 {
    HWNDHookData * pData;
    LRESULT res = 0;
-   UINT_PTR syscmd;
+   UINT syscmd;
 
    //Get the hook information
    pData = (HWNDHookData*)GetPropW(hWnd, (LPWSTR)MAKEINTRESOURCEW(g_aPropName));
@@ -173,7 +173,7 @@ LRESULT CALLBACK hookWndProcA(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 {
    HWNDHookData * pData;
    LRESULT res = 0;
-   UINT_PTR syscmd;
+   UINT syscmd;
 
    //Get the hook information
    pData = (HWNDHookData*)GetPropA(hWnd, (LPSTR)MAKEINTRESOURCEA(g_aPropName));
@@ -446,7 +446,7 @@ void InitPopupMenu(HWND hWnd, HMENU hMenu)
 
    //Retrieve the menu description
    SharedMenuBuffer menuinfo;
-   DWORD res;
+   DWORD_PTR res;
    if (SendMessageTimeout(hVDWnd, WM_VD_PREPARE_HOOK_MENU, (WPARAM)menuinfo.GetFileMapping(), (LPARAM)pHookData->m_iData,
                           SMTO_ABORTIFHUNG|SMTO_NORMAL, 20000 /*20s*/, &res) &&
        res)

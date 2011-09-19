@@ -115,7 +115,7 @@ LRESULT CALLBACK FastWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 LRESULT FastWindow::CommandHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam)
 {
    MessageMap::iterator it;
-   it = m_commandMap.find(wParam);
+   it = m_commandMap.find((UINT)wParam);
    if (it == m_commandMap.end())
       return DefWindowProc(hWnd, code, wParam, lParam);
    else
@@ -125,7 +125,7 @@ LRESULT FastWindow::CommandHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM l
 LRESULT FastWindow::SysCommandHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam)
 {
    MessageMap::iterator it;
-   it = m_syscommandMap.find(wParam);
+   it = m_syscommandMap.find((UINT)wParam);
    if (it == m_syscommandMap.end())
       return DefWindowProc(hWnd, code, wParam, lParam);
    else
@@ -135,7 +135,7 @@ LRESULT FastWindow::SysCommandHandler(HWND hWnd, UINT code, WPARAM wParam, LPARA
 LRESULT FastWindow::NotifyHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam)
 {
    MessageMap::iterator it;
-   it = m_notifyMap.find(wParam);
+   it = m_notifyMap.find((UINT)wParam);
    if (it == m_notifyMap.end())
       return DefWindowProc(hWnd, code, wParam, lParam);
    else
@@ -144,7 +144,7 @@ LRESULT FastWindow::NotifyHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lP
 
 LRESULT FastWindow::TimersHandler(HWND hWnd, UINT code, WPARAM wParam, LPARAM lParam)
 {
-   MessageMap::iterator it;
+   TimerIDMap::iterator it;
    it = m_timersMap.find(wParam);
    if (it == m_timersMap.end())
       return DefWindowProc(hWnd, code, wParam, lParam);
