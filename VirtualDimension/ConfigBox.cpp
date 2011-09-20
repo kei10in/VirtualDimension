@@ -168,7 +168,8 @@ LRESULT CALLBACK SettingsConfiguration(HWND hDlg, UINT message, WPARAM wParam, L
             //Apply auto switch desktop
             winMan->SetAutoSwitchDesktop(IsDlgButtonChecked(hDlg, IDC_AUTOSWITCHDESKTOP_CHECK) == BST_CHECKED);
 
-            //Setup integrate with shell
+
+            // Apply all windows in task list
             winMan->ShowAllWindowsInTaskList(IsDlgButtonChecked(hDlg, IDC_ALLWINDOWSINTASKLIST_CHECK) == BST_CHECKED);
 
 				//Apply snap-size
@@ -733,16 +734,6 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
             Config::Group * group = settings.GetHidingMethodExceptions();
             ApplicationListDlg dlg(group, coltext, settings.LoadSetting(Settings::DefaultHidingMethod), values);
 				dlg.ShowDialog(Locale::GetInstance(), hDlg);
-            delete group;
-         }
-         break;
-
-      case IDC_SHELLINTEGEXCEPTION_BTN:
-         {
-            Settings settings;
-            Config::Group * group = settings.GetShellIntegrationExceptions();
-            ApplicationListDlg dlg(group);
-            dlg.ShowDialog(Locale::GetInstance(), hDlg);
             delete group;
          }
          break;

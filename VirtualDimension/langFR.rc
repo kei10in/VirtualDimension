@@ -333,23 +333,14 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
 CAPTION "Avancé"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Activer",IDC_INTEGRATEWTHSHELL_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,19,49,10
-    GROUPBOX        "Intégration au Shell",IDC_STATIC,7,7,200,41
-    PUSHBUTTON      "Exceptions...",IDC_SHELLINTEGEXCEPTION_BTN,145,16,56,15
-    GROUPBOX        "Méthode de masquage des fenêtres",IDC_STATIC,7,53,200,
-                    51
+    GROUPBOX        "Méthode de masquage des fenêtres",IDC_STATIC,7,7,200,51
     CONTROL         "Cacher",IDC_HIDEMETHOD_RADIO,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,16,65,59,10
+                    BS_AUTORADIOBUTTON | WS_GROUP,16,19,59,10
     CONTROL         "Minimiser",IDC_MINIMIZEMETHOD_RATIO,"Button",
-                    BS_AUTORADIOBUTTON,16,77,71,10
+                    BS_AUTORADIOBUTTON,16,31,71,10
     CONTROL         "Déplacer",IDC_MOVEMETHOD_RATIO,"Button",
-                    BS_AUTORADIOBUTTON,16,89,45,10
-    PUSHBUTTON      "Exceptions...",IDC_HIDINGMETHODEXCEPTIONS_BTN,145,62,56,
-                    15
-    CONTROL         "Détecter les applications incompatibles",
-                    IDC_AUTOEXCEPTION_CHECK,"Button",BS_AUTOCHECKBOX |
-                    WS_DISABLED | WS_TABSTOP,16,32,136,10
+                    BS_AUTORADIOBUTTON,16,43,45,10
+    PUSHBUTTON      "Exceptions...",IDC_HIDINGMETHODEXCEPTIONS_BTN,145,16,56,15
 END
 
 IDD_APPLLIST_DLG DIALOGEX 0, 0, 287, 187

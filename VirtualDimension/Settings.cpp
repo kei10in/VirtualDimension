@@ -159,41 +159,7 @@ void Settings::SaveStartWithWindows(bool start)
    }
 }
 
-LPCTSTR Settings::regSubKeyDisableShellIntegration = TEXT("DisableShellIntegration");
 LPCTSTR Settings::regSubKeyHidingMethods = TEXT("HidingMethodsTweaks");
-
-bool Settings::LoadDisableShellIntegration(LPCTSTR windowclass)
-{
-   HKEY regKey=NULL;
-   bool res;
-
-   res = m_opened &&
-         RegOpenKeyEx(m_regKey, regSubKeyDisableShellIntegration, 0, KEY_READ, &regKey) == ERROR_SUCCESS &&
-         RegQueryValueEx(regKey, windowclass, NULL, NULL, NULL, NULL) == ERROR_SUCCESS;
-
-   if (regKey!=NULL)
-      RegCloseKey(regKey);
-
-   return res;
-}
-
-void Settings::SaveDisableShellIntegration(LPCTSTR windowclass, bool enable)
-{
-   HKEY regKey=NULL;
-
-   if (m_opened &&
-       RegOpenKeyEx(m_regKey, regSubKeyDisableShellIntegration, 0, KEY_READ, &regKey) == ERROR_SUCCESS)
-   {
-      DWORD value = 0;
-
-      if (enable)
-         RegDeleteValue(regKey, windowclass);
-      else
-         RegSetValueEx(regKey, windowclass, 0, REG_DWORD, (BYTE*)&value, sizeof(value));
-
-      RegCloseKey(regKey);
-   }
-}
 
 int Settings::LoadHidingMethod(LPCTSTR windowclass)
 {

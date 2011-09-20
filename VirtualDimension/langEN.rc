@@ -329,22 +329,14 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTROL |
 CAPTION "Advanced"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Enable",IDC_INTEGRATEWTHSHELL_CHECK,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,16,19,49,10
-    GROUPBOX        "Shell integration",IDC_STATIC,7,7,200,41
-    PUSHBUTTON      "Exceptions...",IDC_SHELLINTEGEXCEPTION_BTN,145,16,56,15
-    GROUPBOX        "Hiding method",IDC_STATIC,7,53,200,51
+    GROUPBOX        "Hiding method",IDC_STATIC,7,7,200,51
     CONTROL         "Hide windows",IDC_HIDEMETHOD_RADIO,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,16,65,59,10
+                    BS_AUTORADIOBUTTON | WS_GROUP,16,19,59,10
     CONTROL         "Minimize windows",IDC_MINIMIZEMETHOD_RATIO,"Button",
-                    BS_AUTORADIOBUTTON,16,77,71,10
+                    BS_AUTORADIOBUTTON,16,31,71,10
     CONTROL         "Move windows",IDC_MOVEMETHOD_RATIO,"Button",
-                    BS_AUTORADIOBUTTON,16,89,63,10
-    PUSHBUTTON      "Exceptions...",IDC_HIDINGMETHODEXCEPTIONS_BTN,145,62,56,
-                    15
-    CONTROL         "Detect incompatible applications",
-                    IDC_AUTOEXCEPTION_CHECK,"Button",BS_AUTOCHECKBOX |
-                    WS_DISABLED | WS_TABSTOP,16,32,118,10
+                    BS_AUTORADIOBUTTON,16,43,63,10
+    PUSHBUTTON      "Exceptions...",IDC_HIDINGMETHODEXCEPTIONS_BTN,145,16,56,15
 END
 
 IDD_APPLLIST_DLG DIALOGEX 0, 0, 287, 187

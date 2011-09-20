@@ -39,7 +39,6 @@ public:
    /** Constructor.
     * Builds a Window object from the handle of a window. Settings specific to this window are loaded
     * from registry, if any, and applied. Else, default settings are used.
-    * If shell integration is enabled, the window gets hooked at this time.
     */
    Window(HWND hWnd);
 

@@ -86,13 +86,10 @@ public:
    static DECLARE_SETTING(LanguageCode,int);
 
    // Other settings
-   Config::Group * GetShellIntegrationExceptions() { return GetSubGroup(regSubKeyDisableShellIntegration); }
    Config::Group * GetHidingMethodExceptions()     { return GetSubGroup(regSubKeyHidingMethods); }
 
    bool LoadStartWithWindows();
    void SaveStartWithWindows(bool start);
-   bool LoadDisableShellIntegration(LPCTSTR windowclass);
-   void SaveDisableShellIntegration(LPCTSTR windowclass, bool enable);
    int LoadHidingMethod(LPCTSTR windowclass);
    void SaveHidingMethod(LPCTSTR windowclass, int method);
 
@@ -164,7 +161,6 @@ protected:
    static LPCTSTR regKeyName;
    static LPCTSTR regKeyWindowsStartup;
 
-   static LPCTSTR regSubKeyDisableShellIntegration;
    static LPCTSTR regSubKeyHidingMethods;
    static LPCTSTR regValStartWithWindows;
 

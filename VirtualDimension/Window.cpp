@@ -135,8 +135,7 @@ Window::~Window(void)
  * not work (always on top, transparency...).
  * This function is thus called some time after the constructor (provided a call to
  * WindowManager::ScheduleDelayedUpdate() is made). It checks if the owned window has changed,
- * updates various parameters consequently, and in any case performs auto-size/position and shell
- * integration.
+ * updates various parameters consequently, and in any case performs auto-size/position.
  */
 void Window::OnDelayUpdate()
 {
@@ -158,10 +157,6 @@ void Window::OnDelayUpdate()
       rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top,
       SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS |
       (m_autopos?0:SWP_NOMOVE) | (m_autosize?0:SWP_NOSIZE));
-
-   //Shell integration
-   TCHAR filename[MAX_PATH];
-   PlatformHelper::GetWindowFileName(m_hWnd, filename, MAX_PATH);
 }
 
 void Window::MoveToDesktop(Desktop * desk)
