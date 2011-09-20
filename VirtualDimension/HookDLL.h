@@ -21,13 +21,6 @@
 #ifndef __HOOKDLL_H__
 #define __HOOKDLL_H__
 
-enum HookReturnCode
-{
-   HOOK_ERROR,
-   HOOK_OK,
-   HOOK_OK_REHOOK,
-};
-
 enum MenuItems
 {
    VDM_TOGGLEONTOP = WM_USER+1,

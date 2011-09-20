@@ -291,23 +291,6 @@ bool WindowsManager::ConfirmKillWindow()
           (locMessageBox(vdWindow, IDS_CONFIRMKILL, IDS_KILLWARNING, MB_OKCANCEL|MB_ICONWARNING) == IDOK);
 }
 
-void WindowsManager::SetIntegrateWithShell(bool integ)
-{
-   WindowsList::Iterator it;
-
-   if (m_integrateWithShell == integ)
-      return;
-
-   m_integrateWithShell = integ;
-
-   for(it = m_windows.begin(); it; it++)
-   {
-      if (integ)
-         (*it).Hook();
-      else
-         (*it).UnHook();
-   }
-}
 
 LRESULT WindowsManager::OnSettingsChange(HWND /*hWnd*/, UINT /*message*/, WPARAM wParam, LPARAM /*lParam*/)
 {

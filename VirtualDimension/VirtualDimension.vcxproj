@@ -47,7 +47,6 @@
     <ClCompile Include="SharedMenuBuffer.cpp" />
     <ClCompile Include="ShellHook.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="SubclassWindow.cpp" />
     <ClCompile Include="TaskPool.cpp" />
     <ClCompile Include="ToolTip.cpp" />
     <ClCompile Include="Transparency.cpp" />
@@ -73,6 +72,7 @@
     <ClInclude Include="ExplorerWrapper.h" />
     <ClInclude Include="FastWindow.h" />
     <ClInclude Include="HidingMethod.h" />
+    <ClInclude Include="HookDLL.h" />
     <ClInclude Include="HotkeyConfig.h" />
     <ClInclude Include="HotKeyControl.h" />
     <ClInclude Include="HotKeyManager.h" />
@@ -200,6 +200,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

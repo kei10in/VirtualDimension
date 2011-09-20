@@ -96,9 +96,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SubclassWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TaskPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -246,6 +243,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SharedMenuBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HookDLL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

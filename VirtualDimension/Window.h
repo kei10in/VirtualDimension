@@ -159,9 +159,6 @@ public:
    }
    void GetRect(LPRECT /*rect*/)  { return; }
 
-   void Hook();
-   void UnHook();
-
    inline HWND GetOwnedWindow() const         { return m_hOwnedWnd; }
    inline static HWND GetOwnedWindow(HWND hWnd);
 
@@ -239,7 +236,6 @@ protected:
 
    BalloonNotification::Message m_BallonMsg;
 
-   HINSTANCE m_HookDllHandle;
    DWORD m_dwProcessId;
 
    bool m_switching;

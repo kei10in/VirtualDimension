@@ -32,8 +32,6 @@
 #include "HookDLL.h"
 #include "Locale.h"
 
-HINSTANCE HookWindow(HWND hWnd, DWORD dwProcessId, int data);
-bool UnHookWindow(HINSTANCE hInstance, DWORD dwProcessId, HWND hWnd);
 
 HidingMethodHide       Window::s_hider_method;
 HidingMethodMinimize   Window::s_minimizer_method;
@@ -52,7 +50,7 @@ const ATOM Window::s_VDPropertyTag = GlobalAddAtom(TEXT("ViRtUaL DiMeNsIoN rocks
 Window::Window(HWND hWnd): AlwaysOnTop(hWnd), m_hWnd(hWnd), m_hOwnedWnd(GetOwnedWindow(hWnd)),
                            m_MinToTray(false), m_style(0), m_transp(m_hOwnedWnd), m_transpLevel(128),
                            m_autoSaveSettings(false), m_autosize(false), m_autopos(false), m_autodesk(false),
-                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_BallonMsg(NULL), m_HookDllHandle(NULL),
+                            m_hIcon(NULL), m_hDefaulIcon(NULL), m_BallonMsg(NULL),
                            m_switching(false), m_moving(false), m_hidden(false)
 {
    Settings s;
@@ -115,8 +113,6 @@ Window::~Window(void)
 {
    winMan->CancelDelayedUpdate(this);
 
-   UnHook();
-
    if (m_hDefaulIcon)
       DestroyIcon(m_hDefaulIcon);
 
@@ -166,8 +162,6 @@ void Window::OnDelayUpdate()
    //Shell integration
    TCHAR filename[MAX_PATH];
    PlatformHelper::GetWindowFileName(m_hWnd, filename, MAX_PATH);
-   if (winMan->IsIntegrateWithShell() && !s.LoadDisableShellIntegration(filename))
-      Hook();
 }
 
 void Window::MoveToDesktop(Desktop * desk)
@@ -606,27 +600,6 @@ void Window::OnContextMenu()
    DestroyMenu(hMenu);
 }
 
-void Window::Hook()
-{
-   if (m_HookDllHandle)
-      return;
-
-   GetWindowThreadProcessId(m_hWnd, &m_dwProcessId);
-   m_HookDllHandle = HookWindow(m_hWnd, m_dwProcessId, (int)this);
-   if (m_HookDllHandle && m_hWnd != m_hOwnedWnd)
-      HookWindow(m_hOwnedWnd, m_dwProcessId, (int)this);
-}
-
-void Window::UnHook()
-{
-   if (m_HookDllHandle)
-   {
-      UnHookWindow(m_HookDllHandle, m_dwProcessId, m_hWnd);
-      if (m_hWnd != m_hOwnedWnd)
-         UnHookWindow(m_HookDllHandle, m_dwProcessId, m_hOwnedWnd);
-   }
-   m_HookDllHandle = NULL;
-}
 
 void Window::FlashWindow(void)
 {
