@@ -36,7 +36,6 @@
 #include "ExplorerWrapper.h"
 #include <shellapi.h>
 #include <assert.h>
-#include "HookDLL.h"
 #include "Locale.h"
 #include "CmdLine.h"
 

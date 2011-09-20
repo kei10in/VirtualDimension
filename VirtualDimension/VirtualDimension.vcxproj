@@ -72,7 +72,6 @@
     <ClInclude Include="ExplorerWrapper.h" />
     <ClInclude Include="FastWindow.h" />
     <ClInclude Include="HidingMethod.h" />
-    <ClInclude Include="HookDLL.h" />
     <ClInclude Include="HotkeyConfig.h" />
     <ClInclude Include="HotKeyControl.h" />
     <ClInclude Include="HotKeyManager.h" />

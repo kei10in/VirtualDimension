@@ -29,7 +29,7 @@
 #include "DesktopManager.h"
 #include <Commdlg.h>
 #include "WindowsManager.h"
-#include "HookDLL.h"
+
 
 DesktopManager * deskMan;
 

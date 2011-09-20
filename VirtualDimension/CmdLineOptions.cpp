@@ -22,7 +22,6 @@
 #include "shellapi.h"
 #include "CmdLine.h"
 #include "VirtualDimension.h"
-#include "HookDLL.h"
 
 
 class CommandLineStartApp : public CommandLineOption {

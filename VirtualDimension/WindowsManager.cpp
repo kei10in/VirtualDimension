@@ -27,7 +27,6 @@
 #include "DesktopManager.h"
 #include "Locale.h"
 #include "BalloonNotif.h"
-#include "HookDLL.h"
 
 WindowsManager * winMan;
 

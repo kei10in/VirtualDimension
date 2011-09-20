@@ -29,8 +29,30 @@
 #include "DesktopManager.h"
 #include "WindowsManager.h"
 #include "SharedMenuBuffer.h"
-#include "HookDLL.h"
 #include "Locale.h"
+
+
+enum MenuItems {
+    VDM_TOGGLEONTOP = WM_USER+1,
+    VDM_TOGGLEMINIMIZETOTRAY,
+    VDM_TOGGLETRANSPARENCY,
+
+    VDM_TOGGLEALLDESKTOPS,
+    VDM_MOVEWINDOW,
+
+    VDM_ACTIVATEWINDOW,
+    VDM_RESTORE,
+    VDM_MINIMIZE,
+    VDM_MAXIMIZE,
+    VDM_MAXIMIZEHEIGHT,
+    VDM_MAXIMIZEWIDTH,
+    VDM_CLOSE,
+    VDM_KILL,
+
+    VDM_PROPERTIES,
+
+    VDM_MOVETODESK,
+};
 
 
 HidingMethodHide       Window::s_hider_method;
