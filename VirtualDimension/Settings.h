@@ -48,7 +48,6 @@ public:
    static DECLARE_SETTING(CloseToTray, bool);
    static DECLARE_SETTING(AutoSwitchDesktop, bool);
    static DECLARE_SETTING(AllWindowsInTaskList, bool);
-   static DECLARE_SETTING(IntegrateWithShell, bool);
    static DECLARE_SETTING(SwitchToNextDesktopHotkey, int);
    static DECLARE_SETTING(SwitchToPreviousDesktopHotkey, int);
    static DECLARE_SETTING(SwitchToTopDesktopHotkey, int);

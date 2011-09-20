@@ -60,10 +60,6 @@ public:
    void SetAutoSwitchDesktop(bool autoSw)   { m_autoSwitch = autoSw; }
    bool IsShowAllWindowsInTaskList() const  { return m_allWindowsInTaskList; }
    void ShowAllWindowsInTaskList(bool all)  { m_allWindowsInTaskList = all; }
-   bool IsIntegrateWithShell() const        { return m_integrateWithShell; }
-    void WindowsManager::SetIntegrateWithShell(bool integ) {
-        m_integrateWithShell = integ;
-    }
 
    HWND GetPrevWindow(Window * wnd);
 
@@ -88,7 +84,6 @@ protected:
    bool m_confirmKill;
    bool m_autoSwitch;
    bool m_allWindowsInTaskList;
-   bool m_integrateWithShell;
 
    int m_iAnimate;
    LONG m_nbDisabledAnimations;

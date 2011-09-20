@@ -709,9 +709,6 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
          Settings settings;
          int hidingmethod;
 
-         //Setup integrate with shell
-         CheckDlgButton(hDlg, IDC_INTEGRATEWTHSHELL_CHECK, winMan->IsIntegrateWithShell() ? BST_CHECKED : BST_UNCHECKED);
-
          //Setup hiding method
          hidingmethod = settings.LoadSetting(Settings::DefaultHidingMethod);
          if (hidingmethod > 2 || hidingmethod < 0)
@@ -763,9 +760,6 @@ LRESULT CALLBACK TroubleShootingConfiguration(HWND hDlg, UINT message, WPARAM wP
       case PSN_APPLY:
          {
             int i;
-
-            winMan->SetIntegrateWithShell(IsDlgButtonChecked(hDlg, IDC_INTEGRATEWTHSHELL_CHECK) == BST_CHECKED);
-
             for(i = IDC_HIDEMETHOD_RADIO; i <= IDC_MOVEMETHOD_RATIO; i++)
                if (IsDlgButtonChecked(hDlg, i))
                {

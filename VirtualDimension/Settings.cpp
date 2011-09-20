@@ -46,7 +46,6 @@ DEFINE_SETTING(Settings, AutoSaveWindowSettings, bool, false);
 DEFINE_SETTING(Settings, CloseToTray, bool, false);
 DEFINE_SETTING(Settings, AutoSwitchDesktop, bool, true);
 DEFINE_SETTING(Settings, AllWindowsInTaskList, bool, false);
-DEFINE_SETTING(Settings, IntegrateWithShell, bool, true);
 DEFINE_SETTING(Settings, SwitchToNextDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, SwitchToPreviousDesktopHotkey, int, 0);
 DEFINE_SETTING(Settings, SwitchToTopDesktopHotkey, int, 0);

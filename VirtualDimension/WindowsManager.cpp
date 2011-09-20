@@ -39,7 +39,6 @@ WindowsManager::WindowsManager(): m_shellhook(vdWindow), m_firstFreeDelayedUpdat
    m_confirmKill = settings.LoadSetting(Settings::ConfirmKilling);
    m_autoSwitch = settings.LoadSetting(Settings::AutoSwitchDesktop);
    m_allWindowsInTaskList = settings.LoadSetting(Settings::AllWindowsInTaskList);
-   m_integrateWithShell = settings.LoadSetting(Settings::IntegrateWithShell);
 
    m_nbDisabledAnimations = 0;
    {
@@ -80,7 +79,6 @@ WindowsManager::~WindowsManager(void)
    settings.SaveSetting(Settings::ConfirmKilling, m_confirmKill);
    settings.SaveSetting(Settings::AutoSwitchDesktop, m_autoSwitch);
    settings.SaveSetting(Settings::AllWindowsInTaskList, m_allWindowsInTaskList);
-   settings.SaveSetting(Settings::IntegrateWithShell, m_integrateWithShell);
 
    //Restore the animations
    {
